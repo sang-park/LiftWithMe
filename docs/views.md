@@ -12,7 +12,7 @@
 ## GymSessionForm
 ![gym-session-form]
 
-[new-user-session]: ./wireframes/signup_page.png
-[gym-session-index]: ./wireframes/gymsessionindex.png
-[gym-session-create]: ./wireframes/gymsessioncreate.png
-[gym-session-form]: ./wireframes/gymsessionform.png
+[new-user-session]: ./wireframes/Signup_page.png
+[gym-session-index]: ./wireframes/GymSessionIndex.png
+[gym-session-create]: ./wireframes/GymSessionCreate.png
+[gym-session-form]: ./wireframes/GymSessionForm.png
