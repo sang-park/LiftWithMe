@@ -13,6 +13,6 @@
 ![gym-session-form]
 
 [new-user-session]: ./wireframes/signup_page.png
-[gym-session-index]: ./wireframes/gym-session-index.png
-[gym-session-create]: ./wireframes/gym-session-create.png
-[gym-session-form]: ./wireframes/gym-session-form.png
+[gym-session-index]: ./wireframes/gymsessionindex.png
+[gym-session-create]: ./wireframes/gymsessioncreate.png
+[gym-session-form]: ./wireframes/gymsessionform.png
