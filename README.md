@@ -1,12 +1,12 @@
-# GymBuddy
+# LiftWithMe
 
 [Heroku link][heroku]
 
-[heroku]: http://www.gymbuddy.com
+[heroku]: http://www.LiftWithMe.com
 
 ## Minimum Viable Product
 
-GymBuddy's overall design was inspired by Tea With Strangers, an app that allows you to meet, drink tea, and have meaningful conversations with strangers. GymBuddy is a web application that will be built using Ruby on Rails and React.js. The finished product will meet the following minimum critera:
+LiftWithMe's overall design was inspired by Tea With Strangers, an app that allows you to meet, drink tea, and have meaningful conversations with strangers. LiftWithMe is a web application that will be built using Ruby on Rails and React.js. The finished product will meet the following minimum critera:
 
 - [ ] Sign-up, sign-in, and a demo sign-in feature
 - [ ] Smooth, bug-free navigation
@@ -18,7 +18,7 @@ GymBuddy's overall design was inspired by Tea With Strangers, an app that allows
 
 ## Product Goals and Priorities
 
-GymBuddy will allow users to do the following:
+LiftWithMe will allow users to do the following:
 
 - [ ] Create an account (MVP)
 - [ ] Log in / Log out, including as a Guest/Demo User (MVP)
