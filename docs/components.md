@@ -2,7 +2,8 @@
 
 * `App`
   * `SearchIndex`
-  * `GymSessionIndex`
-    * `GymSessionShow`
-  * `GymSessionCreate`
   * `UsersIndex`
+  * `HomeCityIndex` --> `GymIndex`
+    * `GymShow` --> `WorkoutIndex`
+      * `WorkoutShow` --> `ExercisesIndex`
+    * `WorkoutCreate`

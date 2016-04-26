@@ -3,16 +3,16 @@
 ## New User / Session
 ![new-user-session]
 
-## GymSessionIndex
+## WorkoutIndex
 ![gym-session-index]
 
-## GymSessionCreate
+## WorkoutCreate
 ![gym-session-create]
 
-## GymSessionForm
+## WorkoutForm
 ![gym-session-form]
 
 [new-user-session]: ./wireframes/Signup_page.png
-[gym-session-index]: ./wireframes/GymSessionIndex.png
-[gym-session-create]: ./wireframes/GymSessionCreate.png
-[gym-session-form]: ./wireframes/GymSessionForm.png
+[gym-session-index]: ./wireframes/WorkoutIndex.png
+[gym-session-create]: ./wireframes/WorkoutCreate.png
+[gym-session-form]: ./wireframes/WorkoutForm.png

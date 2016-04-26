@@ -4,7 +4,7 @@
 ### Models
 * User
 * Gym
-* GymSession
+* Workout
 
 ### Controllers
 * UsersController (create, new)

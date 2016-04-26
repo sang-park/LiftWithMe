@@ -1,38 +1,38 @@
-# Phase 3: Gyms (2 days)
+# Phase 3: Flux Architecture and Workout CRUD (2 days)
 
 ## Rails
 ### Models
-* Gym
 
 ### Controllers
-* Api::GymsController (index, show)
 
 ### Views
-* gyms/index.json.jbuilder
-* gyms/show.json.jbuilder
 
 ## Flux
 ### Views (React Components)
-* GymsIndex
+* HomeCityIndex
+* HomeCityShow => GymIndex
+* GymShow => WorkoutsIndex
+* WorkoutsForm
 
 ### Stores
-* Gym
+* Workouts
 
 ### Actions
-* ApiActions.receiveAllGyms -> triggered by ApiUtil
-* ApiActions.receiveSingleGym
-* ApiActions.deleteGym
-* GymActions.fetchAllGyms -> triggers ApiUtil
-* GymActions.fetchSingleGym
-* GymActions.createGym
-* GymActions.editGym
-* GymActions.destroyGym
+* ApiActions.receiveAllWorkouts -> triggered by ApiUtil
+* ApiActions.receiveSingleWorkout
+* ApiActions.deleteWorkout
+* WorkoutActions.fetchAllWorkouts -> triggers ApiUtil
+* WorkoutActions.fetchSingleWorkout
+* WorkoutActions.createWorkout
+* WorkoutActions.editWorkout
+* WorkoutActions.destroyWorkout
 
 ### ApiUtil
-* ApiUtil.fetchAllGyms
-* ApiUtil.fetchSingleGym
-* ApiUtil.createGym
-* ApiUtil.editGym
-* ApiUtil.destroyGym
+* ApiUtil.fetchAllWorkouts
+* ApiUtil.fetchSingleWorkout
+* ApiUtil.createWorkout
+* ApiUtil.editWorkout
+* ApiUtil.destroyWorkout
 
 ## Gems/Libraries
+* Flux Dispatcher (npm)

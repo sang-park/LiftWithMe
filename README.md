@@ -52,15 +52,15 @@ GymBuddy will allow users to do the following:
 - [ ] user signup/signin pages
 - [ ] blank landing page after signin
 
-### Phase 2: Gym Session Model, API, and basic APIUtil (1.5 days)
+### Phase 2: Workouts Model, API, and basic APIUtil (1.5 days)
 
-**Objective:** Gym sessions can be created, read, edited and destroyed through
+**Objective:** Workouts can be created, read, edited and destroyed through
 the API.
 
 - [ ] create `Gym` model
-- [ ] create `GymSessions` model
+- [ ] create `Workouts` model
 - [ ] seed the database with a small amount of test data
-- [ ] CRUD API for notes (`GymSessionsController`)
+- [ ] CRUD API for notes (`WorkoutsController`)
 - [ ] jBuilder views for notes
 - [ ] setup Webpack & Flux scaffold
 - [ ] setup `APIUtil` to interact with the API
@@ -68,14 +68,14 @@ the API.
 
 ### Phase 3: Flux Architecture and Router (1.5 days)
 
-**Objective:** GymSessions can be created, read, edited and destroyed with the
+**Objective:** Workouts can be created, read, edited and destroyed with the
 user interface.
 
 - [ ] setup the flux loop with skeleton files
 - [ ] setup React Router
 - implement each note component, building out the flux loop as needed.
-  - [ ] `GymSessionsIndex`
-  - [ ] `GymSessionForm`
+  - [ ] `WorkoutsIndex`
+  - [ ] `WorkoutForm`
 
 ### Phase 4: Start Styling (0.5 days)
 
@@ -87,7 +87,7 @@ user interface.
 
 ### Phase 5: Muscle Tagging (1 day)
 
-**Objective:** GymSessions can be categorized with muscles by tagging.
+**Objective:** Workouts can be categorized with muscles by tagging.
 
 - [ ] create `Muscle` model and join table (`MuscleTags`)
 - build out API, Flux loop, and components for:
@@ -106,10 +106,11 @@ user interface.
 - [ ] Add modals, transitions, and other styling flourishes.
 
 ### Bonus Features (TBD)
-- [ ] Search through gym sessions by time
+- [ ] Search through workouts by time
 - [ ] Pagination / infinite scroll for gym sessions
 - [ ] Friend system with other users
 - [ ] Search users by how much they lift
+- [ ] Save Workouts like a playlist
 - [ ] Multiple sessions
 
 [phase-one]: ./docs/phases/phase1.md

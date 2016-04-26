@@ -1,4 +1,4 @@
-# Phase 3: Muscle and Muscle Tags (1 days)
+# Phase 5: Muscle and Muscle Tags (1 days)
 
 ## Rails
 ### Models

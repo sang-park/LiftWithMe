@@ -1,37 +1,47 @@
-# Phase 2: Flux Architecture and GymSession CRUD (2 days)
+# Phase 2: Gyms (2 days)
 
 ## Rails
 ### Models
+* Gym
+* Workouts
+* Exercises
 
 ### Controllers
+* Api::GymsController (index, show)
+* Api::ExercisesController (index)
+* Api::WorkoutsController (index, show, new, create, delete, edit, update)
 
 ### Views
+* gyms/index.json.jbuilder
+* gyms/show.json.jbuilder
+* workouts/index.json.jbuilder
+* workouts/new.json.jbuilder
+* workouts/edit.json.jbuilder
+* workouts/show.json.jbuilder
+* exercises/index.json.jbuilder
 
 ## Flux
 ### Views (React Components)
-* GymShow
-* GymSessionsIndex
-* GymSessionsForm
+* GymsIndex
 
 ### Stores
-* GymSessions
+* Gym
 
 ### Actions
-* ApiActions.receiveAllGymSessions -> triggered by ApiUtil
-* ApiActions.receiveSingleGymSession
-* ApiActions.deleteGymSession
-* GymSessionActions.fetchAllGymSessions -> triggers ApiUtil
-* GymSessionActions.fetchSingleGymSession
-* GymSessionActions.createGymSession
-* GymSessionActions.editGymSession
-* GymSessionActions.destroyGymSession
+* ApiActions.receiveAllGyms -> triggered by ApiUtil
+* ApiActions.receiveSingleGym
+* ApiActions.deleteGym
+* GymActions.fetchAllGyms -> triggers ApiUtil
+* GymActions.fetchSingleGym
+* GymActions.createGym
+* GymActions.editGym
+* GymActions.destroyGym
 
 ### ApiUtil
-* ApiUtil.fetchAllGymSessions
-* ApiUtil.fetchSingleGymSession
-* ApiUtil.createGymSession
-* ApiUtil.editGymSession
-* ApiUtil.destroyGymSession
+* ApiUtil.fetchAllGyms
+* ApiUtil.fetchSingleGym
+* ApiUtil.createGym
+* ApiUtil.editGym
+* ApiUtil.destroyGym
 
 ## Gems/Libraries
-* Flux Dispatcher (npm)

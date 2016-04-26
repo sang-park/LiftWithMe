@@ -7,34 +7,33 @@ id              | integer   | not null, primary key
 username        | string    | not null, indexed, unique
 password_digest | string    | not null
 session_token   | string    | not null, indexed, unique
+gym_id          | string    | foreign key (references gym), indexed
 
-## homecity
+## home_city
 column name     | data type | details
 ----------------|-----------|-----------------------
 id              | integer   | not null, primary key
 city            | string    | not null
 
 ## gyms
-column name | data type | details
-------------|-----------|-----------------------
-id          | integer   | not null, primary key
-title       | string    | not null
-homecity_id | integer   | not null, foreign key (references homecity), indexed
+column name  | data type | details
+-------------|-----------|-----------------------
+id           | integer   | not null, primary key
+name         | string    | not null
+home_city_id | integer   | not null, foreign key (references home_city), indexed
 
 ## workouts
 column name | data type | details
 ------------|-----------|-----------------------
 id          | integer   | not null, primary key
-muscles     | string    | not null
 time        | date      | not null
 user_id     | integer   | not null, foreign key (references users), indexed
-gym_id      | integer   | not null, foreign key (references gym), indexed
 
 ## exercises
-column name     | data type | details
-----------------|-----------|-----------------------
-id              | integer   | not null, primary key
-name            | string    | not null
+column name | data type | details
+------------|-----------|-----------------------
+id          | integer   | not null, primary key
+name        | string    | not null
 
 ## workout_exercises
 column name     | data type | details
@@ -42,7 +41,6 @@ column name     | data type | details
 id              | integer   | not null, primary key
 workout_id      | integer   | not null, foreign key (references workouts), indexed
 exercise_id     | integer   | not null, foreign key (references exercises), indexed
-
 
 ## muscles
 column name | data type | details

@@ -24,7 +24,7 @@
 ### Notes
 
 - `GET /api/gym_sessions`
-  - GymSession index/search
+  - Workout index/search
   - Takes in tag as a query string
 - `POST /api/gym_sessions`
 - `GET /api/gym_sessions/:id`

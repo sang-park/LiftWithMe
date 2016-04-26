@@ -12,50 +12,50 @@ because once you start implementing your flux loops, that's precisely
 what you'll need to do.
 
 
-## GymSession Cycles
+## Workout Cycles
 
-### GymSession API Request Actions
+### Workout API Request Actions
 
-* `fetchAllGymSessions`
-  0. invoked from `GymSessionIndex` `didMount`/`willReceiveProps`
+* `fetchAllWorkouts`
+  0. invoked from `WorkoutIndex` `didMount`/`willReceiveProps`
   0. `GET /api/gym_sessions` is called.
-  0. `receiveAllGymSessions` is set as the callback.
+  0. `receiveAllWorkouts` is set as the callback.
 
-* `createGymSession`
+* `createWorkout`
   0. invoked from new note button `onClick`
   0. `POST /api/gym_sessions` is called.
-  0. `receiveSingleGymSession` is set as the callback.
+  0. `receiveSingleWorkout` is set as the callback.
 
-* `fetchSingleGymSession`
-  0. invoked from `GymSessionDetail` `didMount`/`willReceiveProps`
+* `fetchSingleWorkout`
+  0. invoked from `WorkoutDetail` `didMount`/`willReceiveProps`
   0. `GET /api/gym_sessions/:id` is called.
-  0. `receiveSingleGymSession` is set as the callback.
+  0. `receiveSingleWorkout` is set as the callback.
 
-* `updateGymSession`
-  0. invoked from `GymSessionForm` `onSubmit`
+* `updateWorkout`
+  0. invoked from `WorkoutForm` `onSubmit`
   0. `POST /api/gym_sessions` is called.
-  0. `receiveSingleGymSession` is set as the callback.
+  0. `receiveSingleWorkout` is set as the callback.
 
-* `destroyGymSession`
+* `destroyWorkout`
   0. invoked from delete note button `onClick`
   0. `DELETE /api/gym_sessions/:id` is called.
-  0. `removeGymSession` is set as the callback.
+  0. `removeWorkout` is set as the callback.
 
-### GymSession API Response Actions
+### Workout API Response Actions
 
-* `receiveAllGymSessions`
+* `receiveAllWorkouts`
   0. invoked from an API callback.
-  0. `GymSessions` store updates `_gymSessions` and emits change.
+  0. `Workouts` store updates `_Workouts` and emits change.
 
-* `receiveSingleGymSession`
+* `receiveSingleWorkout`
   0. invoked from an API callback.
-  0. `GymSession` store updates `_gymSessions[id]` and emits change.
+  0. `Workout` store updates `_Workouts[id]` and emits change.
 
-* `removeGymSession`
+* `removeWorkout`
   0. invoked from an API callback.
-  0. `GymSession` store removes `_gymSessions[id]` and emits change.
+  0. `Workout` store removes `_Workouts[id]` and emits change.
 
 ### Store Listeners
 
-* `GymSessionsIndex` component listens to `GymSession` store.
-* `GymSessionDetail` component listens to `GymSession` store.
+* `WorkoutsIndex` component listens to `Workout` store.
+* `WorkoutDetail` component listens to `Workout` store.
