@@ -1,34 +1,5 @@
 # Schema Information
 
-## gym sessions
-column name | data type | details
-------------|-----------|-----------------------
-id          | integer   | not null, primary key
-muscles     | string    | not null
-time        | date      | not null
-user_id     | integer   | not null, foreign key (references users), indexed
-gym_id      | integer   | not null, foreign key (references notebooks), indexed
-
-## gyms
-column name | data type | details
-------------|-----------|-----------------------
-id          | integer   | not null, primary key
-title       | string    | not null
-home_city_id| integer   | not null, foreign key (references notebooks), indexed
-
-## tags
-column name | data type | details
-------------|-----------|-----------------------
-id          | integer   | not null, primary key
-name        | string    | not null
-
-## taggings
-column name | data type | details
-------------|-----------|-----------------------
-id          | integer   | not null, primary key
-gym_session_id| integer   | not null, foreign key (references notes), indexed, unique [tag_id]
-tag_id      | integer   | not null, foreign key (references tags), indexed
-
 ## users
 column name     | data type | details
 ----------------|-----------|-----------------------
@@ -36,3 +7,59 @@ id              | integer   | not null, primary key
 username        | string    | not null, indexed, unique
 password_digest | string    | not null
 session_token   | string    | not null, indexed, unique
+
+## homecity
+column name     | data type | details
+----------------|-----------|-----------------------
+id              | integer   | not null, primary key
+city            | string    | not null
+
+## gyms
+column name | data type | details
+------------|-----------|-----------------------
+id          | integer   | not null, primary key
+title       | string    | not null
+homecity_id | integer   | not null, foreign key (references homecity), indexed
+
+## workouts
+column name | data type | details
+------------|-----------|-----------------------
+id          | integer   | not null, primary key
+muscles     | string    | not null
+time        | date      | not null
+user_id     | integer   | not null, foreign key (references users), indexed
+gym_id      | integer   | not null, foreign key (references gym), indexed
+
+## exercises
+column name     | data type | details
+----------------|-----------|-----------------------
+id              | integer   | not null, primary key
+name            | string    | not null
+
+## workout_exercises
+column name     | data type | details
+----------------|-----------|-----------------------
+id              | integer   | not null, primary key
+workout_id      | integer   | not null, foreign key (references workouts), indexed
+exercise_id     | integer   | not null, foreign key (references exercises), indexed
+
+
+## muscles
+column name | data type | details
+------------|-----------|-----------------------
+id          | integer   | not null, primary key
+name        | string    | not null
+
+## muscle taggings
+column name | data type | details
+------------|-----------|-----------------------
+id          | integer   | not null, primary key
+workouts_id | integer   | not null, foreign key (references workouts), indexed, unique [muscle_id]
+muscle_id   | integer   | not null, foreign key (references muscles), indexed
+
+## friends
+column name | data type | details
+------------|-----------|-----------------------
+id          | integer   | not null, primary key
+user_id     | integer   | not null, foreign key (references users), indexed
+friend_id   | integer   | not null, foreign key (references users), indexed
