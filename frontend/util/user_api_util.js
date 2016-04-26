@@ -27,18 +27,15 @@ var UserApiUtil = {
 			error: error
 		});
 	},
-	fetchCurrentUser: function(){
+	fetchCurrentUser: function(success, error){
 		$.ajax({
 			url: '/api/session',
-			method: 'get',
-			success: function(){
-
-      },
-			error: function(){
-        console.log("user api util get error");
-      }
+			method: 'GET',
+			success: success,
+			error: error
 		});
 	},
 };
 
+window.userapi = UserApiUtil;
 module.exports = UserApiUtil;

@@ -13,3 +13,8 @@
  *= require_tree .
  *= require_self
  */
+
+.login-button {
+  float: right;
+  padding: 10px;
+}

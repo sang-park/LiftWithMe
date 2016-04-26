@@ -36,13 +36,13 @@
     "react-router": "^2.0.1"
   },
   "engines": {
-  "node": "5.6.0", 
+  "node": "5.6.0",
   "npm": "3.6.0"
   },
 
   "scripts": {
     "postinstall": "./node_modules/.bin/webpack"
-  },
+  }
 
 
 }

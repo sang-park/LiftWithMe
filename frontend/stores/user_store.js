@@ -9,7 +9,9 @@ var _currentUser, _errors;
 UserStore.__onDispatch = function (payload) {
   switch(payload.actionType) {
     case UserConstants.LOGIN:
-    	UserStore.login(payload.user);
+      if (payload.user.errors !== null){
+    	  UserStore.login(payload.user);
+      }
       break;
     case UserConstants.LOGOUT:
     	UserStore.logout();
