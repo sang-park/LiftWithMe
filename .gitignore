@@ -11,4 +11,12 @@
 /log/*
 !/log/.keep
 /tmp
+
+#ignore the node modules
 /node_modules
+
+#ignore balsamiq file
+/gymbuddy.bmpr
+
+#ignore byebug history
+/.byebug_history

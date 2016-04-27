@@ -31980,7 +31980,6 @@
 			UserApiUtil.fetchCurrentUser(UserActions.receiveCurrentUser, UserActions.handleError);
 		},
 		signup: function (user) {
-			debugger;
 			UserApiUtil.signup(user, UserActions.receiveCurrentUser, UserActions.handleError);
 		},
 		login: function (user) {
@@ -32141,7 +32140,9 @@
 	        header = "Log In";
 	        button = React.createElement(
 	          "button",
-	          { onClick: this.signUpPage },
+	          {
+	            onClick: this.signUpPage,
+	            className: "form-button" },
 	          "Sign Up"
 	        );
 	        this.action = UserActions.login;
@@ -32151,7 +32152,7 @@
 	      }
 	      return React.createElement(
 	        "div",
-	        { className: "login-button" },
+	        null,
 	        React.createElement(
 	          "button",
 	          { onClick: this.openModal },
@@ -32167,7 +32168,7 @@
 	          },
 	          React.createElement(
 	            "form",
-	            { onSubmit: this.handleSubmit },
+	            { onSubmit: this.handleSubmit, className: "login-form" },
 	            React.createElement(
 	              "section",
 	              null,
@@ -32180,8 +32181,9 @@
 	              ),
 	              React.createElement(
 	                "label",
-	                null,
-	                " Username:",
+	                {
+	                  className: "login-section" },
+	                "Username:",
 	                React.createElement("input", { type: "text",
 	                  valueLink: this.linkState("username"),
 	                  className: "login-section"
@@ -32191,16 +32193,24 @@
 	              React.createElement("br", null),
 	              React.createElement(
 	                "label",
-	                null,
-	                " Password:",
+	                {
+	                  className: "login-section" },
+	                "Password:",
 	                React.createElement("input", { type: "password",
 	                  valueLink: this.linkState("password"),
 	                  className: "login-section"
 	                })
 	              )
 	            ),
-	            React.createElement("input", { type: "Submit", valueLink: this.linkState("form") }),
-	            button
+	            React.createElement(
+	              "section",
+	              { className: "form-button" },
+	              React.createElement("input", {
+	                type: "Submit",
+	                valueLink: this.linkState("form")
+	              }),
+	              button
+	            )
 	          )
 	        )
 	      );

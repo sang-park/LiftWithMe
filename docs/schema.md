@@ -26,7 +26,8 @@ home_city_id | integer   | not null, foreign key (references home_city), indexed
 column name | data type | details
 ------------|-----------|-----------------------
 id          | integer   | not null, primary key
-time        | date      | not null
+date        | date      | not null
+time        | time      | not null
 user_id     | integer   | not null, foreign key (references users), indexed
 
 ## exercises

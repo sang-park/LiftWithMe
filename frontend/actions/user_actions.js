@@ -12,7 +12,6 @@ var UserActions = {
 		);
 	},
 	signup: function(user){
-		debugger
 		UserApiUtil.signup(
       user,
       UserActions.receiveCurrentUser,

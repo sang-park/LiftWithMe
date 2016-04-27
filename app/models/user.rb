@@ -7,16 +7,13 @@ class User < ActiveRecord::Base
   validates :password, length: { minimum: 6, allow_nil: true }
   validates :session_token, :username, uniqueness: true
 
-  has_many(
-    :subs,
-    class_name: "Sub",
-    foreign_key: :moderator_id,
-    primary_key: :id,
-    inverse_of: :moderator
-  )
-  has_many :posts, inverse_of: :author
-  has_many :comments, inverse_of: :author
-  has_many :user_votes, inverse_of: :user
+  belongs_to :gym
+
+  has_one :home_city,
+    through: :gym,
+    source: :home_city
+
+  has_many :workouts
 
   def self.find_by_credentials(username, password)
     user = User.find_by(username: username)

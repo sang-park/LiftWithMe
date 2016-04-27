@@ -70,14 +70,18 @@ var LoginForm = React.createClass({
       var header, button;
       if (this.state.form === "login") {
         header = "Log In";
-        button = <button onClick={this.signUpPage}>Sign Up</button>;
+        button = <button
+          onClick={this.signUpPage}
+          className="form-button">
+            Sign Up
+          </button>;
         this.action = UserActions.login;
       } else {
         header = "Sign Up";
         this.action = UserActions.signup;
       }
       return (
-        <div className="login-button">
+        <div>
           <button onClick={this.openModal}>login</button>
           <Modal
             isOpen={this.state.modalIsOpen}
@@ -85,25 +89,31 @@ var LoginForm = React.createClass({
             onRequestClose={this.closeModal}
             style={_style}
           >
-            <form onSubmit={this.handleSubmit}>
+            <form onSubmit={this.handleSubmit} className="login-form">
               <section> <h2>{header}!</h2>
-                <label> Username:
+                <label
+                  className="login-section">Username:
                   <input type="text"
                     valueLink={this.linkState("username")}
                     className="login-section"
                   />
                 </label> <br />
 
-                <label> Password:
+                <label
+                  className="login-section">Password:
                   <input type="password"
                     valueLink={this.linkState("password")}
                     className="login-section"
                   />
                 </label>
               </section>
-
-              <input type="Submit" valueLink={this.linkState("form")} />
-              {button}
+              <section className="form-button">
+                <input
+                  type="Submit"
+                  valueLink={this.linkState("form")}
+                />
+                {button}
+              </section>
             </form>
           </Modal>
         </div>
