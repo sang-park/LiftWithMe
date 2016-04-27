@@ -6,6 +6,12 @@ var ServerActions = {
       actionType: type,
       index: index
     });
+  },
+  receiveOne: function(item, type){
+    AppDispatcher.dispatch({
+      actionType: type,
+      item: item
+    });
   }
 };
 

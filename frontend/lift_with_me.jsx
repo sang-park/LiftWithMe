@@ -14,9 +14,9 @@ var UserStore = require('./stores/user_store');
 //components
 var LoginForm = require('./components/login_form');
 var HomeCityIndex = require('./components/home_city_index');
+var HomeCityShow = require('./components/home_city_show');
 
 var App = React.createClass({
-
   render: function(){
     return (
       <div>
@@ -28,9 +28,10 @@ var App = React.createClass({
 });
 
 var router =  (
-  <Router history={browserHistory}>
+  <Router history={hashHistory}>
     <Route path="/" component={App}>
       <IndexRoute component={HomeCityIndex} />
+      <Route path="home_cities/:home_city_id" component={HomeCityShow} />
     </Route>
   </Router>
 );

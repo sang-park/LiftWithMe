@@ -5,11 +5,7 @@ class Api::HomeCitiesController < ApplicationController
   end
 
   def show
-    if current_user && current_user.home_city.id == params["id"].to_i
-      @home_city = current_user.home_city
-      render :show
-    else
-      self.index
-    end
+    @home_city = HomeCity.find(params["id"].to_i)
+    render :show
   end
 end

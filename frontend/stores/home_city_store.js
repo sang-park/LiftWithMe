@@ -12,7 +12,7 @@ HomeCityStore.__onDispatch = function (payload) {
     	HomeCityStore.updateAllCities(payload.index);
       break;
     case "CURRENT_CITY":
-      HomeCityStore.updateCurrentCity(payload.city);
+      HomeCityStore.updateCurrentCity(payload.item);
   }
 };
 
@@ -34,6 +34,16 @@ HomeCityStore.currentHomeCity = function(){
 
 HomeCityStore.all = function(){
   return [].slice.call(_allHomeCities);
+};
+
+HomeCityStore.findIdOf = function(cityName){
+  var id;
+  Object.keys(_allHomeCities).forEach(function(cityId){
+    if (_allHomeCities[cityId].name === cityName){
+      id = parseInt(cityId) + 1;
+    }
+  });
+  return id;
 };
 
 window.HomeCityStore = HomeCityStore;

@@ -60,10 +60,10 @@
 	//components
 	var LoginForm = __webpack_require__(244);
 	var HomeCityIndex = __webpack_require__(273);
+	var HomeCityShow = __webpack_require__(275);
 	
 	var App = React.createClass({
 	  displayName: 'App',
-	
 	
 	  render: function () {
 	    return React.createElement(
@@ -77,11 +77,12 @@
 	
 	var router = React.createElement(
 	  Router,
-	  { history: browserHistory },
+	  { history: hashHistory },
 	  React.createElement(
 	    Route,
 	    { path: '/', component: App },
-	    React.createElement(IndexRoute, { component: HomeCityIndex })
+	    React.createElement(IndexRoute, { component: HomeCityIndex }),
+	    React.createElement(Route, { path: 'home_cities/:home_city_id', component: HomeCityShow })
 	  )
 	);
 	
@@ -32067,6 +32068,7 @@
 	var CurrentUserState = __webpack_require__(218);
 	var Modal = __webpack_require__(249);
 	var UserStore = __webpack_require__(219);
+	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var _style = {
 	  overlay: {
@@ -32098,6 +32100,7 @@
 	    password: ""
 	  },
 	  getInitialState: function () {
+	    UserStore.addListener(this.clearHash);
 	    Modal.setAppElement(document.getElementById("root"));
 	    return this.blankAttrs;
 	  },
@@ -32106,6 +32109,9 @@
 	  },
 	  closeModal: function () {
 	    this.setState({ modalIsOpen: false });
+	  },
+	  clearHash: function () {
+	    window.history.replaceState({}, document.title, "/");
 	  },
 	  handleSubmit: function (e) {
 	    e.preventDefault();
@@ -32125,6 +32131,10 @@
 	  signUpPage: function (e) {
 	    e.preventDefault();
 	    this.setState({ form: "sign up" });
+	  },
+	  goToHomePage: function (e) {
+	    e.preventDefault();
+	    hashHistory.push("/");
 	  },
 	  form: function () {
 	    if (this.state.currentUser) {
@@ -32261,7 +32271,7 @@
 	      { id: "navbar" },
 	      React.createElement(
 	        "div",
-	        { id: "logo" },
+	        { id: "logo", onClick: this.goToHomePage },
 	        "LOGO"
 	      ),
 	      React.createElement(
@@ -34466,6 +34476,9 @@
 	var ClientActions = {
 	  fetchAll: function (options) {
 	    ApiUtil.fetchAll(options);
+	  },
+	  fetchOne: function (options) {
+	    ApiUtil.fetchOne(options);
 	  }
 	};
 	
@@ -34489,29 +34502,15 @@
 	      }
 	    });
 	  },
-	  login: function (user, success, error) {
+	  fetchOne: function (options) {
+	    var url = options.url;
+	    var type = options.type;
 	    $.ajax({
-	      url: 'api/session/',
-	      type: 'POST',
-	      data: { user: user },
-	      success: success,
-	      error: error
-	    });
-	  },
-	  logout: function (success, error) {
-	    $.ajax({
-	      url: '/api/session',
-	      method: 'delete',
-	      success: success,
-	      error: error
-	    });
-	  },
-	  fetchCurrentUser: function (success, error) {
-	    $.ajax({
-	      url: '/api/session',
-	      method: 'GET',
-	      success: success,
-	      error: error
+	      url: url,
+	      type: 'GET',
+	      success: function (item) {
+	        ServerActions.receiveOne(item, type);
+	      }
 	    });
 	  }
 	
@@ -34531,6 +34530,12 @@
 	      actionType: type,
 	      index: index
 	    });
+	  },
+	  receiveOne: function (item, type) {
+	    AppDispatcher.dispatch({
+	      actionType: type,
+	      item: item
+	    });
 	  }
 	};
 	
@@ -34543,6 +34548,7 @@
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(270);
 	var HomeCityStore = __webpack_require__(274);
+	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var HomeCityIndex = React.createClass({
 	  displayName: 'HomeCityIndex',
@@ -34557,18 +34563,29 @@
 	      type: "ALL_CITITES"
 	    });
 	  },
+	  componentWillUnmount: function () {
+	    this.listener.remove();
+	  },
 	  updateHomeCities: function () {
 	    this.setState({ homeCities: HomeCityStore.all() });
+	  },
+	  handleClick: function (e) {
+	    e.preventDefault();
+	    var cityName = e.target.textContent;
+	    var id = HomeCityStore.findIdOf(cityName);
+	    hashHistory.push('/home_cities/' + id);
 	  },
 	  render: function () {
 	    var cities = [];
 	    this.state.homeCities.forEach(function (city) {
 	      cities.push(React.createElement(
 	        'li',
-	        { key: city.name },
+	        { onClick: this.handleClick,
+	          key: city.name
+	        },
 	        city.name
 	      ));
-	    });
+	    }.bind(this));
 	    return React.createElement(
 	      'div',
 	      null,
@@ -34607,7 +34624,7 @@
 	      HomeCityStore.updateAllCities(payload.index);
 	      break;
 	    case "CURRENT_CITY":
-	      HomeCityStore.updateCurrentCity(payload.city);
+	      HomeCityStore.updateCurrentCity(payload.item);
 	  }
 	};
 	
@@ -34631,9 +34648,65 @@
 	  return [].slice.call(_allHomeCities);
 	};
 	
+	HomeCityStore.findIdOf = function (cityName) {
+	  var id;
+	  Object.keys(_allHomeCities).forEach(function (cityId) {
+	    if (_allHomeCities[cityId].name === cityName) {
+	      id = parseInt(cityId) + 1;
+	    }
+	  });
+	  return id;
+	};
+	
 	window.HomeCityStore = HomeCityStore;
 	
 	module.exports = HomeCityStore;
+
+/***/ },
+/* 275 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ClientActions = __webpack_require__(270);
+	var HomeCityStore = __webpack_require__(274);
+	
+	var HomeCityShow = React.createClass({
+	  displayName: 'HomeCityShow',
+	
+	  getInitialState: function () {
+	    return { homeCity: {}, gyms: [] };
+	  },
+	  componentDidMount: function () {
+	    this.listener = HomeCityStore.addListener(this.updateCurrentCity);
+	
+	    var url = "/api/home_cities/" + this.props.params.home_city_id;
+	    ClientActions.fetchOne({
+	      url: url,
+	      type: "CURRENT_CITY"
+	    });
+	  },
+	  componentWillUnmount: function () {
+	    this.listener.remove();
+	  },
+	  updateCurrentCity: function () {
+	    this.setState({ homeCity: HomeCityStore.currentHomeCity() });
+	  },
+	  render: function () {
+	
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'h1',
+	        null,
+	        this.state.homeCity.name
+	      )
+	    );
+	  }
+	
+	});
+	
+	module.exports = HomeCityShow;
 
 /***/ }
 /******/ ]);

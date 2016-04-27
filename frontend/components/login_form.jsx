@@ -4,6 +4,8 @@ var UserActions = require("../actions/user_actions");
 var CurrentUserState = require("../mixins/current_user_state");
 var Modal = require('react-modal');
 var UserStore = require('../stores/user_store');
+var hashHistory = require('react-router').hashHistory;
+
 
 var _style = {
   overlay : {
@@ -33,6 +35,7 @@ var LoginForm = React.createClass({
     password: ""
   },
   getInitialState: function() {
+    UserStore.addListener(this.clearHash);
     Modal.setAppElement(document.getElementById("root"));
     return this.blankAttrs;
   },
@@ -41,6 +44,9 @@ var LoginForm = React.createClass({
   },
   closeModal: function() {
     this.setState({modalIsOpen: false});
+  },
+  clearHash: function(){
+    window.history.replaceState({}, document.title, "/");
   },
   handleSubmit: function(e){
     e.preventDefault();
@@ -60,6 +66,10 @@ var LoginForm = React.createClass({
   signUpPage: function(e){
     e.preventDefault();
     this.setState({form: "sign up"});
+  },
+  goToHomePage: function(e){
+    e.preventDefault();
+    hashHistory.push("/");
   },
   form: function(){
     if (this.state.currentUser) {
@@ -153,7 +163,7 @@ var LoginForm = React.createClass({
     }
     return (
       <div id="navbar">
-        <div id="logo">LOGO</div>
+        <div id="logo" onClick={this.goToHomePage}>LOGO</div>
         <div id="login-info">
           {this.greet()}
           {this.errors()}
