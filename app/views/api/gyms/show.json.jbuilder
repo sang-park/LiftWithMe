@@ -4,5 +4,6 @@ json.workouts do
     json.name workout.name
     json.time workout.time
     json.date workout.date
+    json.id workout.id
   end
 end

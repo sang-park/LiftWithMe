@@ -67,6 +67,42 @@ var LoginForm = React.createClass({
     e.preventDefault();
     hashHistory.push("/");
   },
+  displayModal: function(button,header){
+    return (
+      <Modal
+        isOpen={this.state.modalIsOpen}
+        onAfterOpen={this.afterOpenModal}
+        onRequestClose={this.closeModal}
+        style={_style}
+      >
+        <form onSubmit={this.handleSubmit} className="login-form">
+          <section> <h2>{header}!</h2>
+            <label
+              className="login-section">Username:
+              <input type="text"
+                valueLink={this.linkState("username")}
+                className="login-section"
+              />
+            </label> <br />
+            <label
+              className="login-section">Password:
+              <input type="password"
+                valueLink={this.linkState("password")}
+                className="login-section"
+              />
+            </label>
+          </section>
+          <section className="form-button">
+            <input
+              type="Submit"
+              valueLink={this.linkState("form")}
+            />
+            {button}
+          </section>
+        </form>
+      </Modal>
+    );
+  },
   form: function(){
     if (this.state.currentUser) {
       return (
@@ -89,39 +125,7 @@ var LoginForm = React.createClass({
       return (
         <div>
           <button onClick={this.openModal}>login</button>
-          <Modal
-            isOpen={this.state.modalIsOpen}
-            onAfterOpen={this.afterOpenModal}
-            onRequestClose={this.closeModal}
-            style={_style}
-          >
-            <form onSubmit={this.handleSubmit} className="login-form">
-              <section> <h2>{header}!</h2>
-                <label
-                  className="login-section">Username:
-                  <input type="text"
-                    valueLink={this.linkState("username")}
-                    className="login-section"
-                  />
-                </label> <br />
-
-                <label
-                  className="login-section">Password:
-                  <input type="password"
-                    valueLink={this.linkState("password")}
-                    className="login-section"
-                  />
-                </label>
-              </section>
-              <section className="form-button">
-                <input
-                  type="Submit"
-                  valueLink={this.linkState("form")}
-                />
-                {button}
-              </section>
-            </form>
-          </Modal>
+          {this.displayModal(button,header)}
         </div>
       );
     }

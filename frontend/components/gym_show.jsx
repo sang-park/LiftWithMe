@@ -6,7 +6,10 @@ var WorkoutIndex = require('./workout_index');
 
 var GymShow = React.createClass({
   getInitialState: function() {
-    return { workouts: [], name: ""};
+    return {
+      workouts: [],
+      name: ""
+    };
   },
   componentDidMount: function() {
     this.listener = GymStore.addListener(this.updateGym);
@@ -20,17 +23,15 @@ var GymShow = React.createClass({
     this.listener.remove();
   },
   updateGym: function(){
-    this.setState({workouts: GymStore.currentGym().workouts});
+    this.setState({
+      workouts: GymStore.currentGym().workouts,
+      name: GymStore.currentGym().name 
+    });
   },
-  handleClick: function(){
-    console.log("CLICKING");
-  },
-
   render: function() {
     return (
       <div>
-        <h2>{this.state.name}</h2>
-        <WorkoutIndex workouts={this.state.workouts}/>
+        <WorkoutIndex workouts={this.state.workouts} gymName={this.state.name}/>
       </div>
     );
   }

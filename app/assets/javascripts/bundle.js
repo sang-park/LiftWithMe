@@ -32136,6 +32136,63 @@
 	    e.preventDefault();
 	    hashHistory.push("/");
 	  },
+	  displayModal: function (button, header) {
+	    return React.createElement(
+	      Modal,
+	      {
+	        isOpen: this.state.modalIsOpen,
+	        onAfterOpen: this.afterOpenModal,
+	        onRequestClose: this.closeModal,
+	        style: _style
+	      },
+	      React.createElement(
+	        "form",
+	        { onSubmit: this.handleSubmit, className: "login-form" },
+	        React.createElement(
+	          "section",
+	          null,
+	          " ",
+	          React.createElement(
+	            "h2",
+	            null,
+	            header,
+	            "!"
+	          ),
+	          React.createElement(
+	            "label",
+	            {
+	              className: "login-section" },
+	            "Username:",
+	            React.createElement("input", { type: "text",
+	              valueLink: this.linkState("username"),
+	              className: "login-section"
+	            })
+	          ),
+	          " ",
+	          React.createElement("br", null),
+	          React.createElement(
+	            "label",
+	            {
+	              className: "login-section" },
+	            "Password:",
+	            React.createElement("input", { type: "password",
+	              valueLink: this.linkState("password"),
+	              className: "login-section"
+	            })
+	          )
+	        ),
+	        React.createElement(
+	          "section",
+	          { className: "form-button" },
+	          React.createElement("input", {
+	            type: "Submit",
+	            valueLink: this.linkState("form")
+	          }),
+	          button
+	        )
+	      )
+	    );
+	  },
 	  form: function () {
 	    if (this.state.currentUser) {
 	      return React.createElement(
@@ -32167,61 +32224,7 @@
 	          { onClick: this.openModal },
 	          "login"
 	        ),
-	        React.createElement(
-	          Modal,
-	          {
-	            isOpen: this.state.modalIsOpen,
-	            onAfterOpen: this.afterOpenModal,
-	            onRequestClose: this.closeModal,
-	            style: _style
-	          },
-	          React.createElement(
-	            "form",
-	            { onSubmit: this.handleSubmit, className: "login-form" },
-	            React.createElement(
-	              "section",
-	              null,
-	              " ",
-	              React.createElement(
-	                "h2",
-	                null,
-	                header,
-	                "!"
-	              ),
-	              React.createElement(
-	                "label",
-	                {
-	                  className: "login-section" },
-	                "Username:",
-	                React.createElement("input", { type: "text",
-	                  valueLink: this.linkState("username"),
-	                  className: "login-section"
-	                })
-	              ),
-	              " ",
-	              React.createElement("br", null),
-	              React.createElement(
-	                "label",
-	                {
-	                  className: "login-section" },
-	                "Password:",
-	                React.createElement("input", { type: "password",
-	                  valueLink: this.linkState("password"),
-	                  className: "login-section"
-	                })
-	              )
-	            ),
-	            React.createElement(
-	              "section",
-	              { className: "form-button" },
-	              React.createElement("input", {
-	                type: "Submit",
-	                valueLink: this.linkState("form")
-	              }),
-	              button
-	            )
-	          )
-	        )
+	        this.displayModal(button, header)
 	      );
 	    }
 	  },
@@ -34765,7 +34768,10 @@
 	  displayName: 'GymShow',
 	
 	  getInitialState: function () {
-	    return { workouts: [], name: "" };
+	    return {
+	      workouts: [],
+	      name: ""
+	    };
 	  },
 	  componentDidMount: function () {
 	    this.listener = GymStore.addListener(this.updateGym);
@@ -34779,22 +34785,16 @@
 	    this.listener.remove();
 	  },
 	  updateGym: function () {
-	    this.setState({ workouts: GymStore.currentGym().workouts });
+	    this.setState({
+	      workouts: GymStore.currentGym().workouts,
+	      name: GymStore.currentGym().name
+	    });
 	  },
-	  handleClick: function () {
-	    console.log("CLICKING");
-	  },
-	
 	  render: function () {
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(
-	        'h2',
-	        null,
-	        this.state.name
-	      ),
-	      React.createElement(WorkoutIndex, { workouts: this.state.workouts })
+	      React.createElement(WorkoutIndex, { workouts: this.state.workouts, gymName: this.state.name })
 	    );
 	  }
 	
@@ -34852,56 +34852,133 @@
 
 	var React = __webpack_require__(1);
 	var GymStore = __webpack_require__(274);
+	var WorkoutShow = __webpack_require__(280);
 	var hashHistory = __webpack_require__(159).hashHistory;
+	var Modal = __webpack_require__(249);
+	
+	var _style = {
+	  overlay: {
+	    position: 'fixed',
+	    top: 0,
+	    left: 0,
+	    right: 0,
+	    bottom: 0,
+	    backgroundColor: 'rgba(255, 255, 255, 0.75)'
+	  },
+	  content: {
+	    top: '30%',
+	    left: '50%',
+	    right: 'auto',
+	    bottom: 'auto',
+	    transform: 'translate(-50%, -50%)',
+	    padding: '0'
+	  }
+	};
+	
+	var WEEKDAYS = ["MON", "TUE", "WED", "THUR", "FRI", "SAT", "SUN"];
 	
 	var WorkoutIndex = React.createClass({
 	  displayName: 'WorkoutIndex',
 	
-	  handleClick: function (e) {
-	    e.preventDefault();
-	    console.log("clickling");
-	    var workoutName = e.target.textContent;
-	    // var id = HomeCityStore.findIdOf(cityName);
-	    // hashHistory.push('/home_cities/' + id);
+	  getInitialState: function () {
+	    return {
+	      modalIsOpen: false
+	    };
 	  },
+	  openModal: function () {
+	    this.setState({ modalIsOpen: true, form: "login" });
+	  },
+	  closeModal: function () {
+	    this.setState({ modalIsOpen: false });
+	  },
+	  handleClick: function (id, name) {
+	    return function (e) {
+	      e.preventDefault();
+	      this.openModal();
+	      this.workout = React.createElement(WorkoutShow, { workout_id: id, name: name });
+	    }.bind(this);
+	  },
+	  parseTime: function (time) {
+	    var tdate = new Date(time);
+	    var hr = tdate.getHours();
+	    var min = tdate.getMinutes();
+	    if (min < 10) {
+	      min = "0" + min;
+	    }
+	    if (hr < 12) {
+	      return hr + ":" + min + " AM";
+	    } else {
+	      return hr + ":" + min + " PM";
+	    }
+	  },
+	
 	  workouts: function () {
 	    var workouts = [];
 	    var self = this;
 	    this.props.workouts.forEach(function (workout) {
+	      var date = new Date(workout.date);
+	      var wday = WEEKDAYS[date.getDay()];
+	      var time = self.parseTime(workout.time);
 	      workouts.push(React.createElement(
-	        'li',
-	        { key: workout.name },
+	        'tr',
+	        {
+	          className: 'workout-index-view',
+	          key: workout.name,
+	          onClick: self.handleClick(workout.id, workout.name)
+	        },
 	        React.createElement(
-	          'div',
-	          { onClick: self.handleClick },
-	          ' ',
-	          workout.name,
-	          ' ',
-	          React.createElement('br', null),
+	          'td',
+	          null,
+	          wday
+	        ),
+	        React.createElement(
+	          'td',
+	          null,
+	          date.getMonth() + "/" + date.getDate(),
 	          ' '
 	        ),
-	        'Date: ',
-	        workout.date,
-	        ' ',
-	        React.createElement('br', null),
-	        'Time: ',
-	        workout.time,
-	        ' ',
-	        React.createElement('br', null),
-	        React.createElement('br', null)
+	        React.createElement(
+	          'td',
+	          null,
+	          time
+	        ),
+	        React.createElement(
+	          'td',
+	          { value: workout.id },
+	          workout.name
+	        )
 	      ));
 	    });
 	    return React.createElement(
-	      'ul',
-	      null,
-	      workouts
+	      'table',
+	      { className: 'workouts' },
+	      React.createElement(
+	        'caption',
+	        null,
+	        this.props.gymName
+	      ),
+	      React.createElement(
+	        'tbody',
+	        null,
+	        workouts
+	      )
 	    );
 	  },
 	  render: function () {
 	    return React.createElement(
 	      'div',
 	      null,
-	      this.workouts()
+	      this.workouts(),
+	      React.createElement(
+	        Modal,
+	        {
+	          isOpen: this.state.modalIsOpen,
+	          onAfterOpen: this.afterOpenModal,
+	          onRequestClose: this.closeModal,
+	          style: _style
+	        },
+	        this.workout
+	      )
 	    );
 	  }
 	
@@ -34915,7 +34992,7 @@
 
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(270);
-	var WorkoutStore = __webpack_require__(278);
+	var WorkoutStore = __webpack_require__(281);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var WorkoutShow = React.createClass({
@@ -34926,7 +35003,7 @@
 	  },
 	  componentDidMount: function () {
 	    this.listener = WorkoutStore.addListener(this.updateWorkout);
-	    var url = "/api/workouts/" + this.props.params.workout_id;
+	    var url = "/api/workouts/" + this.props.workout_id;
 	    ClientActions.fetchOne({
 	      url: url,
 	      type: "CURRENT_WORKOUT"
@@ -34938,25 +35015,112 @@
 	  updateWorkout: function () {
 	    this.setState({ exercises: WorkoutStore.currentWorkout().exercises });
 	  },
-	  handleClick: function () {
-	    console.log("CLICKING");
+	  exercises: function () {
+	    var exercises = [];
+	    this.state.exercises.forEach(function (ex) {
+	      exercises.push(React.createElement(
+	        'tr',
+	        { key: ex.name },
+	        React.createElement(
+	          'td',
+	          null,
+	          ex.name
+	        ),
+	        React.createElement(
+	          'td',
+	          null,
+	          ex.sets
+	        ),
+	        React.createElement(
+	          'td',
+	          null,
+	          ex.reps
+	        )
+	      ));
+	    });
+	    return React.createElement(
+	      'table',
+	      { className: 'workout-table' },
+	      React.createElement(
+	        'thead',
+	        null,
+	        React.createElement(
+	          'tr',
+	          null,
+	          React.createElement(
+	            'th',
+	            null,
+	            'Exercise'
+	          ),
+	          React.createElement(
+	            'th',
+	            null,
+	            'Sets'
+	          ),
+	          React.createElement(
+	            'th',
+	            null,
+	            'Reps'
+	          )
+	        )
+	      ),
+	      React.createElement(
+	        'tbody',
+	        null,
+	        exercises
+	      )
+	    );
 	  },
 	  render: function () {
+	    var workoutTitle = React.createElement(
+	      'span',
+	      { className: 'workout-title' },
+	      this.props.name
+	    );
 	    return React.createElement(
 	      'div',
-	      null,
-	      React.createElement(
-	        'h2',
-	        null,
-	        this.state.name
-	      )
+	      { className: 'workout-modal' },
+	      workoutTitle,
+	      this.exercises()
 	    );
 	  }
 	
 	});
-	// <WorkoutIndex gyms={this.state.gym.workouts}/>
 	
 	module.exports = WorkoutShow;
+
+/***/ },
+/* 281 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var AppDispatcher = __webpack_require__(220);
+	var Store = __webpack_require__(224).Store;
+	
+	var WorkoutStore = new Store(AppDispatcher);
+	
+	var _workout;
+	
+	WorkoutStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case "CURRENT_WORKOUT":
+	      WorkoutStore.updateWorkout(payload.item);
+	  }
+	};
+	
+	WorkoutStore.updateWorkout = function (workout) {
+	  _workout = workout;
+	  WorkoutStore.__emitChange();
+	};
+	
+	WorkoutStore.currentWorkout = function () {
+	  if (_workout) {
+	    return $.extend({}, _workout);
+	  }
+	};
+	
+	window.WorkoutStore = WorkoutStore;
+	
+	module.exports = WorkoutStore;
 
 /***/ }
 /******/ ]);

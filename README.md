@@ -63,7 +63,7 @@ the API.
 - [x] CRUD API for notes (`WorkoutsController`)
 - [x] jBuilder views for workouts
 - [x] setup Webpack & Flux scaffold
-- [x] setup `APIUtil` to interact with the API
+- [ ] setup `APIUtil` to interact with the API
 - [x] test out API interaction in the console.
 
 ### Phase 3: Flux Architecture and Router (1.5 days)
@@ -73,9 +73,9 @@ user interface.
 
 - [ ] setup the flux loop with skeleton files
 - [ ] setup React Router
-- implement each note component, building out the flux loop as needed.
-  - [ ] `WorkoutsIndex`
-  - [ ] `WorkoutForm`
+- [ ] implement each component, building out the flux loop as needed.
+- [x] `WorkoutsIndex`
+- [ ] `WorkoutForm`
 
 ### Phase 4: Start Styling (0.5 days)
 
