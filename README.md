@@ -2,7 +2,7 @@
 
 [Heroku link][heroku]
 
-[heroku]: http://www.LiftWithMe.com
+[heroku]: liftwithme.herokuapp.com
 
 ## Minimum Viable Product
 
