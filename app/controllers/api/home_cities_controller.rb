@@ -5,7 +5,7 @@ class Api::HomeCitiesController < ApplicationController
   end
 
   def show
-    @home_city = HomeCity.find(params["id"].to_i)
+    @home_city = HomeCity.includes(:gyms).find(params["id"].to_i)
     render :show
   end
 end

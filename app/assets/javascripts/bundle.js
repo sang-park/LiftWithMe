@@ -32100,7 +32100,6 @@
 	    password: ""
 	  },
 	  getInitialState: function () {
-	    UserStore.addListener(this.clearHash);
 	    Modal.setAppElement(document.getElementById("root"));
 	    return this.blankAttrs;
 	  },
@@ -32109,9 +32108,6 @@
 	  },
 	  closeModal: function () {
 	    this.setState({ modalIsOpen: false });
-	  },
-	  clearHash: function () {
-	    window.history.replaceState({}, document.title, "/");
 	  },
 	  handleSubmit: function (e) {
 	    e.preventDefault();
@@ -34669,16 +34665,16 @@
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(270);
 	var HomeCityStore = __webpack_require__(274);
+	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var HomeCityShow = React.createClass({
 	  displayName: 'HomeCityShow',
 	
 	  getInitialState: function () {
-	    return { homeCity: {}, gyms: [] };
+	    return { homeCity: { gyms: [] } };
 	  },
 	  componentDidMount: function () {
 	    this.listener = HomeCityStore.addListener(this.updateCurrentCity);
-	
 	    var url = "/api/home_cities/" + this.props.params.home_city_id;
 	    ClientActions.fetchOne({
 	      url: url,
@@ -34691,15 +34687,34 @@
 	  updateCurrentCity: function () {
 	    this.setState({ homeCity: HomeCityStore.currentHomeCity() });
 	  },
+	  handleClick: function (e) {
+	    e.preventDefault();
+	    console.log("clickling");
+	    var gymName = e.target.textContent;
+	    // var id = HomeCityStore.findIdOf(cityName);
+	    // hashHistory.push('/home_cities/' + id);
+	  },
 	  render: function () {
-	
+	    var gyms = [];
+	    this.state.homeCity.gyms.forEach(function (gym) {
+	      gyms.push(React.createElement(
+	        'li',
+	        { onClick: this.handleClick, key: gym.name },
+	        gym.name
+	      ));
+	    }.bind(this));
 	    return React.createElement(
 	      'div',
 	      null,
 	      React.createElement(
-	        'h1',
+	        'h2',
 	        null,
 	        this.state.homeCity.name
+	      ),
+	      React.createElement(
+	        'ul',
+	        null,
+	        gyms
 	      )
 	    );
 	  }

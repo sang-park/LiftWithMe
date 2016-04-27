@@ -35,7 +35,6 @@ var LoginForm = React.createClass({
     password: ""
   },
   getInitialState: function() {
-    UserStore.addListener(this.clearHash);
     Modal.setAppElement(document.getElementById("root"));
     return this.blankAttrs;
   },
@@ -44,9 +43,6 @@ var LoginForm = React.createClass({
   },
   closeModal: function() {
     this.setState({modalIsOpen: false});
-  },
-  clearHash: function(){
-    window.history.replaceState({}, document.title, "/");
   },
   handleSubmit: function(e){
     e.preventDefault();
