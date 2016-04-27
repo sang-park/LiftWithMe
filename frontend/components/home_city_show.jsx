@@ -2,6 +2,7 @@ var React = require('react');
 var ClientActions = require('../actions/client_actions');
 var HomeCityStore = require('../stores/home_city_store');
 var hashHistory = require('react-router').hashHistory;
+var GymIndex = require('./gym_index');
 
 var HomeCityShow = React.createClass({
   getInitialState: function() {
@@ -21,22 +22,13 @@ var HomeCityShow = React.createClass({
   updateCurrentCity: function(){
     this.setState({homeCity: HomeCityStore.currentHomeCity()});
   },
-  handleClick: function(e){
-    e.preventDefault();
-    console.log("clickling");
-    var gymName = e.target.textContent;
-    // var id = HomeCityStore.findIdOf(cityName);
-    // hashHistory.push('/home_cities/' + id);
-  },
+
   render: function() {
-    var gyms = [];
-    this.state.homeCity.gyms.forEach(function(gym){
-      gyms.push(<li onClick={this.handleClick} key={gym.name}>{gym.name}</li>);
-    }.bind(this));
+
     return (
       <div>
         <h2>{this.state.homeCity.name}</h2>
-        <ul>{gyms}</ul>
+        <GymIndex gyms={this.state.homeCity.gyms}/>
       </div>
     );
   }

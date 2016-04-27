@@ -61,6 +61,8 @@
 	var LoginForm = __webpack_require__(244);
 	var HomeCityIndex = __webpack_require__(273);
 	var HomeCityShow = __webpack_require__(275);
+	var GymShow = __webpack_require__(277);
+	var WorkoutShow = __webpack_require__(280);
 	
 	var App = React.createClass({
 	  displayName: 'App',
@@ -82,7 +84,9 @@
 	    Route,
 	    { path: '/', component: App },
 	    React.createElement(IndexRoute, { component: HomeCityIndex }),
-	    React.createElement(Route, { path: 'home_cities/:home_city_id', component: HomeCityShow })
+	    React.createElement(Route, { path: 'home_cities/:home_city_id', component: HomeCityShow }),
+	    React.createElement(Route, { path: 'gyms/:gym_id', component: GymShow }),
+	    React.createElement(Route, { path: 'workouts/:workout_id', component: WorkoutShow })
 	  )
 	);
 	
@@ -34666,6 +34670,7 @@
 	var ClientActions = __webpack_require__(270);
 	var HomeCityStore = __webpack_require__(274);
 	var hashHistory = __webpack_require__(159).hashHistory;
+	var GymIndex = __webpack_require__(276);
 	
 	var HomeCityShow = React.createClass({
 	  displayName: 'HomeCityShow',
@@ -34687,22 +34692,9 @@
 	  updateCurrentCity: function () {
 	    this.setState({ homeCity: HomeCityStore.currentHomeCity() });
 	  },
-	  handleClick: function (e) {
-	    e.preventDefault();
-	    console.log("clickling");
-	    var gymName = e.target.textContent;
-	    // var id = HomeCityStore.findIdOf(cityName);
-	    // hashHistory.push('/home_cities/' + id);
-	  },
+	
 	  render: function () {
-	    var gyms = [];
-	    this.state.homeCity.gyms.forEach(function (gym) {
-	      gyms.push(React.createElement(
-	        'li',
-	        { onClick: this.handleClick, key: gym.name },
-	        gym.name
-	      ));
-	    }.bind(this));
+	
 	    return React.createElement(
 	      'div',
 	      null,
@@ -34711,17 +34703,260 @@
 	        null,
 	        this.state.homeCity.name
 	      ),
-	      React.createElement(
-	        'ul',
-	        null,
-	        gyms
-	      )
+	      React.createElement(GymIndex, { gyms: this.state.homeCity.gyms })
 	    );
 	  }
 	
 	});
 	
 	module.exports = HomeCityShow;
+
+/***/ },
+/* 276 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var GymStore = __webpack_require__(274);
+	var hashHistory = __webpack_require__(159).hashHistory;
+	
+	var GymIndex = React.createClass({
+	  displayName: 'GymIndex',
+	
+	  handleClick: function (e) {
+	    e.preventDefault();
+	    var id = e.target.value;
+	    hashHistory.push('/gyms/' + id);
+	  },
+	  render: function () {
+	    var gyms = [];
+	    this.props.gyms.forEach(function (gym) {
+	      gyms.push(React.createElement(
+	        'li',
+	        {
+	          onClick: this.handleClick,
+	          key: gym.name,
+	          value: gym.id
+	        },
+	        gym.name
+	      ));
+	    }.bind(this));
+	    return React.createElement(
+	      'ul',
+	      null,
+	      gyms
+	    );
+	  }
+	
+	});
+	
+	module.exports = GymIndex;
+
+/***/ },
+/* 277 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ClientActions = __webpack_require__(270);
+	var GymStore = __webpack_require__(278);
+	var hashHistory = __webpack_require__(159).hashHistory;
+	var WorkoutIndex = __webpack_require__(279);
+	
+	var GymShow = React.createClass({
+	  displayName: 'GymShow',
+	
+	  getInitialState: function () {
+	    return { workouts: [], name: "" };
+	  },
+	  componentDidMount: function () {
+	    this.listener = GymStore.addListener(this.updateGym);
+	    var url = "/api/gyms/" + this.props.params.gym_id;
+	    ClientActions.fetchOne({
+	      url: url,
+	      type: "CURRENT_GYM"
+	    });
+	  },
+	  componentWillUnmount: function () {
+	    this.listener.remove();
+	  },
+	  updateGym: function () {
+	    this.setState({ workouts: GymStore.currentGym().workouts });
+	  },
+	  handleClick: function () {
+	    console.log("CLICKING");
+	  },
+	
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'h2',
+	        null,
+	        this.state.name
+	      ),
+	      React.createElement(WorkoutIndex, { workouts: this.state.workouts })
+	    );
+	  }
+	
+	});
+	// <WorkoutIndex gyms={this.state.gym.workouts}/>
+	
+	module.exports = GymShow;
+
+/***/ },
+/* 278 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var AppDispatcher = __webpack_require__(220);
+	var Store = __webpack_require__(224).Store;
+	
+	var GymStore = new Store(AppDispatcher);
+	
+	var _gym;
+	
+	GymStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case "CURRENT_GYM":
+	      GymStore.updateGym(payload.item);
+	  }
+	};
+	
+	GymStore.updateGym = function (gym) {
+	  _gym = gym;
+	  GymStore.__emitChange();
+	};
+	
+	GymStore.currentGym = function () {
+	  if (_gym) {
+	    return $.extend({}, _gym);
+	  }
+	};
+	
+	GymStore.findIdOf = function (gymName) {
+	  // var id;
+	  // Object.keys(_allHomeCities).forEach(function(cityId){
+	  //   if (_allHomeCities[cityId].name === cityName){
+	  //     id = parseInt(cityId) + 1;
+	  //   }
+	  // });
+	  // return id;
+	};
+	
+	window.GymStore = GymStore;
+	
+	module.exports = GymStore;
+
+/***/ },
+/* 279 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var GymStore = __webpack_require__(274);
+	var hashHistory = __webpack_require__(159).hashHistory;
+	
+	var WorkoutIndex = React.createClass({
+	  displayName: 'WorkoutIndex',
+	
+	  handleClick: function (e) {
+	    e.preventDefault();
+	    console.log("clickling");
+	    var workoutName = e.target.textContent;
+	    // var id = HomeCityStore.findIdOf(cityName);
+	    // hashHistory.push('/home_cities/' + id);
+	  },
+	  workouts: function () {
+	    var workouts = [];
+	    var self = this;
+	    this.props.workouts.forEach(function (workout) {
+	      workouts.push(React.createElement(
+	        'li',
+	        { key: workout.name },
+	        React.createElement(
+	          'div',
+	          { onClick: self.handleClick },
+	          ' ',
+	          workout.name,
+	          ' ',
+	          React.createElement('br', null),
+	          ' '
+	        ),
+	        'Date: ',
+	        workout.date,
+	        ' ',
+	        React.createElement('br', null),
+	        'Time: ',
+	        workout.time,
+	        ' ',
+	        React.createElement('br', null),
+	        React.createElement('br', null)
+	      ));
+	    });
+	    return React.createElement(
+	      'ul',
+	      null,
+	      workouts
+	    );
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      null,
+	      this.workouts()
+	    );
+	  }
+	
+	});
+	
+	module.exports = WorkoutIndex;
+
+/***/ },
+/* 280 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ClientActions = __webpack_require__(270);
+	var WorkoutStore = __webpack_require__(278);
+	var hashHistory = __webpack_require__(159).hashHistory;
+	
+	var WorkoutShow = React.createClass({
+	  displayName: 'WorkoutShow',
+	
+	  getInitialState: function () {
+	    return { exercises: [], name: "" };
+	  },
+	  componentDidMount: function () {
+	    this.listener = WorkoutStore.addListener(this.updateWorkout);
+	    var url = "/api/workouts/" + this.props.params.workout_id;
+	    ClientActions.fetchOne({
+	      url: url,
+	      type: "CURRENT_WORKOUT"
+	    });
+	  },
+	  componentWillUnmount: function () {
+	    this.listener.remove();
+	  },
+	  updateWorkout: function () {
+	    this.setState({ exercises: WorkoutStore.currentWorkout().exercises });
+	  },
+	  handleClick: function () {
+	    console.log("CLICKING");
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'h2',
+	        null,
+	        this.state.name
+	      )
+	    );
+	  }
+	
+	});
+	// <WorkoutIndex gyms={this.state.gym.workouts}/>
+	
+	module.exports = WorkoutShow;
 
 /***/ }
 /******/ ]);

@@ -15,6 +15,8 @@ var UserStore = require('./stores/user_store');
 var LoginForm = require('./components/login_form');
 var HomeCityIndex = require('./components/home_city_index');
 var HomeCityShow = require('./components/home_city_show');
+var GymShow = require('./components/gym_show');
+var WorkoutShow = require('./components/workout_show');
 
 var App = React.createClass({
   render: function(){
@@ -32,6 +34,8 @@ var router =  (
     <Route path="/" component={App}>
       <IndexRoute component={HomeCityIndex} />
       <Route path="home_cities/:home_city_id" component={HomeCityShow} />
+      <Route path="gyms/:gym_id" component={GymShow} />
+      <Route path="workouts/:workout_id" component={WorkoutShow} />
     </Route>
   </Router>
 );

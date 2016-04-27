@@ -4,6 +4,8 @@ Rails.application.routes.draw do
     resource :user, only: [:create, :show]
     resource :session, only: [:create, :destroy, :show], controller: "session"
     resources :home_cities, only: [:index, :show]
+    resources :gyms, only: [:show]
+    resources :workouts, only: [:show]
   end
 
 end

@@ -3,4 +3,7 @@ class Gym < ActiveRecord::Base
 
   belongs_to :home_city
   has_many :users
+  has_many :workouts,
+    through: :users,
+    source: :workouts
 end
