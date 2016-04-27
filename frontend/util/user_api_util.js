@@ -2,8 +2,9 @@ var AppDispatcher = require('../dispatcher/dispatcher');
 
 var UserApiUtil = {
   signup: function(user, success, error){
+    debugger
     $.ajax({
-      url: 'api/users',
+      url: 'api/user',
       type: 'POST',
       data: {user: user},
       success: success,

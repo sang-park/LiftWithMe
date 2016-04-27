@@ -12,7 +12,7 @@ LiftWithMe's overall design was inspired by Tea With Strangers, an app that allo
 - [ ] Smooth, bug-free navigation
 - [ ] Populating the website with seeding data
 - [ ] 'Hosting' a gym session, signing up for a session, profile look-up
-- [ ] Hosting on Heroku
+- [x] Hosting on Heroku
 - [ ] CSS styling that is satisfactorily visually appealing
 - [ ] A production README, replacing this README
 
@@ -20,7 +20,7 @@ LiftWithMe's overall design was inspired by Tea With Strangers, an app that allo
 
 LiftWithMe will allow users to do the following:
 
-- [ ] Create an account (MVP)
+- [x] Create an account (MVP)
 - [ ] Log in / Log out, including as a Guest/Demo User (MVP)
 - [ ] Create, edit, and delete a gym session (MVP)
 - [ ] Able to look at all possible sessions (MVP)
@@ -49,8 +49,8 @@ LiftWithMe will allow users to do the following:
 - [x] create new project
 - [x] create `User` model
 - [x] authentication
-- [ ] user signup/signin pages
-- [ ] blank landing page after signin
+- [x] user signup/signin pages
+- [x] blank landing page after signin
 
 ### Phase 2: Workouts Model, API, and basic APIUtil (1.5 days)
 
@@ -104,6 +104,7 @@ user interface.
 - [ ] Get feedback on my UI from others
 - [ ] Refactor HTML classes & CSS rules
 - [ ] Add modals, transitions, and other styling flourishes.
+- [ ] At login failure, display error, keep the login modal up
 
 ### Bonus Features (TBD)
 - [ ] Search through workouts by time

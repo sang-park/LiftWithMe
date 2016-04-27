@@ -27,15 +27,17 @@ var _style = {
 
 var LoginForm = React.createClass({
 	mixins: [LinkedStateMixin, CurrentUserState],
+  blankAttrs: { form: "login",
+    modalIsOpen: false,
+    username: "",
+    password: ""
+  },
   getInitialState: function() {
     Modal.setAppElement(document.getElementById("root"));
-    return { form: "login",
-      modalIsOpen: false,
-      username: "",
-      password: ""};
+    return this.blankAttrs;
   },
   openModal: function() {
-    this.setState({modalIsOpen: true});
+    this.setState({modalIsOpen: true, form: "login"});
   },
   closeModal: function() {
     this.setState({modalIsOpen: false});
@@ -46,11 +48,18 @@ var LoginForm = React.createClass({
       username: this.state.username,
       password: this.state.password
     };
-    UserActions.login(user);
+    this.action(user);
+    this.setState(this.blankAttrs);
   },
+
   handleLogout: function(e){
     e.preventDefault();
     UserActions.logout();
+  },
+
+  signUpPage: function(e){
+    e.preventDefault();
+    this.setState({form: "sign up"});
   },
   form: function(){
     if (this.state.currentUser) {
@@ -58,6 +67,15 @@ var LoginForm = React.createClass({
         <button onClick={this.handleLogout}>logout</button>
       );
     } else {
+      var header, button;
+      if (this.state.form === "login") {
+        header = "Log In";
+        button = <button onClick={this.signUpPage}>Sign Up</button>;
+        this.action = UserActions.login;
+      } else {
+        header = "Sign Up";
+        this.action = UserActions.signup;
+      }
       return (
         <div className="login-button">
           <button onClick={this.openModal}>login</button>
@@ -68,7 +86,7 @@ var LoginForm = React.createClass({
             style={_style}
           >
             <form onSubmit={this.handleSubmit}>
-              <section>
+              <section> <h2>{header}!</h2>
                 <label> Username:
                   <input type="text"
                     valueLink={this.linkState("username")}
@@ -84,7 +102,8 @@ var LoginForm = React.createClass({
                 </label>
               </section>
 
-              <input type="Submit" defaultValue="Log In"/>
+              <input type="Submit" valueLink={this.linkState("form")} />
+              {button}
             </form>
           </Modal>
         </div>
@@ -123,7 +142,7 @@ var LoginForm = React.createClass({
       button = "login";
     }
     return (
-      <div>
+      <div id="navbar">
         {this.greet()}
         {this.errors()}
         {this.form()}

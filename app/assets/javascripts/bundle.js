@@ -31980,6 +31980,7 @@
 			UserApiUtil.fetchCurrentUser(UserActions.receiveCurrentUser, UserActions.handleError);
 		},
 		signup: function (user) {
+			debugger;
 			UserApiUtil.signup(user, UserActions.receiveCurrentUser, UserActions.handleError);
 		},
 		login: function (user) {
@@ -32019,8 +32020,9 @@
 	
 	var UserApiUtil = {
 	  signup: function (user, success, error) {
+	    debugger;
 	    $.ajax({
-	      url: 'api/users',
+	      url: 'api/user',
 	      type: 'POST',
 	      data: { user: user },
 	      success: success,
@@ -32092,15 +32094,17 @@
 	  displayName: "LoginForm",
 	
 	  mixins: [LinkedStateMixin, CurrentUserState],
+	  blankAttrs: { form: "login",
+	    modalIsOpen: false,
+	    username: "",
+	    password: ""
+	  },
 	  getInitialState: function () {
 	    Modal.setAppElement(document.getElementById("root"));
-	    return { form: "login",
-	      modalIsOpen: false,
-	      username: "",
-	      password: "" };
+	    return this.blankAttrs;
 	  },
 	  openModal: function () {
-	    this.setState({ modalIsOpen: true });
+	    this.setState({ modalIsOpen: true, form: "login" });
 	  },
 	  closeModal: function () {
 	    this.setState({ modalIsOpen: false });
@@ -32111,11 +32115,18 @@
 	      username: this.state.username,
 	      password: this.state.password
 	    };
-	    UserActions.login(user);
+	    this.action(user);
+	    this.setState(this.blankAttrs);
 	  },
+	
 	  handleLogout: function (e) {
 	    e.preventDefault();
 	    UserActions.logout();
+	  },
+	
+	  signUpPage: function (e) {
+	    e.preventDefault();
+	    this.setState({ form: "sign up" });
 	  },
 	  form: function () {
 	    if (this.state.currentUser) {
@@ -32125,6 +32136,19 @@
 	        "logout"
 	      );
 	    } else {
+	      var header, button;
+	      if (this.state.form === "login") {
+	        header = "Log In";
+	        button = React.createElement(
+	          "button",
+	          { onClick: this.signUpPage },
+	          "Sign Up"
+	        );
+	        this.action = UserActions.login;
+	      } else {
+	        header = "Sign Up";
+	        this.action = UserActions.signup;
+	      }
 	      return React.createElement(
 	        "div",
 	        { className: "login-button" },
@@ -32147,6 +32171,13 @@
 	            React.createElement(
 	              "section",
 	              null,
+	              " ",
+	              React.createElement(
+	                "h2",
+	                null,
+	                header,
+	                "!"
+	              ),
 	              React.createElement(
 	                "label",
 	                null,
@@ -32168,7 +32199,8 @@
 	                })
 	              )
 	            ),
-	            React.createElement("input", { type: "Submit", defaultValue: "Log In" })
+	            React.createElement("input", { type: "Submit", valueLink: this.linkState("form") }),
+	            button
 	          )
 	        )
 	      );
@@ -32217,7 +32249,7 @@
 	    }
 	    return React.createElement(
 	      "div",
-	      null,
+	      { id: "navbar" },
 	      this.greet(),
 	      this.errors(),
 	      this.form()
