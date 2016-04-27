@@ -59,20 +59,16 @@
 	var UserStore = __webpack_require__(219);
 	//components
 	var LoginForm = __webpack_require__(244);
+	var HomeCityIndex = __webpack_require__(273);
 	
 	var App = React.createClass({
 	  displayName: 'App',
 	
-	  getInitialState: function () {},
+	
 	  render: function () {
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(
-	        'h2',
-	        null,
-	        'ROOT'
-	      ),
 	      React.createElement(LoginForm, null),
 	      this.props.children
 	    );
@@ -82,11 +78,15 @@
 	var router = React.createElement(
 	  Router,
 	  { history: browserHistory },
-	  React.createElement(Route, { path: '/', components: App })
+	  React.createElement(
+	    Route,
+	    { path: '/', component: App },
+	    React.createElement(IndexRoute, { component: HomeCityIndex })
+	  )
 	);
 	
 	document.addEventListener('DOMContentLoaded', function () {
-	  ReactDOM.render(React.createElement(LoginForm, null), document.getElementById('root'));
+	  ReactDOM.render(router, document.getElementById('root'));
 	});
 
 /***/ },
@@ -32019,7 +32019,6 @@
 	
 	var UserApiUtil = {
 	  signup: function (user, success, error) {
-	    debugger;
 	    $.ajax({
 	      url: 'api/user',
 	      type: 'POST',
@@ -32260,9 +32259,18 @@
 	    return React.createElement(
 	      "div",
 	      { id: "navbar" },
-	      this.greet(),
-	      this.errors(),
-	      this.form()
+	      React.createElement(
+	        "div",
+	        { id: "logo" },
+	        "LOGO"
+	      ),
+	      React.createElement(
+	        "div",
+	        { id: "login-info" },
+	        this.greet(),
+	        this.errors(),
+	        this.form()
+	      )
 	    );
 	  }
 	
@@ -34447,6 +34455,185 @@
 	  else this.add(className)
 	}
 
+
+/***/ },
+/* 269 */,
+/* 270 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ApiUtil = __webpack_require__(271);
+	
+	var ClientActions = {
+	  fetchAll: function (options) {
+	    ApiUtil.fetchAll(options);
+	  }
+	};
+	
+	module.exports = ClientActions;
+
+/***/ },
+/* 271 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ServerActions = __webpack_require__(272);
+	
+	var ApiUtil = {
+	  fetchAll: function (options) {
+	    var url = options.url;
+	    var type = options.type;
+	    $.ajax({
+	      url: url,
+	      type: 'get',
+	      success: function (index) {
+	        ServerActions.receiveAll(index, type);
+	      }
+	    });
+	  },
+	  login: function (user, success, error) {
+	    $.ajax({
+	      url: 'api/session/',
+	      type: 'POST',
+	      data: { user: user },
+	      success: success,
+	      error: error
+	    });
+	  },
+	  logout: function (success, error) {
+	    $.ajax({
+	      url: '/api/session',
+	      method: 'delete',
+	      success: success,
+	      error: error
+	    });
+	  },
+	  fetchCurrentUser: function (success, error) {
+	    $.ajax({
+	      url: '/api/session',
+	      method: 'GET',
+	      success: success,
+	      error: error
+	    });
+	  }
+	
+	};
+	
+	module.exports = ApiUtil;
+
+/***/ },
+/* 272 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var AppDispatcher = __webpack_require__(220);
+	
+	var ServerActions = {
+	  receiveAll: function (index, type) {
+	    AppDispatcher.dispatch({
+	      actionType: type,
+	      index: index
+	    });
+	  }
+	};
+	
+	module.exports = ServerActions;
+
+/***/ },
+/* 273 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ClientActions = __webpack_require__(270);
+	var HomeCityStore = __webpack_require__(274);
+	
+	var HomeCityIndex = React.createClass({
+	  displayName: 'HomeCityIndex',
+	
+	  getInitialState: function () {
+	    return { homeCities: [] };
+	  },
+	  componentDidMount: function () {
+	    this.listener = HomeCityStore.addListener(this.updateHomeCities);
+	    ClientActions.fetchAll({
+	      url: "/api/home_cities",
+	      type: "ALL_CITITES"
+	    });
+	  },
+	  updateHomeCities: function () {
+	    this.setState({ homeCities: HomeCityStore.all() });
+	  },
+	  render: function () {
+	    var cities = [];
+	    this.state.homeCities.forEach(function (city) {
+	      cities.push(React.createElement(
+	        'li',
+	        { key: city.name },
+	        city.name
+	      ));
+	    });
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'h2',
+	        null,
+	        'Home Cities:'
+	      ),
+	      React.createElement(
+	        'ul',
+	        null,
+	        cities
+	      )
+	    );
+	  }
+	
+	});
+	
+	module.exports = HomeCityIndex;
+
+/***/ },
+/* 274 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var AppDispatcher = __webpack_require__(220);
+	var Store = __webpack_require__(224).Store;
+	
+	var HomeCityStore = new Store(AppDispatcher);
+	
+	var _allHomeCities = [];
+	var _currentHomeCity = {};
+	
+	HomeCityStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case "ALL_CITITES":
+	      HomeCityStore.updateAllCities(payload.index);
+	      break;
+	    case "CURRENT_CITY":
+	      HomeCityStore.updateCurrentCity(payload.city);
+	  }
+	};
+	
+	HomeCityStore.updateAllCities = function (homeCities) {
+	  _allHomeCities = homeCities;
+	  HomeCityStore.__emitChange();
+	};
+	
+	HomeCityStore.updateCurrentCity = function (homeCity) {
+	  _currentHomeCity = homeCity;
+	  HomeCityStore.__emitChange();
+	};
+	
+	HomeCityStore.currentHomeCity = function () {
+	  if (_currentHomeCity) {
+	    return $.extend({}, _currentHomeCity);
+	  }
+	};
+	
+	HomeCityStore.all = function () {
+	  return [].slice.call(_allHomeCities);
+	};
+	
+	window.HomeCityStore = HomeCityStore;
+	
+	module.exports = HomeCityStore;
 
 /***/ }
 /******/ ]);

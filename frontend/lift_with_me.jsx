@@ -13,16 +13,13 @@ var CurrentUserState = require('./mixins/current_user_state');
 var UserStore = require('./stores/user_store');
 //components
 var LoginForm = require('./components/login_form');
-
+var HomeCityIndex = require('./components/home_city_index');
 
 var App = React.createClass({
-  getInitialState: function(){
 
-  },
   render: function(){
     return (
       <div>
-        <h2>ROOT</h2>
         <LoginForm />
         {this.props.children}
       </div>
@@ -32,10 +29,12 @@ var App = React.createClass({
 
 var router =  (
   <Router history={browserHistory}>
-    <Route path="/" components={App} />
+    <Route path="/" component={App}>
+      <IndexRoute component={HomeCityIndex} />
+    </Route>
   </Router>
 );
 
 document.addEventListener('DOMContentLoaded', function(){
-  ReactDOM.render( <LoginForm /> ,document.getElementById('root'));
+  ReactDOM.render( router ,document.getElementById('root'));
 });

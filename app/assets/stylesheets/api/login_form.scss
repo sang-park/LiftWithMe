@@ -1,0 +1,28 @@
+
+.login-form {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+
+
+  .login-section {
+
+  }
+
+  .form-button {
+    display: flex;
+    flex-direction: row;
+    * {
+      font-size: 14px;
+      width: 100px;
+      height: 30px;
+      padding: 10px;
+      margin: 10px;
+      background-color: deepskyblue;
+      border: 0px;
+      &:hover {
+        background-color: cornflowerblue;
+      }
+    }
+  }
+}

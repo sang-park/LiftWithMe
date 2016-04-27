@@ -153,9 +153,12 @@ var LoginForm = React.createClass({
     }
     return (
       <div id="navbar">
-        {this.greet()}
-        {this.errors()}
-        {this.form()}
+        <div id="logo">LOGO</div>
+        <div id="login-info">
+          {this.greet()}
+          {this.errors()}
+          {this.form()}
+        </div>
       </div>
     );
   }

@@ -57,6 +57,7 @@ ActiveRecord::Schema.define(version: 20160427004723) do
   add_index "workout_exercises", ["workout_id"], name: "index_workout_exercises_on_workout_id", using: :btree
 
   create_table "workouts", force: :cascade do |t|
+    t.string   "name",       null: false
     t.integer  "user_id",    null: false
     t.date     "date",       null: false
     t.time     "time",       null: false

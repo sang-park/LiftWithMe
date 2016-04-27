@@ -1,13 +1,15 @@
-var AppDispatcher = require('../dispatcher/dispatcher');
+var ServerActions = require('../actions/server_actions');
 
-var UserApiUtil = {
-  signup: function(user, success, error){
+var ApiUtil = {
+  fetchAll: function(options){
+    var url = options.url;
+    var type = options.type;
     $.ajax({
-      url: 'api/user',
-      type: 'POST',
-      data: {user: user},
-      success: success,
-      error: error
+      url: url,
+      type: 'get',
+      success: function(index){
+        ServerActions.receiveAll(index, type);
+      }
     });
   },
   login: function(user, success, error){
@@ -34,8 +36,8 @@ var UserApiUtil = {
 			success: success,
 			error: error
 		});
-	}
+	},
+
 };
 
-window.userapi = UserApiUtil;
-module.exports = UserApiUtil;
+module.exports = ApiUtil;

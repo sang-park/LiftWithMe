@@ -1,6 +1,7 @@
 class CreateWorkouts < ActiveRecord::Migration
   def change
     create_table :workouts do |t|
+      t.string :name, null: false
       t.integer :user_id, null: false
       t.date :date, null: false
       t.time :time, null: false
