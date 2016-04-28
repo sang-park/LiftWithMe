@@ -25,7 +25,7 @@ var GymShow = React.createClass({
   updateGym: function(){
     this.setState({
       workouts: GymStore.currentGym().workouts,
-      name: GymStore.currentGym().name 
+      name: GymStore.currentGym().name
     });
   },
   render: function() {
@@ -37,6 +37,5 @@ var GymShow = React.createClass({
   }
 
 });
-// <WorkoutIndex gyms={this.state.gym.workouts}/>
 
 module.exports = GymShow;

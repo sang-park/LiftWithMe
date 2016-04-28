@@ -34575,20 +34575,30 @@
 	  handleClick: function (e) {
 	    e.preventDefault();
 	    var cityName = e.target.textContent;
+	    if (cityName === "") {
+	      cityName = e.currentTarget.textContent;
+	    }
 	    var id = HomeCityStore.findIdOf(cityName);
 	    hashHistory.push('/home_cities/' + id);
 	  },
 	  render: function () {
 	    var cities = [];
 	    this.state.homeCities.forEach(function (city) {
+	      var pathToImage = "/assets/" + city.name.split(" ").join("_") + ".jpg";
 	      cities.push(React.createElement(
 	        'li',
 	        { onClick: this.handleClick,
 	          key: city.name
 	        },
-	        city.name
+	        React.createElement('img', { src: pathToImage }),
+	        React.createElement(
+	          'p',
+	          null,
+	          city.name
+	        )
 	      ));
 	    }.bind(this));
+	
 	    return React.createElement(
 	      'div',
 	      null,
@@ -34599,7 +34609,7 @@
 	      ),
 	      React.createElement(
 	        'ul',
-	        null,
+	        { className: 'home-city-index' },
 	        cities
 	      )
 	    );
@@ -34697,7 +34707,6 @@
 	  },
 	
 	  render: function () {
-	
 	    return React.createElement(
 	      'div',
 	      null,
@@ -34799,7 +34808,6 @@
 	  }
 	
 	});
-	// <WorkoutIndex gyms={this.state.gym.workouts}/>
 	
 	module.exports = GymShow;
 

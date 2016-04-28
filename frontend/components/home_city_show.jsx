@@ -24,7 +24,6 @@ var HomeCityShow = React.createClass({
   },
 
   render: function() {
-
     return (
       <div>
         <h2>{this.state.homeCity.name}</h2>

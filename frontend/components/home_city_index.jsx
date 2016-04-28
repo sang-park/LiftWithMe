@@ -24,23 +24,29 @@ var HomeCityIndex = React.createClass({
   handleClick: function(e){
     e.preventDefault();
     var cityName = e.target.textContent;
+    if (cityName === ""){
+      cityName = e.currentTarget.textContent;
+    }
     var id = HomeCityStore.findIdOf(cityName);
     hashHistory.push('/home_cities/' + id);
   },
   render: function() {
     var cities = [];
     this.state.homeCities.forEach(function(city){
+      var pathToImage = ("/assets/" + city.name.split(" ").join("_") + ".jpg");
       cities.push(
         <li onClick={this.handleClick}
           key={city.name}
         >
-          {city.name}
+          <img src={pathToImage}/>
+          <p>{city.name}</p>
         </li>);
     }.bind(this));
+
     return (
       <div>
         <h2>Home Cities:</h2>
-        <ul>{cities}</ul>
+        <ul className="home-city-index">{cities}</ul>
       </div>
     );
   }
