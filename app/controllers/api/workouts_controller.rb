@@ -15,6 +15,19 @@ class Api::WorkoutsController < ApplicationController
     end
   end
 
+  def destroy
+    @workout = Workout.find(params["id"])
+    if @workout && @workout.user_id == current_user.id
+      @workout.delete
+      @gym = Gym.find(current_user.gym_id)
+      render 'api/gyms/show'
+    else
+      @errors = ['Cannot delete this workout']
+      render "api/shared/error", status: 404
+    end
+
+  end
+
   private
   def workout_params
     params.require(:workout).permit(:name, :date, :time)

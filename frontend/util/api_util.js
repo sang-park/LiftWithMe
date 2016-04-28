@@ -41,6 +41,35 @@ var ApiUtil = {
         ServerActions.handleError(error);
       }
     });
+  },
+  deleteWorkout: function(options){
+    var url = options.url;
+    var type = options.type;
+    $.ajax({
+      url: url,
+      type: "DELETE",
+      success: function(gym){
+        ServerActions.receiveOne(gym, type);
+      },
+      error: function(error){
+        ServerActions.handleError(error);
+      }
+    });
+  },
+  updateWorkout: function(options){
+    var url = options.url;
+    var type = options.type;
+    $.ajax({
+      url: url,
+      type: "PATCH",
+      data: options,
+      success: function(gym){
+        ServerActions.receiveOne(gym, "CURRENT_GYM");
+      },
+      error: function(error){
+        ServerActions.handleError(error);
+      }
+    });
   }
 
 };

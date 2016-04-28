@@ -34549,7 +34549,9 @@
 	var ClientActions = {
 	  fetchAll: ApiUtil.fetchAll,
 	  fetchOne: ApiUtil.fetchOne,
-	  createWorkout: ApiUtil.addWorkout
+	  createWorkout: ApiUtil.addWorkout,
+	  deleteWorkout: ApiUtil.deleteWorkout
+	
 	};
 	
 	module.exports = ClientActions;
@@ -34593,6 +34595,35 @@
 	    $.ajax({
 	      url: '/api/user/add_workout',
 	      type: "POST",
+	      data: options,
+	      success: function (gym) {
+	        ServerActions.receiveOne(gym, "CURRENT_GYM");
+	      },
+	      error: function (error) {
+	        ServerActions.handleError(error);
+	      }
+	    });
+	  },
+	  deleteWorkout: function (options) {
+	    var url = options.url;
+	    var type = options.type;
+	    $.ajax({
+	      url: url,
+	      type: "DELETE",
+	      success: function (gym) {
+	        ServerActions.receiveOne(gym, type);
+	      },
+	      error: function (error) {
+	        ServerActions.handleError(error);
+	      }
+	    });
+	  },
+	  updateWorkout: function (options) {
+	    var url = options.url;
+	    var type = options.type;
+	    $.ajax({
+	      url: url,
+	      type: "PATCH",
 	      data: options,
 	      success: function (gym) {
 	        ServerActions.receiveOne(gym, "CURRENT_GYM");
@@ -34882,11 +34913,12 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var GymStore = __webpack_require__(273);
+	var UserStore = __webpack_require__(219);
 	var WorkoutShow = __webpack_require__(279);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	var Modal = __webpack_require__(249);
 	var WorkoutForm = __webpack_require__(281);
+	var ClientActions = __webpack_require__(270);
 	
 	var _style = {
 	  overlay: {
@@ -34927,6 +34959,7 @@
 	    this.workout = [];
 	    this.setState({ modalIsOpen: false });
 	  },
+	
 	  handleClick: function (id, name) {
 	    return function (e) {
 	      e.preventDefault();
@@ -34947,6 +34980,38 @@
 	      return hr + ":" + min + " PM";
 	    }
 	  },
+	  editAndDelete: function (workout) {
+	    if (UserStore.currentUser() && UserStore.currentUser().id === workout.user_id) {
+	      return React.createElement(
+	        'td',
+	        null,
+	        React.createElement(
+	          'button',
+	          { onClick: this.edit, value: workout.id },
+	          'Edit'
+	        ),
+	        React.createElement(
+	          'button',
+	          { onClick: this.delete, value: workout.id },
+	          'Delete'
+	        )
+	      );
+	    } else {
+	      return React.createElement('td', null);
+	    }
+	  },
+	  edit: function (e) {
+	    e.preventDefault();
+	  },
+	  delete: function (e) {
+	    e.preventDefault();
+	    var options = {
+	      url: 'api/workouts/' + e.target.value,
+	      type: "CURRENT_GYM"
+	    };
+	    ClientActions.deleteWorkout(options);
+	    this.setState({ modalIsOpen: false });
+	  },
 	
 	  workouts: function () {
 	    var workouts = [];
@@ -34959,7 +35024,7 @@
 	        'tr',
 	        {
 	          className: 'workout-index-view',
-	          key: workout.name,
+	          key: workout.name + workout.time,
 	          onClick: self.handleClick(workout.id, workout.name)
 	        },
 	        React.createElement(
@@ -34982,7 +35047,8 @@
 	          'td',
 	          { value: workout.id },
 	          workout.name
-	        )
+	        ),
+	        self.editAndDelete(workout)
 	      ));
 	    });
 	    return React.createElement(
@@ -35012,15 +35078,19 @@
 	    this.formClicked = true;
 	  },
 	  render: function () {
+	    var button = [];
+	    if (UserStore.currentUser()) {
+	      button = React.createElement(
+	        'button',
+	        { onClick: this.openForm },
+	        'Create New Workout'
+	      );
+	    }
 	    return React.createElement(
 	      'div',
 	      null,
 	      this.workouts(),
-	      React.createElement(
-	        'button',
-	        { onClick: this.openForm },
-	        'Create New Workout'
-	      ),
+	      button,
 	      React.createElement(
 	        Modal,
 	        {
@@ -35259,6 +35329,7 @@
 	  allExercises: function () {
 	    var exes = [];
 	    var self = this;
+	    debugger;
 	    for (var i = 1; i <= self.key; i++) {
 	      var id = document.getElementById("exercise").value;
 	      var sets = self.state["sets" + i];

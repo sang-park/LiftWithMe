@@ -24,7 +24,7 @@ class Api::UsersController < ApplicationController
       @gym = current_user.gym
       render 'api/gyms/show'
     else
-      @errors = ['Must be an existing exercise']
+      @errors = ['Cannot create this workout']
       render "api/shared/error", status: 404
     end
 

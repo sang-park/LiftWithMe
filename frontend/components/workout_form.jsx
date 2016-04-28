@@ -68,6 +68,7 @@ var WorkoutForm = React.createClass({
   allExercises: function(){
     var exes = [];
     var self = this;
+    debugger
     for (var i = 1; i <= self.key; i++) {
       var id = document.getElementById("exercise").value;
       var sets = self.state["sets" + i];

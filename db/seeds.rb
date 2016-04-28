@@ -2,6 +2,7 @@
 
 
 User.create!({username: "sang",password: "123123", gym_id: 1})
+User.create!({username: "sang1",password: "123123", gym_id: 1})
 User.create!({username: "sang2",password: "123123", gym_id: 2})
 User.create!({username: "sang3",password: "123123", gym_id: 3})
 User.create!({username: "sang4",password: "123123", gym_id: 4})

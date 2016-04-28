@@ -1,9 +1,10 @@
 var React = require('react');
-var GymStore = require('../stores/home_city_store');
+var UserStore = require('../stores/user_store');
 var WorkoutShow = require('./workout_show');
 var hashHistory = require('react-router').hashHistory;
 var Modal = require('react-modal');
 var WorkoutForm = require('./workout_form');
+var ClientActions = require('../actions/client_actions');
 
 var _style = {
   overlay : {
@@ -44,6 +45,7 @@ var WorkoutIndex = React.createClass({
     this.workout = [];
     this.setState({modalIsOpen: false});
   },
+
   handleClick: function(id,name){
     return function(e){
       e.preventDefault();
@@ -64,6 +66,31 @@ var WorkoutIndex = React.createClass({
       return (hr + ":" + min + " PM");
     }
   },
+  editAndDelete: function(workout){
+    if  ( UserStore.currentUser() &&
+      UserStore.currentUser().id === workout.user_id){
+      return (
+        <td>
+          <button onClick={this.edit} value={workout.id}>Edit</button>
+          <button onClick={this.delete} value={workout.id}>Delete</button>
+        </td>
+      );
+    } else {
+      return (<td></td>);
+    }
+  },
+  edit: function(e){
+    e.preventDefault();
+  },
+  delete: function(e){
+    e.preventDefault();
+    var options = {
+      url: 'api/workouts/' + e.target.value,
+      type: "CURRENT_GYM"
+    };
+    ClientActions.deleteWorkout(options);
+    this.setState({modalIsOpen: false});
+  },
 
   workouts: function(){
     var workouts = [];
@@ -75,7 +102,7 @@ var WorkoutIndex = React.createClass({
       workouts.push(
         <tr
           className = "workout-index-view"
-          key={workout.name}
+          key={workout.name + workout.time}
           onClick={self.handleClick(workout.id,workout.name)}
         >
           <td>{wday}</td>
@@ -84,6 +111,7 @@ var WorkoutIndex = React.createClass({
           <td value={workout.id} >
             {workout.name}
           </td>
+          {self.editAndDelete(workout)}
       </tr>);
     });
     return (
@@ -109,10 +137,14 @@ var WorkoutIndex = React.createClass({
     this.formClicked = true;
   },
   render: function() {
+    var button = [];
+    if (UserStore.currentUser()){
+      button = (<button onClick={this.openForm}>Create New Workout</button>);
+    }
     return (
       <div>
         {this.workouts()}
-        <button onClick={this.openForm}>Create New Workout</button>
+        {button}
         <Modal
           isOpen={this.state.modalIsOpen}
           onAfterOpen={this.afterOpenModal}

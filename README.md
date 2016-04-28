@@ -23,7 +23,7 @@ LiftWithMe will allow users to do the following:
 - [x] Create an account (MVP)
 - [ ] Log in / Log out, including as a Guest/Demo User (MVP)
 - [ ] Create, edit, and delete a gym session (MVP)
-- [ ] Able to look at all possible sessions (MVP)
+- [x] Able to look at all possible sessions (MVP)
 - [ ] Sign up for a gym session (MVP)
 - [ ] Profile look ups (MVP)
 
@@ -71,11 +71,11 @@ the API.
 **Objective:** Workouts can be created, read, edited and destroyed with the
 user interface.
 
-- [ ] setup the flux loop with skeleton files
-- [ ] setup React Router
-- [ ] implement each component, building out the flux loop as needed.
+- [x] setup the flux loop with skeleton files
+- [x] setup React Router
+- [x] implement each component, building out the flux loop as needed.
 - [x] `WorkoutsIndex`
-- [ ] `WorkoutForm`
+- [x] `WorkoutForm`
 
 ### Phase 4: Start Styling (0.5 days)
 
@@ -113,6 +113,9 @@ user interface.
 - [ ] Search users by how much they lift
 - [ ] Save Workouts like a playlist
 - [ ] Multiple sessions
+
+### To-do
+- [ ] remove jquery from select in workout creation
 
 [phase-one]: ./docs/phases/phase1.md
 [phase-two]: ./docs/phases/phase2.md
