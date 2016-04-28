@@ -63,7 +63,7 @@ the API.
 - [x] CRUD API for notes (`WorkoutsController`)
 - [x] jBuilder views for workouts
 - [x] setup Webpack & Flux scaffold
-- [ ] setup `APIUtil` to interact with the API
+- [x] setup `APIUtil` to interact with the API
 - [x] test out API interaction in the console.
 
 ### Phase 3: Flux Architecture and Router (1.5 days)

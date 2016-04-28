@@ -1,5 +1,5 @@
 class WorkoutExercise < ActiveRecord::Base
-  validates :workout_id, :exercise_id, presence: true
+  validates :workout_id, :exercise_id, :sets, :reps, presence: true
   belongs_to :workout
   belongs_to :exercise
 end

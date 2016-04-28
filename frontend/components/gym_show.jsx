@@ -18,6 +18,10 @@ var GymShow = React.createClass({
       url: url,
       type: "CURRENT_GYM"
     });
+    ClientActions.fetchAll({ //fetch all the exercises
+      url: '/api/exercises',
+      type: "ALL_EXERCISES"
+    });
   },
   componentWillUnmount: function() {
     this.listener.remove();

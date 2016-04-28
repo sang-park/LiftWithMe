@@ -59,10 +59,10 @@
 	var UserStore = __webpack_require__(219);
 	//components
 	var LoginForm = __webpack_require__(244);
-	var HomeCityIndex = __webpack_require__(273);
-	var HomeCityShow = __webpack_require__(275);
-	var GymShow = __webpack_require__(277);
-	var WorkoutShow = __webpack_require__(280);
+	var HomeCityIndex = __webpack_require__(269);
+	var HomeCityShow = __webpack_require__(274);
+	var GymShow = __webpack_require__(276);
+	var WorkoutShow = __webpack_require__(279);
 	
 	var App = React.createClass({
 	  displayName: 'App',
@@ -32272,11 +32272,7 @@
 	    return React.createElement(
 	      "div",
 	      { id: "navbar" },
-	      React.createElement(
-	        "div",
-	        { id: "logo", onClick: this.goToHomePage },
-	        "LOGO"
-	      ),
+	      React.createElement("img", { src: "/assets/logo.png", id: "logo", onClick: this.goToHomePage }),
 	      React.createElement(
 	        "div",
 	        { id: "login-info" },
@@ -34470,87 +34466,12 @@
 
 
 /***/ },
-/* 269 */,
-/* 270 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var ApiUtil = __webpack_require__(271);
-	
-	var ClientActions = {
-	  fetchAll: function (options) {
-	    ApiUtil.fetchAll(options);
-	  },
-	  fetchOne: function (options) {
-	    ApiUtil.fetchOne(options);
-	  }
-	};
-	
-	module.exports = ClientActions;
-
-/***/ },
-/* 271 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var ServerActions = __webpack_require__(272);
-	
-	var ApiUtil = {
-	  fetchAll: function (options) {
-	    var url = options.url;
-	    var type = options.type;
-	    $.ajax({
-	      url: url,
-	      type: 'get',
-	      success: function (index) {
-	        ServerActions.receiveAll(index, type);
-	      }
-	    });
-	  },
-	  fetchOne: function (options) {
-	    var url = options.url;
-	    var type = options.type;
-	    $.ajax({
-	      url: url,
-	      type: 'GET',
-	      success: function (item) {
-	        ServerActions.receiveOne(item, type);
-	      }
-	    });
-	  }
-	
-	};
-	
-	module.exports = ApiUtil;
-
-/***/ },
-/* 272 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var AppDispatcher = __webpack_require__(220);
-	
-	var ServerActions = {
-	  receiveAll: function (index, type) {
-	    AppDispatcher.dispatch({
-	      actionType: type,
-	      index: index
-	    });
-	  },
-	  receiveOne: function (item, type) {
-	    AppDispatcher.dispatch({
-	      actionType: type,
-	      item: item
-	    });
-	  }
-	};
-	
-	module.exports = ServerActions;
-
-/***/ },
-/* 273 */
+/* 269 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(270);
-	var HomeCityStore = __webpack_require__(274);
+	var HomeCityStore = __webpack_require__(273);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var HomeCityIndex = React.createClass({
@@ -34605,7 +34526,7 @@
 	      React.createElement(
 	        'h2',
 	        null,
-	        'Home Cities:'
+	        'Pick Your City:'
 	      ),
 	      React.createElement(
 	        'ul',
@@ -34620,7 +34541,105 @@
 	module.exports = HomeCityIndex;
 
 /***/ },
-/* 274 */
+/* 270 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ApiUtil = __webpack_require__(271);
+	
+	var ClientActions = {
+	  fetchAll: ApiUtil.fetchAll,
+	  fetchOne: ApiUtil.fetchOne,
+	  createWorkout: ApiUtil.addWorkout
+	};
+	
+	module.exports = ClientActions;
+
+/***/ },
+/* 271 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ServerActions = __webpack_require__(272);
+	
+	var ApiUtil = {
+	  fetchAll: function (options) {
+	    var url = options.url;
+	    var type = options.type;
+	    $.ajax({
+	      url: url,
+	      type: 'GET',
+	      success: function (index) {
+	        ServerActions.receiveAll(index, type);
+	      },
+	      error: function (error) {
+	        ServerActions.handleError(error);
+	      }
+	    });
+	  },
+	  fetchOne: function (options) {
+	    var url = options.url;
+	    var type = options.type;
+	    $.ajax({
+	      url: url,
+	      type: 'GET',
+	      success: function (item) {
+	        ServerActions.receiveOne(item, type);
+	      },
+	      error: function (error) {
+	        ServerActions.handleError(error);
+	      }
+	    });
+	  },
+	  addWorkout: function (options) {
+	    $.ajax({
+	      url: '/api/user/add_workout',
+	      type: "POST",
+	      data: options,
+	      success: function (gym) {
+	        ServerActions.receiveOne(gym, "CURRENT_GYM");
+	      },
+	      error: function (error) {
+	        ServerActions.handleError(error);
+	      }
+	    });
+	  }
+	
+	};
+	
+	module.exports = ApiUtil;
+
+/***/ },
+/* 272 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var AppDispatcher = __webpack_require__(220);
+	
+	var ServerActions = {
+	  receiveAll: function (index, type) {
+	    AppDispatcher.dispatch({
+	      actionType: type,
+	      index: index
+	    });
+	  },
+	  receiveOne: function (item, type) {
+	    AppDispatcher.dispatch({
+	      actionType: type,
+	      item: item
+	    });
+	  },
+	  handleError: function (error) {
+	    console.log("handle errors in serveractions.js");
+	    // AppDispatcher.dispatch({
+	    //   actionType: UserConstants.ERROR,
+	    //   errors: error
+	    // });
+	  }
+	
+	};
+	
+	module.exports = ServerActions;
+
+/***/ },
+/* 273 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var AppDispatcher = __webpack_require__(220);
@@ -34676,14 +34695,14 @@
 	module.exports = HomeCityStore;
 
 /***/ },
-/* 275 */
+/* 274 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(270);
-	var HomeCityStore = __webpack_require__(274);
+	var HomeCityStore = __webpack_require__(273);
 	var hashHistory = __webpack_require__(159).hashHistory;
-	var GymIndex = __webpack_require__(276);
+	var GymIndex = __webpack_require__(275);
 	
 	var HomeCityShow = React.createClass({
 	  displayName: 'HomeCityShow',
@@ -34724,11 +34743,11 @@
 	module.exports = HomeCityShow;
 
 /***/ },
-/* 276 */
+/* 275 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var GymStore = __webpack_require__(274);
+	var GymStore = __webpack_require__(273);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var GymIndex = React.createClass({
@@ -34764,14 +34783,14 @@
 	module.exports = GymIndex;
 
 /***/ },
-/* 277 */
+/* 276 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(270);
-	var GymStore = __webpack_require__(278);
+	var GymStore = __webpack_require__(277);
 	var hashHistory = __webpack_require__(159).hashHistory;
-	var WorkoutIndex = __webpack_require__(279);
+	var WorkoutIndex = __webpack_require__(278);
 	
 	var GymShow = React.createClass({
 	  displayName: 'GymShow',
@@ -34788,6 +34807,10 @@
 	    ClientActions.fetchOne({
 	      url: url,
 	      type: "CURRENT_GYM"
+	    });
+	    ClientActions.fetchAll({ //fetch all the exercises
+	      url: '/api/exercises',
+	      type: "ALL_EXERCISES"
 	    });
 	  },
 	  componentWillUnmount: function () {
@@ -34812,7 +34835,7 @@
 	module.exports = GymShow;
 
 /***/ },
-/* 278 */
+/* 277 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var AppDispatcher = __webpack_require__(220);
@@ -34855,14 +34878,15 @@
 	module.exports = GymStore;
 
 /***/ },
-/* 279 */
+/* 278 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var GymStore = __webpack_require__(274);
-	var WorkoutShow = __webpack_require__(280);
+	var GymStore = __webpack_require__(273);
+	var WorkoutShow = __webpack_require__(279);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	var Modal = __webpack_require__(249);
+	var WorkoutForm = __webpack_require__(281);
 	
 	var _style = {
 	  overlay: {
@@ -34889,14 +34913,18 @@
 	  displayName: 'WorkoutIndex',
 	
 	  getInitialState: function () {
+	    this.workout = [];
+	    this.formClicked = false;
 	    return {
 	      modalIsOpen: false
 	    };
 	  },
 	  openModal: function () {
+	    this.formClicked = false;
 	    this.setState({ modalIsOpen: true, form: "login" });
 	  },
 	  closeModal: function () {
+	    this.workout = [];
 	    this.setState({ modalIsOpen: false });
 	  },
 	  handleClick: function (id, name) {
@@ -34972,11 +35000,27 @@
 	      )
 	    );
 	  },
+	  workoutForm: function () {
+	    if (this.formClicked) {
+	      return React.createElement(WorkoutForm, { closeModal: this.closeModal });
+	    } else {
+	      return;
+	    }
+	  },
+	  openForm: function () {
+	    this.openModal();
+	    this.formClicked = true;
+	  },
 	  render: function () {
 	    return React.createElement(
 	      'div',
 	      null,
 	      this.workouts(),
+	      React.createElement(
+	        'button',
+	        { onClick: this.openForm },
+	        'Create New Workout'
+	      ),
 	      React.createElement(
 	        Modal,
 	        {
@@ -34985,6 +35029,7 @@
 	          onRequestClose: this.closeModal,
 	          style: _style
 	        },
+	        this.workoutForm(),
 	        this.workout
 	      )
 	    );
@@ -34995,12 +35040,12 @@
 	module.exports = WorkoutIndex;
 
 /***/ },
-/* 280 */
+/* 279 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(270);
-	var WorkoutStore = __webpack_require__(281);
+	var WorkoutStore = __webpack_require__(280);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var WorkoutShow = React.createClass({
@@ -35098,7 +35143,7 @@
 	module.exports = WorkoutShow;
 
 /***/ },
-/* 281 */
+/* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var AppDispatcher = __webpack_require__(220);
@@ -35129,6 +35174,197 @@
 	window.WorkoutStore = WorkoutStore;
 	
 	module.exports = WorkoutStore;
+
+/***/ },
+/* 281 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var LinkedStateMixin = __webpack_require__(245);
+	var ClientActions = __webpack_require__(270);
+	var GymStore = __webpack_require__(277);
+	var ExerciseStore = __webpack_require__(282);
+	
+	var WorkoutForm = React.createClass({
+	  displayName: 'WorkoutForm',
+	
+	  mixins: [LinkedStateMixin],
+	  exercises: function () {
+	    var options = [];
+	    ExerciseStore.all().exercises.forEach(function (exercise) {
+	      options.push(React.createElement(
+	        'option',
+	        { value: exercise.id, key: exercise.name },
+	        exercise.name
+	      ));
+	    });
+	    return React.createElement(
+	      'select',
+	      { id: 'exercise' },
+	      options
+	    );
+	  },
+	  row: function () {
+	    this.rowKey = "exercise" + this.key;
+	    return React.createElement(
+	      'tr',
+	      { key: this.rowKey },
+	      React.createElement(
+	        'td',
+	        null,
+	        this.exercises()
+	      ),
+	      React.createElement(
+	        'td',
+	        null,
+	        React.createElement('input', {
+	          type: 'number',
+	          valueLink: this.linkState('sets' + this.key) })
+	      ),
+	      React.createElement(
+	        'td',
+	        null,
+	        React.createElement('input', {
+	          type: 'number',
+	          valueLink: this.linkState('reps' + this.key) })
+	      )
+	    );
+	  },
+	  blankExercise: function () {
+	    return { exercise: "", sets: 0, reps: 0 };
+	  },
+	  getInitialState: function () {
+	    this.key = 0;
+	    return { rows: [] };
+	  },
+	  componentDidMount: function () {
+	    this.appendRow();
+	  },
+	  appendRow: function () {
+	    this.key++;
+	    var rows = this.state.rows.concat(this.row());
+	    this.setState({ rows: rows });
+	  },
+	  submitForm: function (e) {
+	    e.preventDefault();
+	    var workoutParams = {
+	      name: this.state.name,
+	      date: this.state.date,
+	      time: this.state.time
+	    };
+	    var exercises = this.allExercises();
+	    ClientActions.createWorkout({ workout: workoutParams, exercises: exercises });
+	    this.props.closeModal();
+	  },
+	  allExercises: function () {
+	    var exes = [];
+	    var self = this;
+	    for (var i = 1; i <= self.key; i++) {
+	      var id = document.getElementById("exercise").value;
+	      var sets = self.state["sets" + i];
+	      var reps = self.state["reps" + i];
+	      exes.push({ id: id, sets: sets, reps: reps });
+	    }
+	    return exes;
+	  },
+	  form: function () {
+	    var form = React.createElement(
+	      'form',
+	      null,
+	      'Workout Name:',
+	      React.createElement('input', {
+	        type: 'text',
+	        valueLink: this.linkState('name') }),
+	      ' ',
+	      React.createElement('br', null),
+	      'Date:',
+	      React.createElement('input', { type: 'date', valueLink: this.linkState('date') }),
+	      ' ',
+	      React.createElement('br', null),
+	      'Time:',
+	      React.createElement('input', { type: 'time', valueLink: this.linkState('time') }),
+	      ' ',
+	      React.createElement('br', null),
+	      React.createElement(
+	        'table',
+	        { index: 'ASDF' },
+	        React.createElement(
+	          'thead',
+	          null,
+	          React.createElement(
+	            'tr',
+	            null,
+	            React.createElement(
+	              'td',
+	              null,
+	              'Exercise'
+	            ),
+	            React.createElement(
+	              'td',
+	              null,
+	              'Sets'
+	            ),
+	            React.createElement(
+	              'td',
+	              null,
+	              'Reps'
+	            )
+	          )
+	        ),
+	        React.createElement(
+	          'tbody',
+	          null,
+	          this.state.rows
+	        )
+	      ),
+	      React.createElement(
+	        'button',
+	        { onClick: this.appendRow },
+	        '+'
+	      ),
+	      React.createElement('input', { type: 'submit', onClick: this.submitForm })
+	    );
+	    return form;
+	  },
+	  render: function () {
+	    return this.form();
+	  }
+	
+	});
+	
+	module.exports = WorkoutForm;
+
+/***/ },
+/* 282 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var AppDispatcher = __webpack_require__(220);
+	var Store = __webpack_require__(224).Store;
+	
+	var ExerciseStore = new Store(AppDispatcher);
+	
+	var _exercises;
+	
+	ExerciseStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case "ALL_EXERCISES":
+	      ExerciseStore.updateExercises(payload.index);
+	  }
+	};
+	
+	ExerciseStore.updateExercises = function (exercises) {
+	  _exercises = exercises;
+	};
+	
+	ExerciseStore.all = function () {
+	  if (_exercises) {
+	    return $.extend({}, _exercises);
+	  }
+	};
+	
+	window.ExerciseStore = ExerciseStore;
+	
+	module.exports = ExerciseStore;
 
 /***/ }
 /******/ ]);

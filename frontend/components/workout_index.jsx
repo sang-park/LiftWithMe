@@ -3,6 +3,7 @@ var GymStore = require('../stores/home_city_store');
 var WorkoutShow = require('./workout_show');
 var hashHistory = require('react-router').hashHistory;
 var Modal = require('react-modal');
+var WorkoutForm = require('./workout_form');
 
 var _style = {
   overlay : {
@@ -29,14 +30,18 @@ var WEEKDAYS = [
 
 var WorkoutIndex = React.createClass({
   getInitialState: function() {
+    this.workout = [];
+    this.formClicked = false;
     return {
       modalIsOpen: false
     };
   },
   openModal: function() {
+    this.formClicked = false;
     this.setState({modalIsOpen: true, form: "login"});
   },
   closeModal: function() {
+    this.workout = [];
     this.setState({modalIsOpen: false});
   },
   handleClick: function(id,name){
@@ -90,16 +95,31 @@ var WorkoutIndex = React.createClass({
       </table>
     );
   },
+  workoutForm: function(){
+    if (this.formClicked) {
+      return (
+        <WorkoutForm closeModal={this.closeModal}/>
+      );
+    } else {
+      return;
+    }
+  },
+  openForm: function(){
+    this.openModal();
+    this.formClicked = true;
+  },
   render: function() {
     return (
       <div>
         {this.workouts()}
+        <button onClick={this.openForm}>Create New Workout</button>
         <Modal
           isOpen={this.state.modalIsOpen}
           onAfterOpen={this.afterOpenModal}
           onRequestClose={this.closeModal}
           style={_style}
         >
+          {this.workoutForm()}
           {this.workout}
         </Modal>
       </div>

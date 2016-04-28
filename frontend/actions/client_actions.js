@@ -1,12 +1,9 @@
 var ApiUtil = require('../util/api_util');
 
 var ClientActions = {
-  fetchAll: function(options){
-    ApiUtil.fetchAll(options);
-  },
-  fetchOne: function(options){
-    ApiUtil.fetchOne(options);
-  }
+  fetchAll: ApiUtil.fetchAll,
+  fetchOne: ApiUtil.fetchOne,
+  createWorkout: ApiUtil.addWorkout
 };
 
 module.exports = ClientActions;

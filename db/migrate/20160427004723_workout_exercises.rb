@@ -7,7 +7,5 @@ class WorkoutExercises < ActiveRecord::Migration
       t.integer :reps, null: false
     end
     add_index :workout_exercises, :workout_id
-    add_index :workout_exercises, [:workout_id, :exercise_id], unique: true
-
   end
 end

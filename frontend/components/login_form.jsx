@@ -163,7 +163,7 @@ var LoginForm = React.createClass({
     }
     return (
       <div id="navbar">
-        <div id="logo" onClick={this.goToHomePage}>LOGO</div>
+        <img src="/assets/logo.png" id="logo" onClick={this.goToHomePage}/>
         <div id="login-info">
           {this.greet()}
           {this.errors()}

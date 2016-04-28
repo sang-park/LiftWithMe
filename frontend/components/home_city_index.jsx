@@ -45,7 +45,7 @@ var HomeCityIndex = React.createClass({
 
     return (
       <div>
-        <h2>Home Cities:</h2>
+        <h2>Pick Your City:</h2>
         <ul className="home-city-index">{cities}</ul>
       </div>
     );

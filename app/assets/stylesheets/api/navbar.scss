@@ -1,12 +1,18 @@
 #navbar {
   display :flex;
   justify-content: space-between;
-  background-color: cornflowerblue;
+  background-color: lightgray;
+  height: 50px;
+  #logo {
+    height: 50px;
+    width: 150px;
+    &:hover {
+      cursor: pointer;
+    }
+
+  }
 }
 
-#logo {
-  border: 1px solid black;
-}
 
 #login-info {
   display: flex;

@@ -55,7 +55,6 @@ ActiveRecord::Schema.define(version: 20160427004723) do
     t.integer "reps",        null: false
   end
 
-  add_index "workout_exercises", ["workout_id", "exercise_id"], name: "index_workout_exercises_on_workout_id_and_exercise_id", unique: true, using: :btree
   add_index "workout_exercises", ["workout_id"], name: "index_workout_exercises_on_workout_id", using: :btree
 
   create_table "workouts", force: :cascade do |t|
