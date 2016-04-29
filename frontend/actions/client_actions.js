@@ -4,7 +4,8 @@ var ClientActions = {
   fetchAll: ApiUtil.fetchAll,
   fetchOne: ApiUtil.fetchOne,
   createWorkout: ApiUtil.addWorkout,
-  deleteWorkout: ApiUtil.deleteWorkout
+  deleteWorkout: ApiUtil.deleteWorkout,
+  updateWorkout: ApiUtil.updateWorkout
 
 };
 

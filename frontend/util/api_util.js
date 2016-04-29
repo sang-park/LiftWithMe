@@ -58,9 +58,8 @@ var ApiUtil = {
   },
   updateWorkout: function(options){
     var url = options.url;
-    var type = options.type;
     $.ajax({
-      url: url,
+      url: 'api/user/update_workout',
       type: "PATCH",
       data: options,
       success: function(gym){

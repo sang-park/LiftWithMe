@@ -1,15 +1,18 @@
 var React = require('react');
 var ClientActions = require('../actions/client_actions');
 var WorkoutStore = require('../stores/workout_store');
+var WorkoutEditForm = require('../components/workout_edit_form');
 var hashHistory = require('react-router').hashHistory;
+var UserStore = require('../stores/user_store');
+
 
 var WorkoutShow = React.createClass({
   getInitialState: function() {
-    return { exercises: [], name: ""};
+    return { exercises: [], name: "", editing: false};
   },
   componentDidMount: function() {
     this.listener = WorkoutStore.addListener(this.updateWorkout);
-    var url = "/api/workouts/" + this.props.workout_id;
+    var url = "/api/workouts/" + this.props.workout.id;
     ClientActions.fetchOne({
       url: url,
       type: "CURRENT_WORKOUT"
@@ -43,16 +46,76 @@ var WorkoutShow = React.createClass({
         </thead>
         <tbody>
           {exercises}
+          {this.editAndDelete()}
         </tbody>
+
       </table>
     );
   },
+
+  editAndDelete: function(workout){
+    if  ( UserStore.currentUser() &&
+      UserStore.currentUser().id === this.props.workout.user_id){
+      return (
+        <tr>
+          <td>
+            <button
+              onClick={this.openEditForm(this.props.workout)}
+              value={this.props.workout.id}
+              className="disable-show"> Edit </button>
+            <button
+              onClick={this.delete}
+              value={this.props.workout.id}
+              className="disable-show"> Delete</button>
+        </td>
+        </tr>
+      );
+    } else {
+      return (<td></td>);
+    }
+  },
+  openEditForm: function(workout){
+    return function(){
+      this.setState({editing: true});
+    }.bind(this);
+  },
+
+  edit: function(e){
+    e.preventDefault();
+
+  },
+  delete: function(e){
+    e.preventDefault();
+    var options = {
+      url: 'api/workouts/' + e.target.value,
+      type: "CURRENT_GYM"
+    };
+    ClientActions.deleteWorkout(options);
+    this.setState({modalIsOpen: false});
+    this.props.closeModal();
+  },
+
+
   render: function() {
-    var workoutTitle = <span className="workout-title">{this.props.name}</span>;
+    var workoutTitle = (
+      <span className="workout-title">
+        {this.props.workout.name}
+      </span>
+    );
+    var display;
+    if (this.state.editing) {
+      display = <WorkoutEditForm
+        workout={this.props.workout}
+        exercises={this.state.exercises}
+        closeModal={this.props.closeModal}
+      />;
+    } else {
+      display = this.exercises();
+    }
     return (
       <div className="workout-modal">
         {workoutTitle}
-        {this.exercises()}
+        {display}
       </div>
     );
   }

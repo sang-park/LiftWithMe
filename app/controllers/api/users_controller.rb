@@ -27,7 +27,23 @@ class Api::UsersController < ApplicationController
       @errors = ['Cannot create this workout']
       render "api/shared/error", status: 404
     end
+  end
 
+  def update_workout
+    workout = Workout.find(params['workout']['id'].to_i)
+    if current_user && workout
+      idx = 0
+      workout.workout_exercises.each do |we|
+        workout_exercise = WorkoutExercise.find(we.id)
+        attrs = params['exercises'][idx.to_s].permit(:sets, :reps)
+        workout_exercise.update_attributes(attrs)
+      end
+      @gym = current_user.gym
+      render 'api/gyms/show'
+    else
+      @errors = ['Cannot create this workout']
+      render "api/shared/error", status: 404
+    end
   end
 
   private
