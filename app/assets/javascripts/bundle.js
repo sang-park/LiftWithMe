@@ -34947,6 +34947,7 @@
 	var hashHistory = __webpack_require__(159).hashHistory;
 	var Modal = __webpack_require__(249);
 	var WorkoutForm = __webpack_require__(281);
+	var WorkoutEditForm = __webpack_require__(283);
 	var ClientActions = __webpack_require__(270);
 	
 	var _style = {
@@ -34975,13 +34976,15 @@
 	
 	  getInitialState: function () {
 	    this.workout = [];
-	    this.formClicked = false;
+	    this.createFormClicked = false;
+	    this.editFormClicked = false;
 	    return {
 	      modalIsOpen: false
 	    };
 	  },
 	  openModal: function () {
-	    this.formClicked = false;
+	    this.createFormClicked = false;
+	    this.editFormClicked = false;
 	    this.setState({ modalIsOpen: true, form: "login" });
 	  },
 	  closeModal: function () {
@@ -35019,7 +35022,7 @@
 	        React.createElement(
 	          'button',
 	          {
-	            onClick: this.edit,
+	            onClick: this.openEditForm(workout),
 	            value: workout.id,
 	            className: 'disable-show' },
 	          ' Edit '
@@ -35104,22 +35107,38 @@
 	    );
 	  },
 	  workoutForm: function () {
-	    if (this.formClicked) {
+	    if (this.createFormClicked) {
 	      return React.createElement(WorkoutForm, { closeModal: this.closeModal });
 	    } else {
 	      return;
 	    }
 	  },
-	  openForm: function () {
+	  editForm: function () {
+	    if (this.editFormClicked) {
+	      return React.createElement(WorkoutEditForm, {
+	        closeModal: this.closeModal,
+	        workout_id: this.editWorkout.id });
+	    } else {
+	      return;
+	    }
+	  },
+	  openCreateForm: function () {
 	    this.openModal();
-	    this.formClicked = true;
+	    this.createFormClicked = true;
+	  },
+	  openEditForm: function (workout) {
+	    this.editWorkout = workout;
+	    return function () {
+	      this.openModal();
+	      this.editFormClicked = true;
+	    }.bind(this);
 	  },
 	  render: function () {
 	    var button = [];
 	    if (UserStore.currentUser()) {
 	      button = React.createElement(
 	        'button',
-	        { onClick: this.openForm },
+	        { onClick: this.openCreateForm },
 	        'Create New Workout'
 	      );
 	    }
@@ -35137,6 +35156,7 @@
 	          style: _style
 	        },
 	        this.workoutForm(),
+	        this.editForm(),
 	        this.workout
 	      )
 	    );
@@ -35473,6 +35493,113 @@
 	window.ExerciseStore = ExerciseStore;
 	
 	module.exports = ExerciseStore;
+
+/***/ },
+/* 283 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ClientActions = __webpack_require__(270);
+	var WorkoutStore = __webpack_require__(280);
+	var hashHistory = __webpack_require__(159).hashHistory;
+	var LinkedStateMixin = __webpack_require__(245);
+	
+	var WorkoutEditForm = React.createClass({
+	  displayName: 'WorkoutEditForm',
+	
+	  mixins: [LinkedStateMixin],
+	  getInitialState: function () {
+	    return { exercises: [], name: "", time: "", date: "" };
+	  },
+	  componentDidMount: function () {
+	    this.listener = WorkoutStore.addListener(this.updateWorkout);
+	    var url = "/api/workouts/" + this.props.workout_id;
+	    ClientActions.fetchOne({
+	      url: url,
+	      type: "CURRENT_WORKOUT"
+	    });
+	  },
+	  componentWillUnmount: function () {
+	    this.listener.remove();
+	  },
+	  updateWorkout: function () {
+	    var workout = WorkoutStore.currentWorkout();
+	    this.setState({
+	      exercises: workout.exercises,
+	      name: workout.name,
+	      time: workout.time.split("T")[1].split(".")[0],
+	      date: workout.date
+	    });
+	  },
+	  blankExercise: function () {
+	    return { exercise: "", sets: 0, reps: 0 };
+	  },
+	  form: function () {
+	    var form = React.createElement(
+	      'form',
+	      null,
+	      'Workout Name:',
+	      React.createElement('input', {
+	        type: 'text',
+	        valueLink: this.linkState('name') }),
+	      ' ',
+	      React.createElement('br', null),
+	      'Date:',
+	      React.createElement('input', { type: 'date', valueLink: this.linkState('date') }),
+	      ' ',
+	      React.createElement('br', null),
+	      'Time:',
+	      React.createElement('input', { type: 'time', valueLink: this.linkState('time') }),
+	      ' ',
+	      React.createElement('br', null),
+	      React.createElement(
+	        'table',
+	        { index: 'ASDF' },
+	        React.createElement(
+	          'thead',
+	          null,
+	          React.createElement(
+	            'tr',
+	            null,
+	            React.createElement(
+	              'td',
+	              null,
+	              'Exercise'
+	            ),
+	            React.createElement(
+	              'td',
+	              null,
+	              'Sets'
+	            ),
+	            React.createElement(
+	              'td',
+	              null,
+	              'Reps'
+	            )
+	          )
+	        ),
+	        React.createElement(
+	          'tbody',
+	          null,
+	          this.state.rows
+	        )
+	      ),
+	      React.createElement(
+	        'button',
+	        { onClick: this.appendRow },
+	        '+'
+	      ),
+	      React.createElement('input', { type: 'submit', onClick: this.submitForm })
+	    );
+	    return form;
+	  },
+	  render: function () {
+	    return this.form();
+	  }
+	
+	});
+	
+	module.exports = WorkoutEditForm;
 
 /***/ }
 /******/ ]);

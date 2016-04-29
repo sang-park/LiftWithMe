@@ -4,6 +4,7 @@ var WorkoutShow = require('./workout_show');
 var hashHistory = require('react-router').hashHistory;
 var Modal = require('react-modal');
 var WorkoutForm = require('./workout_form');
+var WorkoutEditForm = require('./workout_edit_form');
 var ClientActions = require('../actions/client_actions');
 
 var _style = {
@@ -32,13 +33,15 @@ var WEEKDAYS = [
 var WorkoutIndex = React.createClass({
   getInitialState: function() {
     this.workout = [];
-    this.formClicked = false;
+    this.createFormClicked = false;
+    this.editFormClicked = false;
     return {
       modalIsOpen: false
     };
   },
   openModal: function() {
-    this.formClicked = false;
+    this.createFormClicked = false;
+    this.editFormClicked = false;
     this.setState({modalIsOpen: true, form: "login"});
   },
   closeModal: function() {
@@ -74,7 +77,7 @@ var WorkoutIndex = React.createClass({
       return (
         <td>
           <button
-            onClick={this.edit}
+            onClick={this.openEditForm(workout)}
             value={workout.id}
             className="disable-show"> Edit </button>
           <button
@@ -89,7 +92,7 @@ var WorkoutIndex = React.createClass({
   },
   edit: function(e){
     e.preventDefault();
-    
+
   },
   delete: function(e){
     e.preventDefault();
@@ -133,7 +136,7 @@ var WorkoutIndex = React.createClass({
     );
   },
   workoutForm: function(){
-    if (this.formClicked) {
+    if (this.createFormClicked) {
       return (
         <WorkoutForm closeModal={this.closeModal}/>
       );
@@ -141,14 +144,34 @@ var WorkoutIndex = React.createClass({
       return;
     }
   },
-  openForm: function(){
+  editForm: function(){
+    if (this.editFormClicked) {
+      return (
+        <WorkoutEditForm
+          closeModal={this.closeModal}
+          workout_id={this.editWorkout.id} />
+      );
+    } else {
+      return;
+    }
+  },
+  openCreateForm: function(){
     this.openModal();
-    this.formClicked = true;
+    this.createFormClicked = true;
+  },
+  openEditForm: function(workout){
+    this.editWorkout = workout;
+    return function(){
+      this.openModal();
+      this.editFormClicked = true;
+    }.bind(this);
   },
   render: function() {
     var button = [];
     if (UserStore.currentUser()){
-      button = (<button onClick={this.openForm}>Create New Workout</button>);
+      button = (
+        <button onClick={this.openCreateForm}>Create New Workout</button>
+      );
     }
     return (
       <div>
@@ -161,6 +184,7 @@ var WorkoutIndex = React.createClass({
           style={_style}
         >
           {this.workoutForm()}
+          {this.editForm()}
           {this.workout}
         </Modal>
       </div>
