@@ -110,7 +110,7 @@ var WorkoutIndex = React.createClass({
         <WorkoutForm closeModal={this.closeModal}/>
       );
     } else {
-      return;
+      return [];
     }
   },
   openCreateForm: function(){

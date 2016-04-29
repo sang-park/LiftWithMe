@@ -1,111 +1,244 @@
 var React = require('react');
+var ReactDOM = require('react-dom');
 var LinkedStateMixin = require('react-addons-linked-state-mixin');
 var ClientActions = require('../actions/client_actions');
 var GymStore = require('../stores/gym_store');
 var ExerciseStore = require('../stores/exercise_store');
 
 var WorkoutForm = React.createClass({
-  mixins: [LinkedStateMixin],
+  getInitialState: function() {
+    return {
+      name: "",
+      date: "",
+      time: "",
+      exercises: [this.blankExercise()]
+    };
+  },
+  blankExercise: function(){
+    return {
+      exercise_id: 1,
+      sets: 0,
+      reps: 0
+    };
+  },
+  handleSubmit: function(e){
+    e.preventDefault();
+    debugger
+  },
+  updateWorkout: function(newState){
+    this.setState(newState);
+  },
+  updateExercise: function(index,newState){
+    var exercise = this.state.exercises;
+    exercise[index] = newState;
+    this.setState({exercise: exercise});
+  },
+  addExercise: function(){
+    var exercises = this.state.exercises;
+    exercises.push(this.blankExercise());
+    this.setState({exercises: exercises});
+  },
+  render: function(){
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <WorkoutInfo
+          ref="info"
+          updateWorkout={this.updateWorkout} />
+        <WorkoutTable
+          ref="table"
+          addExercise={this.addExercise}
+          updateExercise={this.updateExercise}
+          blankAttrs={this.blankExercise()}/>
+        <input type="submit" />
+      </form>
+    );
+  }
+});
+
+var WorkoutInfo = React.createClass({
+  getInitialState: function() {
+    return {name: "", date: "", time: ""};
+  },
+  handleChange: function(type){
+    return function(e){
+      var updateAttrs = {};
+      updateAttrs[type] = e.target.value;
+      this.setState(updateAttrs);
+      this.props.updateWorkout(updateAttrs);
+    }.bind(this);
+  },
+  render: function(){
+    return (
+      <div className="workout-info">
+        <label>
+          Workout Name: <input
+            ref="name"
+            type='text'
+            value={this.state.name}
+            onChange={this.handleChange("name")}/>
+        </label>
+        <label>
+          Date: <input
+            ref="date"
+            type='date'
+            value={this.state.date}
+            onChange={this.handleChange("date")}/>
+        </label>
+        <label>
+          Time: <input
+            ref="time"
+            type='time'
+            value={this.state.time}
+            onChange={this.handleChange("time")}/>
+        </label>
+      </div>
+    );
+  }
+});
+
+var WorkoutTable = React.createClass({
+  getInitialState: function() {
+    this.row = 0;
+    return {
+      rows: [
+        <WorkoutTableRow
+          key={"workout-row-" + this.row}
+          index={this.row}
+          updateExercise={this.props.updateExercise}
+          blankAttrs={this.props.blankAttrs}
+        />
+      ]};
+  },
+  appendRow: function(e){
+    e.preventDefault();
+    this.row++;
+    var rows = this.state.rows;
+    rows.push(
+      <WorkoutTableRow
+        key={"workout-row-" + this.row}
+        index={this.row}
+        updateExercise={this.props.updateExercise}
+        blankAttrs={this.props.blankAttrs}
+      />
+    );
+    this.setState({rows: rows});
+
+    this.props.addExercise();
+  },
+  tableHead: function(){
+    return (
+      <thead>
+        <tr>
+          <th> Exercise </th>
+          <th> Sets </th>
+          <th> Reps </th>
+        </tr>
+      </thead>
+    );
+  },
+  tableBody: function(){
+    return(
+      <tbody>
+        {this.state.rows}
+      </tbody>
+    );
+  },
+  render: function(){
+    return (
+      <div>
+        <table>
+          {this.tableHead()}
+          {this.tableBody()}
+        </table>
+        <input
+          type="button"
+          value="+"
+          onClick={this.appendRow}
+        />
+      </div>
+    );
+  }
+});
+
+var WorkoutTableRow = React.createClass({
+  getInitialState: function() {
+    return this.props.blankAttrs;
+  },
+  handleChange: function(type){
+    return function(e){
+      var updateAttrs = {};
+      this.state[type] = parseInt(e.target.value);
+      this.props.updateExercise(this.props.index, this.state);
+      this.forceUpdate();
+    }.bind(this);
+  },
+  updateExerciseName: function(exercise_id){
+    this.state.exercise_id = parseInt(exercise_id.selected);
+    this.props.updateExercise(this.props.index, this.state);
+    this.forceUpdate();
+  },
+  render: function(){
+    return (
+      <tr>
+        <td>
+          <ExerciseList
+            selected={this.state.exercise_id}
+            updateExerciseName={this.updateExerciseName}
+          />
+        </td>
+        <td>
+          <input
+            ref="sets"
+            type="number"
+            value={this.state.sets}
+            onChange={this.handleChange("sets")}
+          />
+        </td>
+        <td>
+          <input
+            ref="reps"
+            type="number"
+            value={this.state.reps}
+            onChange={this.handleChange("reps")}
+          /></td>
+      </tr>
+    );
+  }
+});
+
+var ExerciseList = React.createClass({
+  getInitialState: function() {
+    var exercises = ExerciseStore.all();
+    return {selected: this.props.selected};
+  },
   exercises: function(){
+    var self = this;
     var options = [];
     ExerciseStore.all().exercises.forEach(function(exercise){
       options.push(
-        <option value={exercise.id} key={exercise.name}>{exercise.name}</option>
+        <option
+          value={exercise.id}
+          key={exercise.name}
+        > {exercise.name} </option>
       );
     });
-    return (
-      <select id="exercise">
-        {options}
+    return options;
+  },
+  handleChange: function(e){
+    this.state["selected"] = e.target.value;
+    this.forceUpdate();
+    this.props.updateExerciseName(this.state);
+  },
+  render: function(){
+    return(
+      <select
+        value={this.state.selected}
+        onChange={this.handleChange}
+      >
+        {this.exercises()}
       </select>
     );
-  },
-  row: function(){
-    this.rowKey = "exercise" + this.key;
-    return (
-      <tr key={this.rowKey} >
-        <td>
-          {this.exercises()}
-        </td>
-        <td>
-          <input
-            type="number"
-            valueLink={this.linkState('sets' + this.key)} />
-        </td>
-        <td>
-          <input
-            type="number"
-            valueLink={this.linkState('reps' + this.key)} />
-        </td>
-      </tr>
-    );
-  },
-  blankExercise: function(){
-    return {exercise: "", sets: 0, reps: 0};
-  },
-  getInitialState: function() {
-    this.key = 0;
-    return { rows: []};
-  },
-  componentDidMount: function() {
-    this.appendRow();
-  },
-  appendRow: function(){
-    this.key++;
-    var rows = this.state.rows.concat(this.row());
-    this.setState({rows: rows});
-  },
-  submitForm: function(e){
-    e.preventDefault();
-    var workoutParams = {
-      name: this.state.name,
-      date: this.state.date,
-      time: this.state.time,
-    };
-    var exercises = this.allExercises();
-    ClientActions.createWorkout({workout: workoutParams, exercises: exercises});
-    this.props.closeModal();
-  },
-  allExercises: function(){
-    var exes = [];
-    var self = this;
-    for (var i = 1; i <= self.key; i++) {
-      var id = document.getElementById("exercise").value;
-      var sets = self.state["sets" + i];
-      var reps = self.state["reps" + i];
-      exes.push({id: id, sets: sets, reps: reps});
-    }
-    return exes;
-  },
-  form: function(){
-    var form = (
-      <form>
-        Workout Name:<input
-          type='text'
-          valueLink={this.linkState('name')} /> <br />
-        Date:<input type='date' valueLink={this.linkState('date')}/> <br />
-        Time:<input type='time' valueLink={this.linkState('time')}/> <br />
-        <table index="ASDF">
-          <thead>
-            <tr>
-              <td>Exercise</td>
-              <td>Sets</td>
-              <td>Reps</td>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.rows}
-          </tbody>
-        </table>
-        <button onClick={this.appendRow}>+</button>
-        <input type="submit" onClick={this.submitForm}></input>
-      </form>
-    );
-    return form;
-  },
-  render: function() {
-    return this.form();
   }
-
 });
 
 module.exports = WorkoutForm;

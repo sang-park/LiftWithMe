@@ -74,9 +74,12 @@ var WorkoutEditForm = React.createClass({
     this.rowKey = "exercise" + this.key;
     var setKey = "sets" + this.key;
     var repKey = "reps" + this.key;
+    var idKey = "id" + this.key;
+    var workoutExerciseId = "workoutExerciseId" + this.key;
     this.state[setKey] = exercise.sets;
     this.state[repKey] = exercise.reps;
-
+    this.state[idKey] = exercise.id;
+    this.state[workoutExerciseId] = exercise.workout_exercise_id;
     // valueLink={this.linkState('sets' + this.key)} />
     // valueLink={this.linkState(repKey)} />
 
@@ -156,10 +159,16 @@ var WorkoutEditForm = React.createClass({
     var exes = [];
     var self = this;
     for (var i = 1; i <= self.key; i++) {
-      var id = document.getElementById("exercise").value;
+      var id = self.state["id" + i];
       var sets = self.state["sets" + i];
       var reps = self.state["reps" + i];
-      exes.push({id: id, sets: sets, reps: reps});
+      var workoutExerciseId = self.state["workoutExerciseId" + i];
+      exes.push({
+        id: id,
+        sets: sets,
+        reps: reps,
+        workoutExerciseId: workoutExerciseId
+      });
     }
     return exes;
   },

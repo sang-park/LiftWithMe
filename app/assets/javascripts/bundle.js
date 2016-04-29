@@ -35072,7 +35072,7 @@
 	    if (this.createFormClicked) {
 	      return React.createElement(WorkoutForm, { closeModal: this.closeModal });
 	    } else {
-	      return;
+	      return [];
 	    }
 	  },
 	  openCreateForm: function () {
@@ -35316,6 +35316,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
+	var ReactDOM = __webpack_require__(158);
 	var LinkedStateMixin = __webpack_require__(245);
 	var ClientActions = __webpack_require__(270);
 	var GymStore = __webpack_require__(277);
@@ -35324,148 +35325,279 @@
 	var WorkoutForm = React.createClass({
 	  displayName: 'WorkoutForm',
 	
-	  mixins: [LinkedStateMixin],
+	  getInitialState: function () {
+	    return {
+	      name: "",
+	      date: "",
+	      time: "",
+	      exercises: [this.blankExercise()]
+	    };
+	  },
+	  blankExercise: function () {
+	    return {
+	      exercise_id: 1,
+	      sets: 0,
+	      reps: 0
+	    };
+	  },
+	  handleSubmit: function (e) {
+	    e.preventDefault();
+	    debugger;
+	  },
+	  updateWorkout: function (newState) {
+	    this.setState(newState);
+	  },
+	  updateExercise: function (index, newState) {
+	    var exercise = this.state.exercises;
+	    exercise[index] = newState;
+	    this.setState({ exercise: exercise });
+	  },
+	  addExercise: function () {
+	    var exercises = this.state.exercises;
+	    exercises.push(this.blankExercise());
+	    this.setState({ exercises: exercises });
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'form',
+	      { onSubmit: this.handleSubmit },
+	      React.createElement(WorkoutInfo, {
+	        ref: 'info',
+	        updateWorkout: this.updateWorkout }),
+	      React.createElement(WorkoutTable, {
+	        ref: 'table',
+	        addExercise: this.addExercise,
+	        updateExercise: this.updateExercise,
+	        blankAttrs: this.blankExercise() }),
+	      React.createElement('input', { type: 'submit' })
+	    );
+	  }
+	});
+	
+	var WorkoutInfo = React.createClass({
+	  displayName: 'WorkoutInfo',
+	
+	  getInitialState: function () {
+	    return { name: "", date: "", time: "" };
+	  },
+	  handleChange: function (type) {
+	    return function (e) {
+	      var updateAttrs = {};
+	      updateAttrs[type] = e.target.value;
+	      this.setState(updateAttrs);
+	      this.props.updateWorkout(updateAttrs);
+	    }.bind(this);
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      { className: 'workout-info' },
+	      React.createElement(
+	        'label',
+	        null,
+	        'Workout Name: ',
+	        React.createElement('input', {
+	          ref: 'name',
+	          type: 'text',
+	          value: this.state.name,
+	          onChange: this.handleChange("name") })
+	      ),
+	      React.createElement(
+	        'label',
+	        null,
+	        'Date: ',
+	        React.createElement('input', {
+	          ref: 'date',
+	          type: 'date',
+	          value: this.state.date,
+	          onChange: this.handleChange("date") })
+	      ),
+	      React.createElement(
+	        'label',
+	        null,
+	        'Time: ',
+	        React.createElement('input', {
+	          ref: 'time',
+	          type: 'time',
+	          value: this.state.time,
+	          onChange: this.handleChange("time") })
+	      )
+	    );
+	  }
+	});
+	
+	var WorkoutTable = React.createClass({
+	  displayName: 'WorkoutTable',
+	
+	  getInitialState: function () {
+	    this.row = 0;
+	    return {
+	      rows: [React.createElement(WorkoutTableRow, {
+	        key: "workout-row-" + this.row,
+	        index: this.row,
+	        updateExercise: this.props.updateExercise,
+	        blankAttrs: this.props.blankAttrs
+	      })] };
+	  },
+	  appendRow: function (e) {
+	    e.preventDefault();
+	    this.row++;
+	    var rows = this.state.rows;
+	    rows.push(React.createElement(WorkoutTableRow, {
+	      key: "workout-row-" + this.row,
+	      index: this.row,
+	      updateExercise: this.props.updateExercise,
+	      blankAttrs: this.props.blankAttrs
+	    }));
+	    this.setState({ rows: rows });
+	
+	    this.props.addExercise();
+	  },
+	  tableHead: function () {
+	    return React.createElement(
+	      'thead',
+	      null,
+	      React.createElement(
+	        'tr',
+	        null,
+	        React.createElement(
+	          'th',
+	          null,
+	          ' Exercise '
+	        ),
+	        React.createElement(
+	          'th',
+	          null,
+	          ' Sets '
+	        ),
+	        React.createElement(
+	          'th',
+	          null,
+	          ' Reps '
+	        )
+	      )
+	    );
+	  },
+	  tableBody: function () {
+	    return React.createElement(
+	      'tbody',
+	      null,
+	      this.state.rows
+	    );
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'table',
+	        null,
+	        this.tableHead(),
+	        this.tableBody()
+	      ),
+	      React.createElement('input', {
+	        type: 'button',
+	        value: '+',
+	        onClick: this.appendRow
+	      })
+	    );
+	  }
+	});
+	
+	var WorkoutTableRow = React.createClass({
+	  displayName: 'WorkoutTableRow',
+	
+	  getInitialState: function () {
+	    return this.props.blankAttrs;
+	  },
+	  handleChange: function (type) {
+	    return function (e) {
+	      var updateAttrs = {};
+	      this.state[type] = parseInt(e.target.value);
+	      this.props.updateExercise(this.props.index, this.state);
+	      this.forceUpdate();
+	    }.bind(this);
+	  },
+	  updateExerciseName: function (exercise_id) {
+	    this.state.exercise_id = parseInt(exercise_id.selected);
+	    this.props.updateExercise(this.props.index, this.state);
+	    this.forceUpdate();
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'tr',
+	      null,
+	      React.createElement(
+	        'td',
+	        null,
+	        React.createElement(ExerciseList, {
+	          selected: this.state.exercise_id,
+	          updateExerciseName: this.updateExerciseName
+	        })
+	      ),
+	      React.createElement(
+	        'td',
+	        null,
+	        React.createElement('input', {
+	          ref: 'sets',
+	          type: 'number',
+	          value: this.state.sets,
+	          onChange: this.handleChange("sets")
+	        })
+	      ),
+	      React.createElement(
+	        'td',
+	        null,
+	        React.createElement('input', {
+	          ref: 'reps',
+	          type: 'number',
+	          value: this.state.reps,
+	          onChange: this.handleChange("reps")
+	        })
+	      )
+	    );
+	  }
+	});
+	
+	var ExerciseList = React.createClass({
+	  displayName: 'ExerciseList',
+	
+	  getInitialState: function () {
+	    var exercises = ExerciseStore.all();
+	    return { selected: this.props.selected };
+	  },
 	  exercises: function () {
+	    var self = this;
 	    var options = [];
 	    ExerciseStore.all().exercises.forEach(function (exercise) {
 	      options.push(React.createElement(
 	        'option',
-	        { value: exercise.id, key: exercise.name },
-	        exercise.name
+	        {
+	          value: exercise.id,
+	          key: exercise.name
+	        },
+	        ' ',
+	        exercise.name,
+	        ' '
 	      ));
 	    });
-	    return React.createElement(
-	      'select',
-	      { id: 'exercise' },
-	      options
-	    );
+	    return options;
 	  },
-	  row: function () {
-	    this.rowKey = "exercise" + this.key;
-	    return React.createElement(
-	      'tr',
-	      { key: this.rowKey },
-	      React.createElement(
-	        'td',
-	        null,
-	        this.exercises()
-	      ),
-	      React.createElement(
-	        'td',
-	        null,
-	        React.createElement('input', {
-	          type: 'number',
-	          valueLink: this.linkState('sets' + this.key) })
-	      ),
-	      React.createElement(
-	        'td',
-	        null,
-	        React.createElement('input', {
-	          type: 'number',
-	          valueLink: this.linkState('reps' + this.key) })
-	      )
-	    );
-	  },
-	  blankExercise: function () {
-	    return { exercise: "", sets: 0, reps: 0 };
-	  },
-	  getInitialState: function () {
-	    this.key = 0;
-	    return { rows: [] };
-	  },
-	  componentDidMount: function () {
-	    this.appendRow();
-	  },
-	  appendRow: function () {
-	    this.key++;
-	    var rows = this.state.rows.concat(this.row());
-	    this.setState({ rows: rows });
-	  },
-	  submitForm: function (e) {
-	    e.preventDefault();
-	    var workoutParams = {
-	      name: this.state.name,
-	      date: this.state.date,
-	      time: this.state.time
-	    };
-	    var exercises = this.allExercises();
-	    ClientActions.createWorkout({ workout: workoutParams, exercises: exercises });
-	    this.props.closeModal();
-	  },
-	  allExercises: function () {
-	    var exes = [];
-	    var self = this;
-	    for (var i = 1; i <= self.key; i++) {
-	      var id = document.getElementById("exercise").value;
-	      var sets = self.state["sets" + i];
-	      var reps = self.state["reps" + i];
-	      exes.push({ id: id, sets: sets, reps: reps });
-	    }
-	    return exes;
-	  },
-	  form: function () {
-	    var form = React.createElement(
-	      'form',
-	      null,
-	      'Workout Name:',
-	      React.createElement('input', {
-	        type: 'text',
-	        valueLink: this.linkState('name') }),
-	      ' ',
-	      React.createElement('br', null),
-	      'Date:',
-	      React.createElement('input', { type: 'date', valueLink: this.linkState('date') }),
-	      ' ',
-	      React.createElement('br', null),
-	      'Time:',
-	      React.createElement('input', { type: 'time', valueLink: this.linkState('time') }),
-	      ' ',
-	      React.createElement('br', null),
-	      React.createElement(
-	        'table',
-	        { index: 'ASDF' },
-	        React.createElement(
-	          'thead',
-	          null,
-	          React.createElement(
-	            'tr',
-	            null,
-	            React.createElement(
-	              'td',
-	              null,
-	              'Exercise'
-	            ),
-	            React.createElement(
-	              'td',
-	              null,
-	              'Sets'
-	            ),
-	            React.createElement(
-	              'td',
-	              null,
-	              'Reps'
-	            )
-	          )
-	        ),
-	        React.createElement(
-	          'tbody',
-	          null,
-	          this.state.rows
-	        )
-	      ),
-	      React.createElement(
-	        'button',
-	        { onClick: this.appendRow },
-	        '+'
-	      ),
-	      React.createElement('input', { type: 'submit', onClick: this.submitForm })
-	    );
-	    return form;
+	  handleChange: function (e) {
+	    this.state["selected"] = e.target.value;
+	    this.forceUpdate();
+	    this.props.updateExerciseName(this.state);
 	  },
 	  render: function () {
-	    return this.form();
+	    return React.createElement(
+	      'select',
+	      {
+	        value: this.state.selected,
+	        onChange: this.handleChange
+	      },
+	      this.exercises()
+	    );
 	  }
-	
 	});
 	
 	module.exports = WorkoutForm;
@@ -35591,9 +35723,12 @@
 	    this.rowKey = "exercise" + this.key;
 	    var setKey = "sets" + this.key;
 	    var repKey = "reps" + this.key;
+	    var idKey = "id" + this.key;
+	    var workoutExerciseId = "workoutExerciseId" + this.key;
 	    this.state[setKey] = exercise.sets;
 	    this.state[repKey] = exercise.reps;
-	
+	    this.state[idKey] = exercise.id;
+	    this.state[workoutExerciseId] = exercise.workout_exercise_id;
 	    // valueLink={this.linkState('sets' + this.key)} />
 	    // valueLink={this.linkState(repKey)} />
 	
@@ -35708,10 +35843,16 @@
 	    var exes = [];
 	    var self = this;
 	    for (var i = 1; i <= self.key; i++) {
-	      var id = document.getElementById("exercise").value;
+	      var id = self.state["id" + i];
 	      var sets = self.state["sets" + i];
 	      var reps = self.state["reps" + i];
-	      exes.push({ id: id, sets: sets, reps: reps });
+	      var workoutExerciseId = self.state["workoutExerciseId" + i];
+	      exes.push({
+	        id: id,
+	        sets: sets,
+	        reps: reps,
+	        workoutExerciseId: workoutExerciseId
+	      });
 	    }
 	    return exes;
 	  },
