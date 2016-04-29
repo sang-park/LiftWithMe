@@ -6,17 +6,18 @@ class Api::UsersController < ApplicationController
       render 'api/user/show'
     else
       flash.now[:errors] = @user.errors.full_messages
-      # render :show
+      render 'api/shared/error', status: 404
     end
   end
 
   def add_workout
+
     if current_user && Workout.create!(workout_params.merge({user_id: current_user.id}))
       exercise_params.length.times do |i|
         exercise = exercise_params[i.to_s]
         WorkoutExercise.create!({
           workout_id: Workout.last.id,
-          exercise_id: exercise["id"],
+          exercise_id: exercise["exercise_id"],
           sets: exercise["sets"],
           reps: exercise["reps"]
           })
@@ -43,7 +44,7 @@ class Api::UsersController < ApplicationController
           new_params = params['exercises']
             .permit(:sets, :reps)
             .merge(workout_id: params['workout']['id'], exercise_id: exercise[1]['id'])
-          we = WorkoutExercise.new!(params['exercises'].permit(:sets, :reps)))
+          we = WorkoutExercise.new!(params['exercises'].permit(:sets, :reps))
         end
       end
       @gym = current_user.gym

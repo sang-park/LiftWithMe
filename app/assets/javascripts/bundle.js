@@ -34628,6 +34628,7 @@
 	      data: options,
 	      success: function (gym) {
 	        ServerActions.receiveOne(gym, "CURRENT_GYM");
+	        // options.success() ; // closemodal
 	      },
 	      error: function (error) {
 	        ServerActions.handleError(error);
@@ -35316,7 +35317,6 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ReactDOM = __webpack_require__(158);
 	var LinkedStateMixin = __webpack_require__(245);
 	var ClientActions = __webpack_require__(270);
 	var GymStore = __webpack_require__(277);
@@ -35342,7 +35342,17 @@
 	  },
 	  handleSubmit: function (e) {
 	    e.preventDefault();
-	    debugger;
+	    var workoutParams = {
+	      name: this.state.name,
+	      date: this.state.date,
+	      time: this.state.time
+	    };
+	    var exercises = this.state.exercises;
+	    ClientActions.createWorkout({
+	      workout: workoutParams,
+	      exercises: exercises,
+	      success: this.props.closeModal
+	    });
 	  },
 	  updateWorkout: function (newState) {
 	    this.setState(newState);
@@ -35362,10 +35372,8 @@
 	      'form',
 	      { onSubmit: this.handleSubmit },
 	      React.createElement(WorkoutInfo, {
-	        ref: 'info',
 	        updateWorkout: this.updateWorkout }),
 	      React.createElement(WorkoutTable, {
-	        ref: 'table',
 	        addExercise: this.addExercise,
 	        updateExercise: this.updateExercise,
 	        blankAttrs: this.blankExercise() }),
@@ -35397,7 +35405,6 @@
 	        null,
 	        'Workout Name: ',
 	        React.createElement('input', {
-	          ref: 'name',
 	          type: 'text',
 	          value: this.state.name,
 	          onChange: this.handleChange("name") })
@@ -35407,7 +35414,6 @@
 	        null,
 	        'Date: ',
 	        React.createElement('input', {
-	          ref: 'date',
 	          type: 'date',
 	          value: this.state.date,
 	          onChange: this.handleChange("date") })
@@ -35417,7 +35423,6 @@
 	        null,
 	        'Time: ',
 	        React.createElement('input', {
-	          ref: 'time',
 	          type: 'time',
 	          value: this.state.time,
 	          onChange: this.handleChange("time") })
@@ -35518,8 +35523,8 @@
 	      this.forceUpdate();
 	    }.bind(this);
 	  },
-	  updateExerciseName: function (exercise_id) {
-	    this.state.exercise_id = parseInt(exercise_id.selected);
+	  updateExerciseName: function (exerciseId) {
+	    this.state.exercise_id = parseInt(exerciseId.selected);
 	    this.props.updateExercise(this.props.index, this.state);
 	    this.forceUpdate();
 	  },
@@ -35539,7 +35544,6 @@
 	        'td',
 	        null,
 	        React.createElement('input', {
-	          ref: 'sets',
 	          type: 'number',
 	          value: this.state.sets,
 	          onChange: this.handleChange("sets")
@@ -35549,7 +35553,6 @@
 	        'td',
 	        null,
 	        React.createElement('input', {
-	          ref: 'reps',
 	          type: 'number',
 	          value: this.state.reps,
 	          onChange: this.handleChange("reps")

@@ -1,5 +1,4 @@
 var React = require('react');
-var ReactDOM = require('react-dom');
 var LinkedStateMixin = require('react-addons-linked-state-mixin');
 var ClientActions = require('../actions/client_actions');
 var GymStore = require('../stores/gym_store');
@@ -23,7 +22,17 @@ var WorkoutForm = React.createClass({
   },
   handleSubmit: function(e){
     e.preventDefault();
-    debugger
+    var workoutParams = {
+      name: this.state.name,
+      date: this.state.date,
+      time: this.state.time,
+    };
+    var exercises = this.state.exercises;
+    ClientActions.createWorkout({
+      workout: workoutParams,
+      exercises: exercises,
+      success: this.props.closeModal
+    });
   },
   updateWorkout: function(newState){
     this.setState(newState);
@@ -42,10 +51,8 @@ var WorkoutForm = React.createClass({
     return (
       <form onSubmit={this.handleSubmit}>
         <WorkoutInfo
-          ref="info"
           updateWorkout={this.updateWorkout} />
         <WorkoutTable
-          ref="table"
           addExercise={this.addExercise}
           updateExercise={this.updateExercise}
           blankAttrs={this.blankExercise()}/>
@@ -72,21 +79,18 @@ var WorkoutInfo = React.createClass({
       <div className="workout-info">
         <label>
           Workout Name: <input
-            ref="name"
             type='text'
             value={this.state.name}
             onChange={this.handleChange("name")}/>
         </label>
         <label>
           Date: <input
-            ref="date"
             type='date'
             value={this.state.date}
             onChange={this.handleChange("date")}/>
         </label>
         <label>
           Time: <input
-            ref="time"
             type='time'
             value={this.state.time}
             onChange={this.handleChange("time")}/>
@@ -172,8 +176,8 @@ var WorkoutTableRow = React.createClass({
       this.forceUpdate();
     }.bind(this);
   },
-  updateExerciseName: function(exercise_id){
-    this.state.exercise_id = parseInt(exercise_id.selected);
+  updateExerciseName: function(exerciseId){
+    this.state.exercise_id = parseInt(exerciseId.selected);
     this.props.updateExercise(this.props.index, this.state);
     this.forceUpdate();
   },
@@ -188,7 +192,6 @@ var WorkoutTableRow = React.createClass({
         </td>
         <td>
           <input
-            ref="sets"
             type="number"
             value={this.state.sets}
             onChange={this.handleChange("sets")}
@@ -196,7 +199,6 @@ var WorkoutTableRow = React.createClass({
         </td>
         <td>
           <input
-            ref="reps"
             type="number"
             value={this.state.reps}
             onChange={this.handleChange("reps")}
