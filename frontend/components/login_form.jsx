@@ -6,6 +6,7 @@ var Modal = require('react-modal');
 var UserStore = require('../stores/user_store');
 var hashHistory = require('react-router').hashHistory;
 
+var _logoURL = "http://res.cloudinary.com/dque3vywj/image/upload/v1461889490/logo_ksdmj0.png";
 
 var _style = {
   overlay : {
@@ -37,6 +38,16 @@ var LoginForm = React.createClass({
   getInitialState: function() {
     Modal.setAppElement(document.getElementById("root"));
     return this.blankAttrs;
+  },
+  componentDidMount: function() {
+    // UserStore.addListener(function(){
+    //   if (UserStore.notLoaded()){
+    //     console.log(UserStore.notLoaded());
+    //     UserStore.toggleLoaded();
+    //     console.log(UserStore.notLoaded());
+    //     location.reload();
+    //   }
+    // });
   },
   openModal: function() {
     this.setState({modalIsOpen: true, form: "login"});
@@ -163,7 +174,7 @@ var LoginForm = React.createClass({
     }
     return (
       <div id="navbar">
-        <img src="/assets/logo.png" id="logo" onClick={this.goToHomePage}/>
+        <img src={_logoURL} id="logo" onClick={this.goToHomePage}/>
         <div id="login-info">
           {this.greet()}
           {this.errors()}

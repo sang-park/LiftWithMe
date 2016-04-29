@@ -25151,23 +25151,35 @@
 	
 	var UserStore = new Store(AppDispatcher);
 	
-	var _currentUser, _errors;
+	var _currentUser,
+	    _errors,
+	    _loaded = false;
 	
 	UserStore.__onDispatch = function (payload) {
 	  switch (payload.actionType) {
 	    case UserConstants.LOGIN:
 	      if (payload.user.errors !== null) {
 	        UserStore.login(payload.user);
+	        UserStore.__emitChange();
 	      }
 	      break;
 	    case UserConstants.LOGOUT:
 	      UserStore.logout();
+	      UserStore.__emitChange();
 	      break;
 	    case UserConstants.ERROR:
 	      UserStore.setErrors(payload.errors);
+	      UserStore.__emitChange();
 	      break;
 	  }
-	  UserStore.__emitChange();
+	};
+	
+	UserStore.notLoaded = function () {
+	  return !_loaded;
+	};
+	
+	UserStore.toggleLoaded = function () {
+	  _loaded = !_loaded;
 	};
 	
 	UserStore.login = function (user) {
@@ -32074,6 +32086,8 @@
 	var UserStore = __webpack_require__(219);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	
+	var _logoURL = "http://res.cloudinary.com/dque3vywj/image/upload/v1461889490/logo_ksdmj0.png";
+	
 	var _style = {
 	  overlay: {
 	    position: 'fixed',
@@ -32106,6 +32120,16 @@
 	  getInitialState: function () {
 	    Modal.setAppElement(document.getElementById("root"));
 	    return this.blankAttrs;
+	  },
+	  componentDidMount: function () {
+	    // UserStore.addListener(function(){
+	    //   if (UserStore.notLoaded()){
+	    //     console.log(UserStore.notLoaded());
+	    //     UserStore.toggleLoaded();
+	    //     console.log(UserStore.notLoaded());
+	    //     location.reload();
+	    //   }
+	    // });
 	  },
 	  openModal: function () {
 	    this.setState({ modalIsOpen: true, form: "login" });
@@ -32272,7 +32296,7 @@
 	    return React.createElement(
 	      "div",
 	      { id: "navbar" },
-	      React.createElement("img", { src: "/assets/logo.png", id: "logo", onClick: this.goToHomePage }),
+	      React.createElement("img", { src: _logoURL, id: "logo", onClick: this.goToHomePage }),
 	      React.createElement(
 	        "div",
 	        { id: "login-info" },
@@ -34473,6 +34497,12 @@
 	var ClientActions = __webpack_require__(270);
 	var HomeCityStore = __webpack_require__(273);
 	var hashHistory = __webpack_require__(159).hashHistory;
+	var img_URLs = {
+	  "San Francisco": "http://res.cloudinary.com/dque3vywj/image/upload/v1461889491/San_Francisco_ebesqu.jpg",
+	  "New York": "http://res.cloudinary.com/dque3vywj/image/upload/v1461889493/New_York_bd25nv.jpg",
+	  "Los Angeles": "http://res.cloudinary.com/dque3vywj/image/upload/v1461889492/Los_Angeles_lo8tqs.jpg",
+	  "Boston": "http://res.cloudinary.com/dque3vywj/image/upload/v1461889491/Boston_my2trf.jpg"
+	};
 	
 	var HomeCityIndex = React.createClass({
 	  displayName: 'HomeCityIndex',
@@ -34505,13 +34535,12 @@
 	  render: function () {
 	    var cities = [];
 	    this.state.homeCities.forEach(function (city) {
-	      var pathToImage = "/assets/" + city.name.split(" ").join("_") + ".jpg";
 	      cities.push(React.createElement(
 	        'li',
 	        { onClick: this.handleClick,
 	          key: city.name
 	        },
-	        React.createElement('img', { src: pathToImage }),
+	        React.createElement('img', { src: img_URLs[city.name] }),
 	        React.createElement(
 	          'p',
 	          null,
@@ -34963,8 +34992,10 @@
 	  handleClick: function (id, name) {
 	    return function (e) {
 	      e.preventDefault();
-	      this.openModal();
-	      this.workout = React.createElement(WorkoutShow, { workout_id: id, name: name });
+	      if ([].slice.call(e.target.classList).indexOf("disable-show") === -1) {
+	        this.openModal();
+	        this.workout = React.createElement(WorkoutShow, { workout_id: id, name: name });
+	      }
 	    }.bind(this);
 	  },
 	  parseTime: function (time) {
@@ -34987,13 +35018,19 @@
 	        null,
 	        React.createElement(
 	          'button',
-	          { onClick: this.edit, value: workout.id },
-	          'Edit'
+	          {
+	            onClick: this.edit,
+	            value: workout.id,
+	            className: 'disable-show' },
+	          ' Edit '
 	        ),
 	        React.createElement(
 	          'button',
-	          { onClick: this.delete, value: workout.id },
-	          'Delete'
+	          {
+	            onClick: this.delete,
+	            value: workout.id,
+	            className: 'disable-show' },
+	          ' Delete'
 	        )
 	      );
 	    } else {

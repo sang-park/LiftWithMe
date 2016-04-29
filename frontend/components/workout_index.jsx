@@ -49,8 +49,10 @@ var WorkoutIndex = React.createClass({
   handleClick: function(id,name){
     return function(e){
       e.preventDefault();
-      this.openModal();
-      this.workout = <WorkoutShow workout_id={id} name={name}/>;
+      if ([].slice.call(e.target.classList).indexOf("disable-show") === -1) {
+        this.openModal();
+        this.workout = <WorkoutShow workout_id={id} name={name}/>;
+      }
     }.bind(this);
   },
   parseTime: function(time){
@@ -71,8 +73,14 @@ var WorkoutIndex = React.createClass({
       UserStore.currentUser().id === workout.user_id){
       return (
         <td>
-          <button onClick={this.edit} value={workout.id}>Edit</button>
-          <button onClick={this.delete} value={workout.id}>Delete</button>
+          <button
+            onClick={this.edit}
+            value={workout.id}
+            className="disable-show"> Edit </button>
+          <button
+            onClick={this.delete}
+            value={workout.id}
+            className="disable-show"> Delete</button>
         </td>
       );
     } else {
@@ -81,6 +89,7 @@ var WorkoutIndex = React.createClass({
   },
   edit: function(e){
     e.preventDefault();
+    
   },
   delete: function(e){
     e.preventDefault();
