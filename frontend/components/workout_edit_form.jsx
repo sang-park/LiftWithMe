@@ -14,6 +14,7 @@ var WorkoutEditForm = React.createClass({
       <WorkoutForm
         editing="true"
         workout={this.state.workout}
+        closeModal={this.props.closeModal}
       />
 
     );

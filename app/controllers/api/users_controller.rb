@@ -32,20 +32,20 @@ class Api::UsersController < ApplicationController
 
   def update_workout
     workout = Workout.find(params['workout']['id'].to_i)
-    debugger
     if current_user && workout
-      idx = 0
       params['exercises'].each do |exercise|
-        we_id = exercise[1]["workoutExerciseId"]
-        if we_id
-          we = WorkoutExercise.find(we_id)
-          we.update_attributes(params['exercises'].permit(:sets, :reps))
-        else
-          new_params = params['exercises']
-            .permit(:sets, :reps)
-            .merge(workout_id: params['workout']['id'], exercise_id: exercise[1]['id'])
-          we = WorkoutExercise.new!(params['exercises'].permit(:sets, :reps))
-        end
+        WorkoutExercise.destory_all_in_workout(workout.id)
+        # we_id = exercise[1]["workout_exercise_id"]
+        # if we_id
+        #   we = WorkoutExercise.find(we_id)
+        #   we.update_attributes(exercise[1].permit(:sets, :reps))
+        # else
+        debugger
+        new_params = exercise[1]
+          .permit(:sets, :reps, :exercise_id)
+          .merge(workout_id: workout.id)
+        WorkoutExercise.create!(new_params)
+        # end
       end
       @gym = current_user.gym
       render 'api/gyms/show'

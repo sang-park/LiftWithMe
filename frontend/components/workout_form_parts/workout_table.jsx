@@ -21,6 +21,7 @@ var WorkoutTable = React.createClass({
         );
         this.row++;
       }.bind(this));
+      this.row--;
       return {rows: rows};
     } else {
       return (
@@ -47,7 +48,6 @@ var WorkoutTable = React.createClass({
       />
     );
     this.setState({rows: rows});
-
     this.props.addExercise();
   },
   tableHead: function(){

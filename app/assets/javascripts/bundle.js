@@ -35347,14 +35347,23 @@
 	    var workoutParams = {
 	      name: this.state.name,
 	      date: this.state.date,
-	      time: this.state.time
+	      time: this.state.time,
+	      id: this.state.id
 	    };
 	    var exercises = this.state.exercises;
-	    ClientActions.createWorkout({
-	      workout: workoutParams,
-	      exercises: exercises,
-	      success: this.props.closeModal
-	    });
+	    if (this.props.editing) {
+	      ClientActions.updateWorkout({
+	        workout: workoutParams,
+	        exercises: exercises,
+	        success: this.props.closeModal
+	      });
+	    } else {
+	      ClientActions.createWorkout({
+	        workout: workoutParams,
+	        exercises: exercises,
+	        success: this.props.closeModal
+	      });
+	    }
 	  },
 	  updateWorkout: function (newState) {
 	    this.setState(newState);
@@ -35441,7 +35450,8 @@
 	
 	    return React.createElement(WorkoutForm, {
 	      editing: 'true',
-	      workout: this.state.workout
+	      workout: this.state.workout,
+	      closeModal: this.props.closeModal
 	    });
 	  }
 	
@@ -35659,6 +35669,7 @@
 	        }));
 	        this.row++;
 	      }.bind(this));
+	      this.row--;
 	      return { rows: rows };
 	    } else {
 	      return { rows: [React.createElement(WorkoutTableRow, {
@@ -35680,7 +35691,6 @@
 	      blankAttrs: this.props.blankAttrs
 	    }));
 	    this.setState({ rows: rows });
-	
 	    this.props.addExercise();
 	  },
 	  tableHead: function () {

@@ -30,13 +30,22 @@ var WorkoutForm = React.createClass({
       name: this.state.name,
       date: this.state.date,
       time: this.state.time,
+      id: this.state.id
     };
     var exercises = this.state.exercises;
-    ClientActions.createWorkout({
-      workout: workoutParams,
-      exercises: exercises,
-      success: this.props.closeModal
-    });
+    if (this.props.editing) {
+      ClientActions.updateWorkout({
+        workout: workoutParams,
+        exercises: exercises,
+        success: this.props.closeModal
+      });
+    } else {
+      ClientActions.createWorkout({
+        workout: workoutParams,
+        exercises: exercises,
+        success: this.props.closeModal
+      });
+    }
   },
   updateWorkout: function(newState){
     this.setState(newState);
