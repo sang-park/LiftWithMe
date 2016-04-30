@@ -34628,7 +34628,7 @@
 	      data: options,
 	      success: function (gym) {
 	        ServerActions.receiveOne(gym, "CURRENT_GYM");
-	        // options.success() ; // closemodal
+	        options.success();
 	      },
 	      error: function (error) {
 	        ServerActions.handleError(error);
@@ -34657,6 +34657,7 @@
 	      data: options,
 	      success: function (gym) {
 	        ServerActions.receiveOne(gym, "CURRENT_GYM");
+	        options.success();
 	      },
 	      error: function (error) {
 	        ServerActions.handleError(error);
@@ -35010,7 +35011,7 @@
 	    if (hr < 12) {
 	      return hr + ":" + min + " AM";
 	    } else {
-	      return hr + ":" + min + " PM";
+	      return hr - 12 + ":" + min + " PM";
 	    }
 	  },
 	  workouts: function () {
@@ -35213,22 +35214,20 @@
 	            'button',
 	            {
 	              onClick: this.openEditForm(this.props.workout),
-	              value: this.props.workout.id,
-	              className: 'disable-show' },
-	            ' Edit '
+	              value: this.props.workout.id },
+	            'Edit'
 	          ),
 	          React.createElement(
 	            'button',
 	            {
 	              onClick: this.delete,
-	              value: this.props.workout.id,
-	              className: 'disable-show' },
-	            ' Delete'
+	              value: this.props.workout.id },
+	            'Delete'
 	          )
 	        )
 	      );
 	    } else {
-	      return React.createElement('td', null);
+	      return;
 	    }
 	  },
 	  openEditForm: function (workout) {
@@ -35317,21 +35316,24 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var LinkedStateMixin = __webpack_require__(245);
 	var ClientActions = __webpack_require__(270);
-	var GymStore = __webpack_require__(277);
-	var ExerciseStore = __webpack_require__(282);
+	var WorkoutInfo = __webpack_require__(398);
+	var WorkoutTable = __webpack_require__(399);
 	
 	var WorkoutForm = React.createClass({
 	  displayName: 'WorkoutForm',
 	
 	  getInitialState: function () {
-	    return {
-	      name: "",
-	      date: "",
-	      time: "",
-	      exercises: [this.blankExercise()]
-	    };
+	    if (this.props.editing) {
+	      return this.props.workout;
+	    } else {
+	      return {
+	        name: "",
+	        date: "",
+	        time: "",
+	        exercises: [this.blankExercise()]
+	      };
+	    }
 	  },
 	  blankExercise: function () {
 	    return {
@@ -35372,21 +35374,218 @@
 	      'form',
 	      { onSubmit: this.handleSubmit },
 	      React.createElement(WorkoutInfo, {
+	        info: this.state,
 	        updateWorkout: this.updateWorkout }),
 	      React.createElement(WorkoutTable, {
+	        exercises: this.state.exercises,
 	        addExercise: this.addExercise,
 	        updateExercise: this.updateExercise,
+	        editing: this.props.editing,
 	        blankAttrs: this.blankExercise() }),
 	      React.createElement('input', { type: 'submit' })
 	    );
 	  }
 	});
 	
-	var WorkoutInfo = React.createClass({
-	  displayName: 'WorkoutInfo',
+	module.exports = WorkoutForm;
+
+/***/ },
+/* 282 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var AppDispatcher = __webpack_require__(220);
+	var Store = __webpack_require__(224).Store;
+	
+	var ExerciseStore = new Store(AppDispatcher);
+	
+	var _exercises;
+	
+	ExerciseStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case "ALL_EXERCISES":
+	      ExerciseStore.updateExercises(payload.index);
+	  }
+	};
+	
+	ExerciseStore.updateExercises = function (exercises) {
+	  _exercises = exercises;
+	};
+	
+	ExerciseStore.all = function () {
+	  if (_exercises) {
+	    return $.extend({}, _exercises);
+	  }
+	};
+	
+	window.ExerciseStore = ExerciseStore;
+	
+	module.exports = ExerciseStore;
+
+/***/ },
+/* 283 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ClientActions = __webpack_require__(270);
+	var WorkoutStore = __webpack_require__(280);
+	var hashHistory = __webpack_require__(159).hashHistory;
+	var WorkoutForm = __webpack_require__(281);
+	
+	var WorkoutEditForm = React.createClass({
+	  displayName: 'WorkoutEditForm',
 	
 	  getInitialState: function () {
-	    return { name: "", date: "", time: "" };
+	    return { workout: WorkoutStore.currentWorkout() };
+	  },
+	  render: function () {
+	
+	    return React.createElement(WorkoutForm, {
+	      editing: 'true',
+	      workout: this.state.workout
+	    });
+	  }
+	
+	});
+	
+	module.exports = WorkoutEditForm;
+
+/***/ },
+/* 284 */,
+/* 285 */,
+/* 286 */,
+/* 287 */,
+/* 288 */,
+/* 289 */,
+/* 290 */,
+/* 291 */,
+/* 292 */,
+/* 293 */,
+/* 294 */,
+/* 295 */,
+/* 296 */,
+/* 297 */,
+/* 298 */,
+/* 299 */,
+/* 300 */,
+/* 301 */,
+/* 302 */,
+/* 303 */,
+/* 304 */,
+/* 305 */,
+/* 306 */,
+/* 307 */,
+/* 308 */,
+/* 309 */,
+/* 310 */,
+/* 311 */,
+/* 312 */,
+/* 313 */,
+/* 314 */,
+/* 315 */,
+/* 316 */,
+/* 317 */,
+/* 318 */,
+/* 319 */,
+/* 320 */,
+/* 321 */,
+/* 322 */,
+/* 323 */,
+/* 324 */,
+/* 325 */,
+/* 326 */,
+/* 327 */,
+/* 328 */,
+/* 329 */,
+/* 330 */,
+/* 331 */,
+/* 332 */,
+/* 333 */,
+/* 334 */,
+/* 335 */,
+/* 336 */,
+/* 337 */,
+/* 338 */,
+/* 339 */,
+/* 340 */,
+/* 341 */,
+/* 342 */,
+/* 343 */,
+/* 344 */,
+/* 345 */,
+/* 346 */,
+/* 347 */,
+/* 348 */,
+/* 349 */,
+/* 350 */,
+/* 351 */,
+/* 352 */,
+/* 353 */,
+/* 354 */,
+/* 355 */,
+/* 356 */,
+/* 357 */,
+/* 358 */,
+/* 359 */,
+/* 360 */,
+/* 361 */,
+/* 362 */,
+/* 363 */,
+/* 364 */,
+/* 365 */,
+/* 366 */,
+/* 367 */,
+/* 368 */,
+/* 369 */,
+/* 370 */,
+/* 371 */,
+/* 372 */,
+/* 373 */,
+/* 374 */,
+/* 375 */,
+/* 376 */,
+/* 377 */,
+/* 378 */,
+/* 379 */,
+/* 380 */,
+/* 381 */,
+/* 382 */,
+/* 383 */,
+/* 384 */,
+/* 385 */,
+/* 386 */,
+/* 387 */,
+/* 388 */,
+/* 389 */,
+/* 390 */,
+/* 391 */,
+/* 392 */,
+/* 393 */,
+/* 394 */,
+/* 395 */,
+/* 396 */,
+/* 397 */,
+/* 398 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	
+	var WorkoutInfo = React.createClass({
+	  displayName: "WorkoutInfo",
+	
+	  parseTime: function (str) {
+	    if (str.length > 3) {
+	      return str.split("T")[1].slice(0, 8);
+	    } else {
+	      return str;
+	    }
+	  },
+	  getInitialState: function () {
+	    var time = this.parseTime(this.props.info.time);
+	    return {
+	      name: this.props.info.name,
+	      date: this.props.info.date,
+	      time: time
+	    };
 	  },
 	  handleChange: function (type) {
 	    return function (e) {
@@ -35398,32 +35597,32 @@
 	  },
 	  render: function () {
 	    return React.createElement(
-	      'div',
-	      { className: 'workout-info' },
+	      "div",
+	      { className: "workout-info" },
 	      React.createElement(
-	        'label',
+	        "label",
 	        null,
-	        'Workout Name: ',
-	        React.createElement('input', {
-	          type: 'text',
+	        "Workout Name: ",
+	        React.createElement("input", {
+	          type: "text",
 	          value: this.state.name,
 	          onChange: this.handleChange("name") })
 	      ),
 	      React.createElement(
-	        'label',
+	        "label",
 	        null,
-	        'Date: ',
-	        React.createElement('input', {
-	          type: 'date',
+	        "Date: ",
+	        React.createElement("input", {
+	          type: "date",
 	          value: this.state.date,
 	          onChange: this.handleChange("date") })
 	      ),
 	      React.createElement(
-	        'label',
+	        "label",
 	        null,
-	        'Time: ',
-	        React.createElement('input', {
-	          type: 'time',
+	        "Time: ",
+	        React.createElement("input", {
+	          type: "time",
 	          value: this.state.time,
 	          onChange: this.handleChange("time") })
 	      )
@@ -35431,18 +35630,44 @@
 	  }
 	});
 	
+	module.exports = WorkoutInfo;
+
+/***/ },
+/* 399 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var WorkoutTableRow = __webpack_require__(400);
+	
 	var WorkoutTable = React.createClass({
 	  displayName: 'WorkoutTable',
 	
 	  getInitialState: function () {
+	    var rows = [];
 	    this.row = 0;
-	    return {
-	      rows: [React.createElement(WorkoutTableRow, {
-	        key: "workout-row-" + this.row,
-	        index: this.row,
-	        updateExercise: this.props.updateExercise,
-	        blankAttrs: this.props.blankAttrs
-	      })] };
+	    if (this.props.editing) {
+	      this.props.exercises.forEach(function (exercise) {
+	        var attrs = { exercise_id: exercise.id,
+	          sets: exercise.sets,
+	          reps: exercise.reps
+	        };
+	        rows.push(React.createElement(WorkoutTableRow, {
+	          key: "workout-row-" + this.row,
+	          index: this.row,
+	          updateExercise: this.props.updateExercise,
+	          blankAttrs: attrs
+	        }));
+	        this.row++;
+	      }.bind(this));
+	      return { rows: rows };
+	    } else {
+	      return { rows: [React.createElement(WorkoutTableRow, {
+	          key: "workout-row-" + this.row,
+	          index: this.row,
+	          updateExercise: this.props.updateExercise,
+	          blankAttrs: this.props.blankAttrs
+	        })] };
+	    }
 	  },
 	  appendRow: function (e) {
 	    e.preventDefault();
@@ -35509,6 +35734,15 @@
 	  }
 	});
 	
+	module.exports = WorkoutTable;
+
+/***/ },
+/* 400 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ExerciseList = __webpack_require__(401);
+	
 	var WorkoutTableRow = React.createClass({
 	  displayName: 'WorkoutTableRow',
 	
@@ -35562,6 +35796,15 @@
 	  }
 	});
 	
+	module.exports = WorkoutTableRow;
+
+/***/ },
+/* 401 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ExerciseStore = __webpack_require__(282);
+	
 	var ExerciseList = React.createClass({
 	  displayName: 'ExerciseList',
 	
@@ -35603,270 +35846,7 @@
 	  }
 	});
 	
-	module.exports = WorkoutForm;
-
-/***/ },
-/* 282 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var AppDispatcher = __webpack_require__(220);
-	var Store = __webpack_require__(224).Store;
-	
-	var ExerciseStore = new Store(AppDispatcher);
-	
-	var _exercises;
-	
-	ExerciseStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case "ALL_EXERCISES":
-	      ExerciseStore.updateExercises(payload.index);
-	  }
-	};
-	
-	ExerciseStore.updateExercises = function (exercises) {
-	  _exercises = exercises;
-	};
-	
-	ExerciseStore.all = function () {
-	  if (_exercises) {
-	    return $.extend({}, _exercises);
-	  }
-	};
-	
-	window.ExerciseStore = ExerciseStore;
-	
-	module.exports = ExerciseStore;
-
-/***/ },
-/* 283 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(270);
-	var WorkoutStore = __webpack_require__(280);
-	var ExerciseStore = __webpack_require__(282);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var LinkedStateMixin = __webpack_require__(245);
-	
-	var WorkoutEditForm = React.createClass({
-	  displayName: 'WorkoutEditForm',
-	
-	  mixins: [LinkedStateMixin],
-	  exercises: function (id) {
-	    var options = [];
-	    var selectedVal;
-	    ExerciseStore.all().exercises.forEach(function (exercise) {
-	      options.push(React.createElement(
-	        'option',
-	        {
-	          value: exercise.id,
-	          key: exercise.name
-	        },
-	        exercise.name
-	      ));
-	    });
-	    return React.createElement(
-	      'select',
-	      { id: 'exercise', defaultValue: id },
-	      options
-	    );
-	  },
-	  getInitialState: function () {
-	    this.key = 0;
-	    return { rows: [], name: "", time: "", date: "" };
-	  },
-	  componentDidMount: function () {
-	    this.listener = WorkoutStore.addListener(this.updateWorkout);
-	    this.updateWorkout();
-	    this.props.exercises.forEach(function (exercise) {
-	      this.retrieveRow(exercise);
-	    }.bind(this));
-	  },
-	  componentWillUnmount: function () {
-	    this.listener.remove();
-	  },
-	  updateWorkout: function () {
-	    var workout = this.props.workout;
-	    this.setState({
-	      time: workout.time.split("T")[1].split(".")[0],
-	      date: workout.date
-	    });
-	  },
-	  blankExercise: function () {
-	    return { exercise: "", sets: 0, reps: 0 };
-	  },
-	  row: function () {
-	    this.rowKey = "exercise" + this.key;
-	    return React.createElement(
-	      'tr',
-	      { key: this.rowKey },
-	      React.createElement(
-	        'td',
-	        null,
-	        this.exercises()
-	      ),
-	      React.createElement(
-	        'td',
-	        null,
-	        React.createElement('input', {
-	          type: 'number',
-	          valueLink: this.linkState('sets' + this.key) })
-	      ),
-	      React.createElement(
-	        'td',
-	        null,
-	        React.createElement('input', {
-	          type: 'number',
-	          valueLink: this.linkState('reps' + this.key) })
-	      )
-	    );
-	  },
-	  retrieveRow: function (exercise) {
-	    this.key++;
-	    this.rowKey = "exercise" + this.key;
-	    var setKey = "sets" + this.key;
-	    var repKey = "reps" + this.key;
-	    var idKey = "id" + this.key;
-	    var workoutExerciseId = "workoutExerciseId" + this.key;
-	    this.state[setKey] = exercise.sets;
-	    this.state[repKey] = exercise.reps;
-	    this.state[idKey] = exercise.id;
-	    this.state[workoutExerciseId] = exercise.workout_exercise_id;
-	    // valueLink={this.linkState('sets' + this.key)} />
-	    // valueLink={this.linkState(repKey)} />
-	
-	    var rows = this.state.rows.concat(React.createElement(
-	      'tr',
-	      { key: this.rowKey },
-	      React.createElement(
-	        'td',
-	        null,
-	        this.exercises(exercise.id)
-	      ),
-	      React.createElement(
-	        'td',
-	        null,
-	        React.createElement('input', {
-	          className: 'SETS',
-	          type: 'number',
-	          value: this.state[setKey],
-	          onChange: this.update(setKey) })
-	      ),
-	      React.createElement(
-	        'td',
-	        null,
-	        React.createElement('input', {
-	          type: 'number',
-	          value: this.state[repKey],
-	          onChange: this.update(repKey) })
-	      )
-	    ));
-	    this.state.rows = rows;
-	  },
-	  update: function (key) {
-	    return function (e) {
-	      e.preventDefault();
-	      var updated = {};
-	      updated[key] = parseInt(e.target.value);
-	      this.state[key] = parseInt(e.target.value);
-	      this.forceUpdate();
-	    }.bind(this);
-	  },
-	  appendRow: function () {
-	    this.key++;
-	    var rows = this.state.rows.concat(this.row());
-	    this.setState({ rows: rows });
-	  },
-	  form: function () {
-	    var form = React.createElement(
-	      'form',
-	      null,
-	      'Date:',
-	      React.createElement('input', { type: 'date', valueLink: this.linkState('date') }),
-	      ' ',
-	      React.createElement('br', null),
-	      'Time:',
-	      React.createElement('input', { type: 'time', valueLink: this.linkState('time') }),
-	      ' ',
-	      React.createElement('br', null),
-	      React.createElement(
-	        'table',
-	        { index: 'ASDF' },
-	        React.createElement(
-	          'thead',
-	          null,
-	          React.createElement(
-	            'tr',
-	            null,
-	            React.createElement(
-	              'td',
-	              null,
-	              'Exercise'
-	            ),
-	            React.createElement(
-	              'td',
-	              null,
-	              'Sets'
-	            ),
-	            React.createElement(
-	              'td',
-	              null,
-	              'Reps'
-	            )
-	          )
-	        ),
-	        React.createElement(
-	          'tbody',
-	          null,
-	          this.state.rows
-	        )
-	      ),
-	      React.createElement(
-	        'button',
-	        { onClick: this.appendRow },
-	        '+'
-	      ),
-	      React.createElement('input', { type: 'submit', onClick: this.updateForm })
-	    );
-	    return form;
-	  },
-	  updateForm: function () {
-	    var workout = this.props.workout;
-	    var exercises = this.allExercises();
-	    var options = {
-	      // url: "api/workouts/" + this.props.workout.id,
-	      url: "api/user/update_workout",
-	      workout: workout,
-	      exercises: exercises
-	    };
-	    ClientActions.updateWorkout(options);
-	    this.props.closeModal();
-	  },
-	  allExercises: function () {
-	    var exes = [];
-	    var self = this;
-	    for (var i = 1; i <= self.key; i++) {
-	      var id = self.state["id" + i];
-	      var sets = self.state["sets" + i];
-	      var reps = self.state["reps" + i];
-	      var workoutExerciseId = self.state["workoutExerciseId" + i];
-	      exes.push({
-	        id: id,
-	        sets: sets,
-	        reps: reps,
-	        workoutExerciseId: workoutExerciseId
-	      });
-	    }
-	    return exes;
-	  },
-	
-	  render: function () {
-	    return this.form();
-	  }
-	
-	});
-	
-	module.exports = WorkoutEditForm;
+	module.exports = ExerciseList;
 
 /***/ }
 /******/ ]);

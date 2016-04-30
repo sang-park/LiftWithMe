@@ -36,7 +36,7 @@ var ApiUtil = {
       data: options,
       success: function(gym){
         ServerActions.receiveOne(gym, "CURRENT_GYM");
-        // options.success() ; // closemodal
+        options.success();
       },
       error: function(error){
         ServerActions.handleError(error);
@@ -65,6 +65,7 @@ var ApiUtil = {
       data: options,
       success: function(gym){
         ServerActions.receiveOne(gym, "CURRENT_GYM");
+        options.success();
       },
       error: function(error){
         ServerActions.handleError(error);

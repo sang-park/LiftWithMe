@@ -66,7 +66,7 @@ var WorkoutIndex = React.createClass({
     if (hr < 12){
       return (hr + ":" + min + " AM");
     } else {
-      return (hr + ":" + min + " PM");
+      return ((hr-12) + ":" + min + " PM");
     }
   },
   workouts: function(){

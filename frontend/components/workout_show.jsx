@@ -61,17 +61,19 @@ var WorkoutShow = React.createClass({
           <td>
             <button
               onClick={this.openEditForm(this.props.workout)}
-              value={this.props.workout.id}
-              className="disable-show"> Edit </button>
+              value={this.props.workout.id}>
+              Edit 
+            </button>
             <button
               onClick={this.delete}
-              value={this.props.workout.id}
-              className="disable-show"> Delete</button>
-        </td>
+              value={this.props.workout.id}>
+              Delete
+            </button>
+          </td>
         </tr>
       );
     } else {
-      return (<td></td>);
+      return;
     }
   },
   openEditForm: function(workout){
