@@ -32308,32 +32308,20 @@
 	    if (this.state.currentUser) {
 	      return React.createElement(
 	        "li",
-	        null,
-	        React.createElement(
-	          "a",
-	          { className: "dropdown-toggle", "data-toggle": "dropdown", href: "#" },
-	          this.state.currentUser.username
-	        ),
+	        { className: "dropdown drop-button" },
+	        this.state.currentUser.username,
 	        React.createElement(
 	          "ul",
-	          { className: "dropdown-menu" },
+	          { className: "dropdown-content" },
 	          React.createElement(
 	            "li",
 	            { onClick: this.goToUser },
-	            React.createElement(
-	              "button",
-	              null,
-	              "Go to Profile"
-	            )
+	            "Go to Profile"
 	          ),
 	          React.createElement(
 	            "li",
 	            { onClick: this.handleLogout },
-	            React.createElement(
-	              "button",
-	              null,
-	              "Log Out"
-	            )
+	            "Log Out"
 	          )
 	        )
 	      );
@@ -32362,19 +32350,14 @@
 	  },
 	  redirectToGym: function (e) {
 	    e.preventDefault();
-	    debugger;
 	    var gymId = UserStore.currentGymId();
-	    hashHistory.push('gym/' + gymId);
+	    hashHistory.push('gyms/' + gymId);
 	  },
 	  homeCities: function () {
 	    return React.createElement(
 	      "li",
 	      { onClick: this.redirectToHome },
-	      React.createElement(
-	        "a",
-	        { href: "#" },
-	        "Cities"
-	      )
+	      "Cities"
 	    );
 	  },
 	  myGym: function () {
@@ -32382,11 +32365,7 @@
 	      return React.createElement(
 	        "li",
 	        { onClick: this.redirectToGym },
-	        React.createElement(
-	          "a",
-	          { href: "#" },
-	          "My Gym"
-	        )
+	        "My Gym"
 	      );
 	    }
 	  },
@@ -32394,28 +32373,20 @@
 	  render: function () {
 	    return React.createElement(
 	      "nav",
-	      { className: "navbar navbar-default navbar-static-top" },
+	      { className: "navbar" },
 	      React.createElement(
 	        "div",
-	        { className: "container-fluid" },
-	        React.createElement(
-	          "div",
-	          { className: "navbar-header" },
-	          React.createElement(
-	            "a",
-	            { className: "navbar-brand", href: "#" },
-	            React.createElement("img", { src: _logoURL, id: "logo", onClick: this.goToHomePage })
-	          )
-	        ),
-	        React.createElement(
-	          "ul",
-	          { className: "nav navbar-nav navbar-right" },
-	          this.homeCities(),
-	          this.myGym(),
-	          this.profile(),
-	          this.errors(),
-	          this.form()
-	        )
+	        null,
+	        React.createElement("img", { src: _logoURL, id: "logo", onClick: this.goToHomePage })
+	      ),
+	      React.createElement(
+	        "ul",
+	        { className: "login-info" },
+	        this.homeCities(),
+	        this.myGym(),
+	        this.profile(),
+	        this.errors(),
+	        this.form()
 	      )
 	    );
 	  }

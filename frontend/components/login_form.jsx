@@ -156,15 +156,12 @@ var LoginForm = React.createClass({
   profile: function(){
     if (this.state.currentUser){
       return (
-        <li >
-          <a className="dropdown-toggle" data-toggle="dropdown" href="#">
-            {this.state.currentUser.username}
-          </a>
-          <ul className="dropdown-menu">
-            <li onClick={this.goToUser}><button>Go to Profile</button></li>
-            <li onClick={this.handleLogout}><button>Log Out</button></li>
+        <li className="dropdown drop-button">
+          {this.state.currentUser.username}
+          <ul className="dropdown-content">
+            <li onClick={this.goToUser}>Go to Profile</li>
+            <li onClick={this.handleLogout}>Log Out</li>
           </ul>
-
         </li>
       );
     }
@@ -188,14 +185,13 @@ var LoginForm = React.createClass({
   },
   redirectToGym: function(e){
     e.preventDefault();
-    debugger
     var gymId = UserStore.currentGymId();
-    hashHistory.push('gym/' + gymId);
+    hashHistory.push('gyms/' + gymId);
   },
   homeCities: function(){
     return (
       <li onClick={this.redirectToHome}>
-        <a href="#">Cities</a>
+        Cities
       </li>
     );
   },
@@ -203,7 +199,7 @@ var LoginForm = React.createClass({
     if (UserStore.currentUser()){
       return (
         <li onClick={this.redirectToGym}>
-          <a href="#">My Gym</a>
+          My Gym
         </li>
       );
     }
@@ -211,21 +207,17 @@ var LoginForm = React.createClass({
 
   render: function() {
     return (
-      <nav className="navbar navbar-default navbar-static-top">
-        <div className="container-fluid">
-          <div className="navbar-header">
-            <a className="navbar-brand" href="#">
-              <img src={_logoURL} id="logo" onClick={this.goToHomePage}/>
-            </a>
-          </div>
-          <ul className="nav navbar-nav navbar-right">
-            {this.homeCities()}
-            {this.myGym()}
-            {this.profile()}
-            {this.errors()}
-            {this.form()}
-          </ul>
+      <nav className="navbar">
+        <div>
+          <img src={_logoURL} id="logo" onClick={this.goToHomePage}/>
         </div>
+        <ul className="login-info">
+          {this.homeCities()}
+          {this.myGym()}
+          {this.profile()}
+          {this.errors()}
+          {this.form()}
+        </ul>
       </nav>
     );
   }
