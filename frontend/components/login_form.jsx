@@ -71,7 +71,7 @@ var LoginForm = React.createClass({
   demoLogin: function(e){
     e.preventDefault();
     var user = {
-      username: "demo",
+      username: "Arnold",
       password: "123123"
     };
     UserActions.login(user);
@@ -124,15 +124,18 @@ var LoginForm = React.createClass({
   form: function(){
     if (this.state.currentUser) {
       return (
-        <button onClick={this.handleLogout}>logout</button>
-      );
+        <button
+          onClick={this.handleLogout}
+          className="btn-0 group"
+          >logout</button>
+      ); //LOG OUT BUTTON HERE
     } else {
       var header, button;
       if (this.state.form === "login") {
         header = "Log In";
         button = <button
           onClick={this.signUpPage}
-          className="form-button">
+          className="top-right">
             Sign Up
           </button>;
         this.action = UserActions.login;
@@ -142,18 +145,30 @@ var LoginForm = React.createClass({
       }
       return (
         <div>
-          <button onClick={this.openModal}>login</button>
+          <button
+            onClick={this.openModal}
+            className="btn-0 group"
+          >login</button>
           {this.displayModal(button,header)}
         </div>
       );
     }
   },
-  greet: function(){
+  goToUser: function(e){
+    e.preventDefault();
+    hashHistory.push('/users/' + this.state.currentUser.id);
+  },
+  profile: function(){
     if (this.state.currentUser){
       return (
-        <section>
-          <h4>Hello, {this.state.currentUser.username} </h4>
-        </section>
+        <div
+          onClick={this.goToUser}
+        >
+          <image
+            className="profile-picture"
+            src={this.state.currentUser.profile_image_url}
+          />
+        </div>
       );
     }
   },
@@ -170,20 +185,25 @@ var LoginForm = React.createClass({
     }
     </ul>);
   },
+  redirectToHome: function(e){
+    e.preventDefault();
+    hashHistory.push('/home_cities');
+  },
+  homeCities: function(){
+    return (
+      <button onClick={this.redirectToHome}>
+        Cities
+      </button>
+    );
+  },
 
   render: function() {
-    var button;
-    if (this.state.currentUser) {
-      this.state.modalIsOpen = false;
-      button = "logout";
-    } else {
-      button = "login";
-    }
     return (
       <div id="navbar">
         <img src={_logoURL} id="logo" onClick={this.goToHomePage}/>
         <div id="login-info">
-          {this.greet()}
+          {this.homeCities()}
+          {this.profile()}
           {this.errors()}
           {this.form()}
         </div>

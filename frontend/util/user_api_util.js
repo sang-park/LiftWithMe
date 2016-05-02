@@ -34,6 +34,14 @@ var UserApiUtil = {
 			success: success,
 			error: error
 		});
+	},
+	fetchUser: function(id, success, error){
+		$.ajax({
+			url: '/api/user/' + id + "/preview",
+			method: 'GET',
+			success: success,
+			error: error
+		});
 	}
 };
 

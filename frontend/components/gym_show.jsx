@@ -27,8 +27,17 @@ var GymShow = React.createClass({
     this.listener.remove();
   },
   updateGym: function(){
+    var workouts = GymStore.currentGym().workouts.sort(function(a,b){
+      if (a.date > b.date) {
+        return 1;
+      } else if (a.date < b.date) {
+        return -1;
+      } else {
+        return 0;
+      }
+    });
     this.setState({
-      workouts: GymStore.currentGym().workouts,
+      workouts: workouts,
       name: GymStore.currentGym().name
     });
   },

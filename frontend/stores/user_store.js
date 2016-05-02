@@ -4,7 +4,7 @@ var UserConstants = require('../constants/user_constants');
 
 var UserStore = new Store(AppDispatcher);
 
-var _currentUser, _errors, _loaded = false;
+var _currentUser, _user = {}, _errors, _loaded = false;
 
 UserStore.__onDispatch = function (payload) {
   switch(payload.actionType) {
@@ -22,7 +22,19 @@ UserStore.__onDispatch = function (payload) {
       UserStore.setErrors(payload.errors);
       UserStore.__emitChange();
       break;
+    case "RECEIVE_USER":
+      UserStore.setUser(payload.user);
+      UserStore.__emitChange();
+      break;
   }
+};
+
+UserStore.setUser = function(user){
+  _user = user;
+};
+
+UserStore.user = function(){
+  return _user;
 };
 
 UserStore.notLoaded = function(){

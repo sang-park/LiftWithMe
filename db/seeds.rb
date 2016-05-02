@@ -1,7 +1,8 @@
 
 
 
-User.create!({username: "demo",password: "123123", gym_id: 1})
+User.create!({username: "Arnold",password: "123123", gym_id: 1,
+  age: 68, weight: 249, profile_image_url: "http://daily.barbellshrugged.com/wp-content/uploads/2015/02/Screen-Shot-2015-02-05-at-10.52.48-AM.png"})
 User.create!({username: "sang",password: "123123", gym_id: 1})
 User.create!({username: "sang1",password: "123123", gym_id: 1})
 User.create!({username: "sang2",password: "123123", gym_id: 2})

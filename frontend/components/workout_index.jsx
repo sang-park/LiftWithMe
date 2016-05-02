@@ -51,6 +51,7 @@ var WorkoutIndex = React.createClass({
       e.preventDefault();
       this.openModal();
       this.workout = <WorkoutShow
+        view={this.props.view}
         workout={workout}
         closeModal={this.closeModal}
       />;
@@ -85,7 +86,7 @@ var WorkoutIndex = React.createClass({
         <tr
           className = {"workout-index-view" + myWorkout}
           key={workout.name + workout.time}
-          onClick={self.handleClick(workout,workout)}
+          onClick={self.handleClick(workout)}
         >
           <td>{wday}</td>
           <td>{date.getMonth() + "/" + date.getDate()} </td>
@@ -93,6 +94,7 @@ var WorkoutIndex = React.createClass({
           <td value={workout.id} >
             {workout.name}
           </td>
+          <td>{workout.username}</td>
       </tr>);
     });
     return (
@@ -107,7 +109,10 @@ var WorkoutIndex = React.createClass({
   workoutForm: function(){
     if (this.createFormClicked) {
       return (
-        <WorkoutForm closeModal={this.closeModal}/>
+        <WorkoutForm
+          closeModal={this.closeModal}
+          view={this.props.view}
+        />
       );
     } else {
       return [];
@@ -119,7 +124,7 @@ var WorkoutIndex = React.createClass({
   },
   render: function() {
     var button = [];
-    if (UserStore.currentUser()){
+    if (UserStore.currentUser() && !this.props.view){
       button = (
         <button onClick={this.openCreateForm}>Create New Workout</button>
       );

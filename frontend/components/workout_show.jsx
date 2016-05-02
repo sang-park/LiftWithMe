@@ -13,6 +13,10 @@ var WorkoutShow = React.createClass({
   componentDidMount: function() {
     this.listener = WorkoutStore.addListener(this.updateWorkout);
     var url = "/api/workouts/" + this.props.workout.id;
+    ClientActions.fetchAll({ //fetch all the exercises
+      url: '/api/exercises',
+      type: "ALL_EXERCISES"
+    });
     ClientActions.fetchOne({
       url: url,
       type: "CURRENT_WORKOUT"
@@ -46,23 +50,26 @@ var WorkoutShow = React.createClass({
         </thead>
         <tbody>
           {exercises}
-          {this.editAndDelete()}
+          {this.editAndDeleteOrPairUp()}
         </tbody>
 
       </table>
     );
   },
 
-  editAndDelete: function(workout){
-    if  ( UserStore.currentUser() &&
+  editAndDeleteOrPairUp: function(workout){
+    if (this.props.view) {
+      return;
+    } else if  ( UserStore.currentUser() &&
       UserStore.currentUser().id === this.props.workout.user_id){
       return (
         <tr>
           <td>
             <button
+              className="form-button"
               onClick={this.openEditForm(this.props.workout)}
               value={this.props.workout.id}>
-              Edit 
+              Edit
             </button>
             <button
               onClick={this.delete}
@@ -73,9 +80,37 @@ var WorkoutShow = React.createClass({
         </tr>
       );
     } else {
-      return;
+      return (
+        <tr>
+          <td>
+            <button
+              className="pair-up"
+              onClick={this.pairUp}
+              value={this.props.workout.id}
+            >
+              Pair Up!
+            </button>
+            <button
+              onClick={this.goToUser}
+            >
+              More from {this.props.workout.username}
+            </button>
+          </td>
+        </tr>
+      );
     }
   },
+
+  goToUser: function(e){
+    e.preventDefault();
+    hashHistory.push('/users/' + this.props.workout.user_id);
+  },
+
+  pairUp: function(e){
+    e.preventDefault();
+
+  },
+
   openEditForm: function(workout){
     return function(){
       this.setState({editing: true});
@@ -92,9 +127,8 @@ var WorkoutShow = React.createClass({
       url: 'api/workouts/' + e.target.value,
       type: "CURRENT_GYM"
     };
-    ClientActions.deleteWorkout(options);
-    this.setState({modalIsOpen: false});
     this.props.closeModal();
+    ClientActions.deleteWorkout(options);
   },
 
 

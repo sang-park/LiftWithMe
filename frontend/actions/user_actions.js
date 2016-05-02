@@ -11,6 +11,13 @@ var UserActions = {
 			UserActions.handleError
 		);
 	},
+	fetchUser: function(id){
+		UserApiUtil.fetchUser(
+			id,
+			UserActions.receiveUser,
+			UserActions.handleError
+		);
+	},
 	signup: function(user){
 		UserApiUtil.signup(
       user,
@@ -36,6 +43,12 @@ var UserActions = {
 	receiveCurrentUser: function(user){
 		AppDispatcher.dispatch({
 			actionType: UserConstants.LOGIN,
+			user: user
+		});
+	},
+	receiveUser: function(user){
+		AppDispatcher.dispatch({
+			actionType: "RECEIVE_USER",
 			user: user
 		});
 	},

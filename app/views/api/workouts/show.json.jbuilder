@@ -1,4 +1,4 @@
-json.extract! @workout, :id, :name, :time, :date, :buddy_id, :user_id
+json.extract! @workout, :id, :name, :time, :date, :buddy_id, :user_id, :user
 zip_file = @workout.exercises.zip(@workout.workout_exercises)
 
 json.exercises do

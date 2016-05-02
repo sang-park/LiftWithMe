@@ -73,9 +73,21 @@ class Api::UsersController < ApplicationController
     end
   end
 
+  def preview
+    @user = User.find(params['user_id'])
+    @workouts = @user.workouts
+    render 'api/users/preview'
+  end
+
   private
   def user_params
-    params.require(:user).permit(:username, :password)
+    params.require(:user).permit(
+      :username,
+      :password,
+      :profile_image_url,
+      :weight,
+      :age
+    )
   end
 
   def workout_params

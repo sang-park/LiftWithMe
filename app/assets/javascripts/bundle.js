@@ -63,6 +63,8 @@
 	var HomeCityShow = __webpack_require__(274);
 	var GymShow = __webpack_require__(276);
 	var WorkoutShow = __webpack_require__(279);
+	var UserShow = __webpack_require__(289);
+	var HomePage = __webpack_require__(288);
 	
 	var App = React.createClass({
 	  displayName: 'App',
@@ -83,7 +85,9 @@
 	  React.createElement(
 	    Route,
 	    { path: '/', component: App },
-	    React.createElement(IndexRoute, { component: HomeCityIndex }),
+	    React.createElement(IndexRoute, { component: HomePage }),
+	    React.createElement(Route, { path: 'users/:user_id', component: UserShow }),
+	    React.createElement(Route, { path: 'home_cities', component: HomeCityIndex }),
 	    React.createElement(Route, { path: 'home_cities/:home_city_id', component: HomeCityShow }),
 	    React.createElement(Route, { path: 'gyms/:gym_id', component: GymShow }),
 	    React.createElement(Route, { path: 'workouts/:workout_id', component: WorkoutShow })
@@ -25152,6 +25156,7 @@
 	var UserStore = new Store(AppDispatcher);
 	
 	var _currentUser,
+	    _user = {},
 	    _errors,
 	    _loaded = false;
 	
@@ -25171,7 +25176,19 @@
 	      UserStore.setErrors(payload.errors);
 	      UserStore.__emitChange();
 	      break;
+	    case "RECEIVE_USER":
+	      UserStore.setUser(payload.user);
+	      UserStore.__emitChange();
+	      break;
 	  }
+	};
+	
+	UserStore.setUser = function (user) {
+	  _user = user;
+	};
+	
+	UserStore.user = function () {
+	  return _user;
 	};
 	
 	UserStore.notLoaded = function () {
@@ -31996,6 +32013,9 @@
 		fetchCurrentUser: function () {
 			UserApiUtil.fetchCurrentUser(UserActions.receiveCurrentUser, UserActions.handleError);
 		},
+		fetchUser: function (id) {
+			UserApiUtil.fetchUser(id, UserActions.receiveUser, UserActions.handleError);
+		},
 		signup: function (user) {
 			UserApiUtil.signup(user, UserActions.receiveCurrentUser, UserActions.handleError);
 		},
@@ -32010,6 +32030,12 @@
 		receiveCurrentUser: function (user) {
 			AppDispatcher.dispatch({
 				actionType: UserConstants.LOGIN,
+				user: user
+			});
+		},
+		receiveUser: function (user) {
+			AppDispatcher.dispatch({
+				actionType: "RECEIVE_USER",
 				user: user
 			});
 		},
@@ -32035,40 +32061,48 @@
 	var AppDispatcher = __webpack_require__(220);
 	
 	var UserApiUtil = {
-	  signup: function (user, success, error) {
-	    $.ajax({
-	      url: 'api/user',
-	      type: 'POST',
-	      data: { user: user },
-	      success: success,
-	      error: error
-	    });
-	  },
-	  login: function (user, success, error) {
-	    $.ajax({
-	      url: 'api/session/',
-	      type: 'POST',
-	      data: { user: user },
-	      success: success,
-	      error: error
-	    });
-	  },
-	  logout: function (success, error) {
-	    $.ajax({
-	      url: '/api/session',
-	      method: 'delete',
-	      success: success,
-	      error: error
-	    });
-	  },
-	  fetchCurrentUser: function (success, error) {
-	    $.ajax({
-	      url: '/api/session',
-	      method: 'GET',
-	      success: success,
-	      error: error
-	    });
-	  }
+		signup: function (user, success, error) {
+			$.ajax({
+				url: 'api/user',
+				type: 'POST',
+				data: { user: user },
+				success: success,
+				error: error
+			});
+		},
+		login: function (user, success, error) {
+			$.ajax({
+				url: 'api/session/',
+				type: 'POST',
+				data: { user: user },
+				success: success,
+				error: error
+			});
+		},
+		logout: function (success, error) {
+			$.ajax({
+				url: '/api/session',
+				method: 'delete',
+				success: success,
+				error: error
+			});
+		},
+		fetchCurrentUser: function (success, error) {
+			$.ajax({
+				url: '/api/session',
+				method: 'GET',
+				success: success,
+				error: error
+			});
+		},
+		fetchUser: function (id, success, error) {
+			$.ajax({
+				url: '/api/user/' + id + "/preview",
+				method: 'GET',
+				success: success,
+				error: error
+			});
+		}
 	};
 	
 	window.userapi = UserApiUtil;
@@ -32153,7 +32187,7 @@
 	  demoLogin: function (e) {
 	    e.preventDefault();
 	    var user = {
-	      username: "demo",
+	      username: "Arnold",
 	      password: "123123"
 	    };
 	    UserActions.login(user);
@@ -32230,49 +32264,58 @@
 	    if (this.state.currentUser) {
 	      return React.createElement(
 	        "button",
-	        { onClick: this.handleLogout },
+	        {
+	          onClick: this.handleLogout,
+	          className: "btn-0 group"
+	        },
 	        "logout"
-	      );
+	      ); //LOG OUT BUTTON HERE
 	    } else {
-	      var header, button;
-	      if (this.state.form === "login") {
-	        header = "Log In";
-	        button = React.createElement(
-	          "button",
-	          {
-	            onClick: this.signUpPage,
-	            className: "form-button" },
-	          "Sign Up"
+	        var header, button;
+	        if (this.state.form === "login") {
+	          header = "Log In";
+	          button = React.createElement(
+	            "button",
+	            {
+	              onClick: this.signUpPage,
+	              className: "top-right" },
+	            "Sign Up"
+	          );
+	          this.action = UserActions.login;
+	        } else {
+	          header = "Sign Up";
+	          this.action = UserActions.signup;
+	        }
+	        return React.createElement(
+	          "div",
+	          null,
+	          React.createElement(
+	            "button",
+	            {
+	              onClick: this.openModal,
+	              className: "btn-0 group"
+	            },
+	            "login"
+	          ),
+	          this.displayModal(button, header)
 	        );
-	        this.action = UserActions.login;
-	      } else {
-	        header = "Sign Up";
-	        this.action = UserActions.signup;
 	      }
-	      return React.createElement(
-	        "div",
-	        null,
-	        React.createElement(
-	          "button",
-	          { onClick: this.openModal },
-	          "login"
-	        ),
-	        this.displayModal(button, header)
-	      );
-	    }
 	  },
-	  greet: function () {
+	  goToUser: function (e) {
+	    e.preventDefault();
+	    hashHistory.push('/users/' + this.state.currentUser.id);
+	  },
+	  profile: function () {
 	    if (this.state.currentUser) {
 	      return React.createElement(
-	        "section",
-	        null,
-	        React.createElement(
-	          "h4",
-	          null,
-	          "Hello, ",
-	          this.state.currentUser.username,
-	          " "
-	        )
+	        "div",
+	        {
+	          onClick: this.goToUser
+	        },
+	        React.createElement("image", {
+	          className: "profile-picture",
+	          src: this.state.currentUser.profile_image_url
+	        })
 	      );
 	    }
 	  },
@@ -32293,15 +32336,19 @@
 	      })
 	    );
 	  },
+	  redirectToHome: function (e) {
+	    e.preventDefault();
+	    hashHistory.push('/home_cities');
+	  },
+	  homeCities: function () {
+	    return React.createElement(
+	      "button",
+	      { onClick: this.redirectToHome },
+	      "Cities"
+	    );
+	  },
 	
 	  render: function () {
-	    var button;
-	    if (this.state.currentUser) {
-	      this.state.modalIsOpen = false;
-	      button = "logout";
-	    } else {
-	      button = "login";
-	    }
 	    return React.createElement(
 	      "div",
 	      { id: "navbar" },
@@ -32309,7 +32356,8 @@
 	      React.createElement(
 	        "div",
 	        { id: "login-info" },
-	        this.greet(),
+	        this.homeCities(),
+	        this.profile(),
 	        this.errors(),
 	        this.form()
 	      )
@@ -34888,8 +34936,17 @@
 	    this.listener.remove();
 	  },
 	  updateGym: function () {
+	    var workouts = GymStore.currentGym().workouts.sort(function (a, b) {
+	      if (a.date > b.date) {
+	        return 1;
+	      } else if (a.date < b.date) {
+	        return -1;
+	      } else {
+	        return 0;
+	      }
+	    });
 	    this.setState({
-	      workouts: GymStore.currentGym().workouts,
+	      workouts: workouts,
 	      name: GymStore.currentGym().name
 	    });
 	  },
@@ -35005,6 +35062,7 @@
 	      e.preventDefault();
 	      this.openModal();
 	      this.workout = React.createElement(WorkoutShow, {
+	        view: this.props.view,
 	        workout: workout,
 	        closeModal: this.closeModal
 	      });
@@ -35039,7 +35097,7 @@
 	        {
 	          className: "workout-index-view" + myWorkout,
 	          key: workout.name + workout.time,
-	          onClick: self.handleClick(workout, workout)
+	          onClick: self.handleClick(workout)
 	        },
 	        React.createElement(
 	          'td',
@@ -35061,6 +35119,11 @@
 	          'td',
 	          { value: workout.id },
 	          workout.name
+	        ),
+	        React.createElement(
+	          'td',
+	          null,
+	          workout.username
 	        )
 	      ));
 	    });
@@ -35081,7 +35144,10 @@
 	  },
 	  workoutForm: function () {
 	    if (this.createFormClicked) {
-	      return React.createElement(WorkoutForm, { closeModal: this.closeModal });
+	      return React.createElement(WorkoutForm, {
+	        closeModal: this.closeModal,
+	        view: this.props.view
+	      });
 	    } else {
 	      return [];
 	    }
@@ -35092,7 +35158,7 @@
 	  },
 	  render: function () {
 	    var button = [];
-	    if (UserStore.currentUser()) {
+	    if (UserStore.currentUser() && !this.props.view) {
 	      button = React.createElement(
 	        'button',
 	        { onClick: this.openCreateForm },
@@ -35142,6 +35208,10 @@
 	  componentDidMount: function () {
 	    this.listener = WorkoutStore.addListener(this.updateWorkout);
 	    var url = "/api/workouts/" + this.props.workout.id;
+	    ClientActions.fetchAll({ //fetch all the exercises
+	      url: '/api/exercises',
+	      type: "ALL_EXERCISES"
+	    });
 	    ClientActions.fetchOne({
 	      url: url,
 	      type: "CURRENT_WORKOUT"
@@ -35206,13 +35276,15 @@
 	        'tbody',
 	        null,
 	        exercises,
-	        this.editAndDelete()
+	        this.editAndDeleteOrPairUp()
 	      )
 	    );
 	  },
 	
-	  editAndDelete: function (workout) {
-	    if (UserStore.currentUser() && UserStore.currentUser().id === this.props.workout.user_id) {
+	  editAndDeleteOrPairUp: function (workout) {
+	    if (this.props.view) {
+	      return;
+	    } else if (UserStore.currentUser() && UserStore.currentUser().id === this.props.workout.user_id) {
 	      return React.createElement(
 	        'tr',
 	        null,
@@ -35222,6 +35294,7 @@
 	          React.createElement(
 	            'button',
 	            {
+	              className: 'form-button',
 	              onClick: this.openEditForm(this.props.workout),
 	              value: this.props.workout.id },
 	            'Edit'
@@ -35236,9 +35309,43 @@
 	        )
 	      );
 	    } else {
-	      return;
+	      return React.createElement(
+	        'tr',
+	        null,
+	        React.createElement(
+	          'td',
+	          null,
+	          React.createElement(
+	            'button',
+	            {
+	              className: 'pair-up',
+	              onClick: this.pairUp,
+	              value: this.props.workout.id
+	            },
+	            'Pair Up!'
+	          ),
+	          React.createElement(
+	            'button',
+	            {
+	              onClick: this.goToUser
+	            },
+	            'More from ',
+	            this.props.workout.username
+	          )
+	        )
+	      );
 	    }
 	  },
+	
+	  goToUser: function (e) {
+	    e.preventDefault();
+	    hashHistory.push('/users/' + this.props.workout.user_id);
+	  },
+	
+	  pairUp: function (e) {
+	    e.preventDefault();
+	  },
+	
 	  openEditForm: function (workout) {
 	    return function () {
 	      this.setState({ editing: true });
@@ -35254,9 +35361,8 @@
 	      url: 'api/workouts/' + e.target.value,
 	      type: "CURRENT_GYM"
 	    };
-	    ClientActions.deleteWorkout(options);
-	    this.setState({ modalIsOpen: false });
 	    this.props.closeModal();
+	    ClientActions.deleteWorkout(options);
 	  },
 	
 	  render: function () {
@@ -35770,6 +35876,300 @@
 	window.ExerciseStore = ExerciseStore;
 	
 	module.exports = ExerciseStore;
+
+/***/ },
+/* 288 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	
+	var HomePage = React.createClass({
+	  displayName: 'HomePage',
+	
+	
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      null,
+	      'Home Page'
+	    );
+	  }
+	
+	});
+	
+	module.exports = HomePage;
+
+/***/ },
+/* 289 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var UserActions = __webpack_require__(242);
+	var UserStore = __webpack_require__(219);
+	var WorkoutIndex = __webpack_require__(290);
+	
+	var UserShow = React.createClass({
+	  displayName: 'UserShow',
+	
+	  getInitialState: function () {
+	    return { user: {} };
+	  },
+	  componentDidMount: function () {
+	    var id = this.props.params.user_id;
+	    UserStore.addListener(this.updateUser);
+	    UserActions.fetchUser(id);
+	  },
+	  updateUser: function () {
+	    if (UserStore.user) {
+	      var user = UserStore.user();
+	      this.setState({ user: user });
+	    }
+	  },
+	  profile: function () {
+	    return React.createElement(
+	      'div',
+	      { className: 'profile-show' },
+	      React.createElement(
+	        'div',
+	        null,
+	        React.createElement('img', { src: this.state.user.profile_image_url })
+	      ),
+	      React.createElement(
+	        'div',
+	        null,
+	        React.createElement(
+	          'div',
+	          null,
+	          'Name:',
+	          this.state.user.username
+	        ),
+	        React.createElement(
+	          'div',
+	          null,
+	          'Age:',
+	          this.state.user.age
+	        ),
+	        React.createElement(
+	          'div',
+	          null,
+	          'Weight:',
+	          this.state.user.weight
+	        )
+	      )
+	    );
+	  },
+	  workouts: function () {
+	    if (this.state.user.workouts) {
+	      var workouts = this.state.user.workouts.sort(function (a, b) {
+	        if (a.date > b.date) {
+	          return 1;
+	        } else if (a.date < b.date) {
+	          return -1;
+	        } else {
+	          return 0;
+	        }
+	      });
+	      return React.createElement(WorkoutIndex, {
+	        workouts: workouts,
+	        view: 'true'
+	      });
+	    }
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      null,
+	      this.profile(),
+	      this.workouts()
+	    );
+	  }
+	
+	});
+	
+	module.exports = UserShow;
+
+/***/ },
+/* 290 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var UserStore = __webpack_require__(219);
+	var WorkoutShow = __webpack_require__(279);
+	var hashHistory = __webpack_require__(159).hashHistory;
+	var Modal = __webpack_require__(249);
+	var WorkoutForm = __webpack_require__(282);
+	var ClientActions = __webpack_require__(270);
+	
+	var _style = {
+	  overlay: {
+	    position: 'fixed',
+	    top: 0,
+	    left: 0,
+	    right: 0,
+	    bottom: 0,
+	    backgroundColor: 'rgba(255, 255, 255, 0.75)'
+	  },
+	  content: {
+	    top: '30%',
+	    left: '50%',
+	    right: 'auto',
+	    bottom: 'auto',
+	    transform: 'translate(-50%, -50%)',
+	    padding: '0'
+	  }
+	};
+	
+	var WEEKDAYS = ["MON", "TUE", "WED", "THUR", "FRI", "SAT", "SUN"];
+	
+	var WorkoutIndex = React.createClass({
+	  displayName: 'WorkoutIndex',
+	
+	  getInitialState: function () {
+	    this.workout = [];
+	    this.createFormClicked = false;
+	    return {
+	      modalIsOpen: false
+	    };
+	  },
+	  openModal: function () {
+	    this.createFormClicked = false;
+	    this.setState({ modalIsOpen: true, form: "login" });
+	  },
+	  closeModal: function () {
+	    this.workout = [];
+	    this.setState({ modalIsOpen: false });
+	  },
+	
+	  handleClick: function (workout) {
+	    return function (e) {
+	      e.preventDefault();
+	      this.openModal();
+	      this.workout = React.createElement(WorkoutShow, {
+	        view: this.props.view,
+	        workout: workout,
+	        closeModal: this.closeModal
+	      });
+	    }.bind(this);
+	  },
+	  parseTime: function (time) {
+	    var tdate = new Date(time);
+	    var hr = tdate.getHours();
+	    var min = tdate.getMinutes();
+	    if (min < 10) {
+	      min = "0" + min;
+	    }
+	    if (hr < 12) {
+	      return hr + ":" + min + " AM";
+	    } else {
+	      return hr - 12 + ":" + min + " PM";
+	    }
+	  },
+	  workouts: function () {
+	    var workouts = [];
+	    var self = this;
+	    this.props.workouts.forEach(function (workout) {
+	      var date = new Date(workout.date);
+	      var wday = WEEKDAYS[date.getDay()];
+	      var time = self.parseTime(workout.time);
+	      var myWorkout = " ";
+	      if (UserStore.currentUser() && UserStore.currentUser().id === workout.user_id) {
+	        myWorkout += "my-workout";
+	      }
+	      workouts.push(React.createElement(
+	        'tr',
+	        {
+	          className: "workout-index-view" + myWorkout,
+	          key: workout.name + workout.time,
+	          onClick: self.handleClick(workout)
+	        },
+	        React.createElement(
+	          'td',
+	          null,
+	          wday
+	        ),
+	        React.createElement(
+	          'td',
+	          null,
+	          date.getMonth() + "/" + date.getDate(),
+	          ' '
+	        ),
+	        React.createElement(
+	          'td',
+	          null,
+	          time
+	        ),
+	        React.createElement(
+	          'td',
+	          { value: workout.id },
+	          workout.name
+	        ),
+	        React.createElement(
+	          'td',
+	          null,
+	          workout.username
+	        )
+	      ));
+	    });
+	    return React.createElement(
+	      'table',
+	      { className: 'workouts' },
+	      React.createElement(
+	        'caption',
+	        null,
+	        this.props.gymName
+	      ),
+	      React.createElement(
+	        'tbody',
+	        null,
+	        workouts
+	      )
+	    );
+	  },
+	  workoutForm: function () {
+	    if (this.createFormClicked) {
+	      return React.createElement(WorkoutForm, {
+	        closeModal: this.closeModal,
+	        view: this.props.view
+	      });
+	    } else {
+	      return [];
+	    }
+	  },
+	  openCreateForm: function () {
+	    this.openModal();
+	    this.createFormClicked = true;
+	  },
+	  render: function () {
+	    var button = [];
+	    if (UserStore.currentUser() && !this.props.view) {
+	      button = React.createElement(
+	        'button',
+	        { onClick: this.openCreateForm },
+	        'Create New Workout'
+	      );
+	    }
+	    return React.createElement(
+	      'div',
+	      null,
+	      this.workouts(),
+	      button,
+	      React.createElement(
+	        Modal,
+	        {
+	          isOpen: this.state.modalIsOpen,
+	          onAfterOpen: this.afterOpenModal,
+	          onRequestClose: this.closeModal,
+	          style: _style
+	        },
+	        this.workoutForm(),
+	        this.workout
+	      )
+	    );
+	  }
+	
+	});
+	
+	module.exports = WorkoutIndex;
 
 /***/ }
 /******/ ]);
