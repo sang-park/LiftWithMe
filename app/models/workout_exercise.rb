@@ -12,10 +12,11 @@ class WorkoutExercise < ActiveRecord::Base
     end
   end
 
-  def self.destory_all_in_workout(workout_id)
-    WorkoutExercise.find_all_in_workout(workout_id).each do |we|
-      we.destroy
+  def self.remove_extras(workout_id, existing_we)
+    remove = WorkoutExercise.find_all_in_workout(workout_id).select do |we|
+      !existing_we.include?(we.id)
     end
+    remove.each {|we| we.destroy}
   end
 
 end

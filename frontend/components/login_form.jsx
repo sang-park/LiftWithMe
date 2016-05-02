@@ -39,16 +39,6 @@ var LoginForm = React.createClass({
     Modal.setAppElement(document.getElementById("root"));
     return this.blankAttrs;
   },
-  componentDidMount: function() {
-    // UserStore.addListener(function(){
-    //   if (UserStore.notLoaded()){
-    //     console.log(UserStore.notLoaded());
-    //     UserStore.toggleLoaded();
-    //     console.log(UserStore.notLoaded());
-    //     location.reload();
-    //   }
-    // });
-  },
   openModal: function() {
     this.setState({modalIsOpen: true, form: "login"});
   },
@@ -77,6 +67,22 @@ var LoginForm = React.createClass({
   goToHomePage: function(e){
     e.preventDefault();
     hashHistory.push("/");
+  },
+  demoLogin: function(e){
+    e.preventDefault();
+    var user = {
+      username: "demo",
+      password: "123123"
+    };
+    UserActions.login(user);
+    this.setState(this.blankAttrs);
+  },
+  demoLoginButton: function(){
+    return (
+      <button
+        onClick={this.demoLogin}
+        className="form-button">Demo Log In</button>
+    );
   },
   displayModal: function(button,header){
     return (
@@ -108,7 +114,8 @@ var LoginForm = React.createClass({
               type="Submit"
               valueLink={this.linkState("form")}
             />
-            {button}
+          {button}
+          {this.demoLoginButton()}
           </section>
         </form>
       </Modal>

@@ -115,9 +115,7 @@ user interface.
 - [ ] Multiple sessions
 
 ### To-do
-- [ ] edit form submit
 - [ ] time on form and screen is off by 8 hours... and 2 months
-- [ ] remove jquery from select in workout creation
 
 [phase-one]: ./docs/phases/phase1.md
 [phase-two]: ./docs/phases/phase2.md

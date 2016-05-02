@@ -39,7 +39,8 @@ var WorkoutTableRow = React.createClass({
             type="number"
             value={this.state.reps}
             onChange={this.handleChange("reps")}
-          /></td>
+          />
+        </td>
       </tr>
     );
   }

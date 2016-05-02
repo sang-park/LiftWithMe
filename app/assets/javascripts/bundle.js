@@ -32121,16 +32121,6 @@
 	    Modal.setAppElement(document.getElementById("root"));
 	    return this.blankAttrs;
 	  },
-	  componentDidMount: function () {
-	    // UserStore.addListener(function(){
-	    //   if (UserStore.notLoaded()){
-	    //     console.log(UserStore.notLoaded());
-	    //     UserStore.toggleLoaded();
-	    //     console.log(UserStore.notLoaded());
-	    //     location.reload();
-	    //   }
-	    // });
-	  },
 	  openModal: function () {
 	    this.setState({ modalIsOpen: true, form: "login" });
 	  },
@@ -32159,6 +32149,24 @@
 	  goToHomePage: function (e) {
 	    e.preventDefault();
 	    hashHistory.push("/");
+	  },
+	  demoLogin: function (e) {
+	    e.preventDefault();
+	    var user = {
+	      username: "demo",
+	      password: "123123"
+	    };
+	    UserActions.login(user);
+	    this.setState(this.blankAttrs);
+	  },
+	  demoLoginButton: function () {
+	    return React.createElement(
+	      "button",
+	      {
+	        onClick: this.demoLogin,
+	        className: "form-button" },
+	      "Demo Log In"
+	    );
 	  },
 	  displayModal: function (button, header) {
 	    return React.createElement(
@@ -32212,7 +32220,8 @@
 	            type: "Submit",
 	            valueLink: this.linkState("form")
 	          }),
-	          button
+	          button,
+	          this.demoLoginButton()
 	        )
 	      )
 	    );
@@ -34948,7 +34957,7 @@
 	var WorkoutShow = __webpack_require__(279);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	var Modal = __webpack_require__(249);
-	var WorkoutForm = __webpack_require__(281);
+	var WorkoutForm = __webpack_require__(282);
 	var ClientActions = __webpack_require__(270);
 	
 	var _style = {
@@ -35120,7 +35129,7 @@
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(270);
 	var WorkoutStore = __webpack_require__(280);
-	var WorkoutEditForm = __webpack_require__(283);
+	var WorkoutEditForm = __webpack_require__(281);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	var UserStore = __webpack_require__(219);
 	
@@ -35317,8 +35326,37 @@
 
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(270);
-	var WorkoutInfo = __webpack_require__(398);
-	var WorkoutTable = __webpack_require__(399);
+	var WorkoutStore = __webpack_require__(280);
+	var hashHistory = __webpack_require__(159).hashHistory;
+	var WorkoutForm = __webpack_require__(282);
+	
+	var WorkoutEditForm = React.createClass({
+	  displayName: 'WorkoutEditForm',
+	
+	  getInitialState: function () {
+	    return { workout: WorkoutStore.currentWorkout() };
+	  },
+	  render: function () {
+	
+	    return React.createElement(WorkoutForm, {
+	      editing: 'true',
+	      workout: this.state.workout,
+	      closeModal: this.props.closeModal
+	    });
+	  }
+	
+	});
+	
+	module.exports = WorkoutEditForm;
+
+/***/ },
+/* 282 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ClientActions = __webpack_require__(270);
+	var WorkoutInfo = __webpack_require__(283);
+	var WorkoutTable = __webpack_require__(284);
 	
 	var WorkoutForm = React.createClass({
 	  displayName: 'WorkoutForm',
@@ -35378,6 +35416,10 @@
 	    exercises.push(this.blankExercise());
 	    this.setState({ exercises: exercises });
 	  },
+	  removeExercise: function () {
+	    this.state.exercises.pop();
+	    this.setState({ exercises: this.state.exercises });
+	  },
 	  render: function () {
 	    return React.createElement(
 	      'form',
@@ -35388,9 +35430,11 @@
 	      React.createElement(WorkoutTable, {
 	        exercises: this.state.exercises,
 	        addExercise: this.addExercise,
+	        removeExercise: this.removeExercise,
 	        updateExercise: this.updateExercise,
 	        editing: this.props.editing,
-	        blankAttrs: this.blankExercise() }),
+	        blankAttrs: this.blankExercise()
+	      }),
 	      React.createElement('input', { type: 'submit' })
 	    );
 	  }
@@ -35399,182 +35443,7 @@
 	module.exports = WorkoutForm;
 
 /***/ },
-/* 282 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var AppDispatcher = __webpack_require__(220);
-	var Store = __webpack_require__(224).Store;
-	
-	var ExerciseStore = new Store(AppDispatcher);
-	
-	var _exercises;
-	
-	ExerciseStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case "ALL_EXERCISES":
-	      ExerciseStore.updateExercises(payload.index);
-	  }
-	};
-	
-	ExerciseStore.updateExercises = function (exercises) {
-	  _exercises = exercises;
-	};
-	
-	ExerciseStore.all = function () {
-	  if (_exercises) {
-	    return $.extend({}, _exercises);
-	  }
-	};
-	
-	window.ExerciseStore = ExerciseStore;
-	
-	module.exports = ExerciseStore;
-
-/***/ },
 /* 283 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(270);
-	var WorkoutStore = __webpack_require__(280);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var WorkoutForm = __webpack_require__(281);
-	
-	var WorkoutEditForm = React.createClass({
-	  displayName: 'WorkoutEditForm',
-	
-	  getInitialState: function () {
-	    return { workout: WorkoutStore.currentWorkout() };
-	  },
-	  render: function () {
-	
-	    return React.createElement(WorkoutForm, {
-	      editing: 'true',
-	      workout: this.state.workout,
-	      closeModal: this.props.closeModal
-	    });
-	  }
-	
-	});
-	
-	module.exports = WorkoutEditForm;
-
-/***/ },
-/* 284 */,
-/* 285 */,
-/* 286 */,
-/* 287 */,
-/* 288 */,
-/* 289 */,
-/* 290 */,
-/* 291 */,
-/* 292 */,
-/* 293 */,
-/* 294 */,
-/* 295 */,
-/* 296 */,
-/* 297 */,
-/* 298 */,
-/* 299 */,
-/* 300 */,
-/* 301 */,
-/* 302 */,
-/* 303 */,
-/* 304 */,
-/* 305 */,
-/* 306 */,
-/* 307 */,
-/* 308 */,
-/* 309 */,
-/* 310 */,
-/* 311 */,
-/* 312 */,
-/* 313 */,
-/* 314 */,
-/* 315 */,
-/* 316 */,
-/* 317 */,
-/* 318 */,
-/* 319 */,
-/* 320 */,
-/* 321 */,
-/* 322 */,
-/* 323 */,
-/* 324 */,
-/* 325 */,
-/* 326 */,
-/* 327 */,
-/* 328 */,
-/* 329 */,
-/* 330 */,
-/* 331 */,
-/* 332 */,
-/* 333 */,
-/* 334 */,
-/* 335 */,
-/* 336 */,
-/* 337 */,
-/* 338 */,
-/* 339 */,
-/* 340 */,
-/* 341 */,
-/* 342 */,
-/* 343 */,
-/* 344 */,
-/* 345 */,
-/* 346 */,
-/* 347 */,
-/* 348 */,
-/* 349 */,
-/* 350 */,
-/* 351 */,
-/* 352 */,
-/* 353 */,
-/* 354 */,
-/* 355 */,
-/* 356 */,
-/* 357 */,
-/* 358 */,
-/* 359 */,
-/* 360 */,
-/* 361 */,
-/* 362 */,
-/* 363 */,
-/* 364 */,
-/* 365 */,
-/* 366 */,
-/* 367 */,
-/* 368 */,
-/* 369 */,
-/* 370 */,
-/* 371 */,
-/* 372 */,
-/* 373 */,
-/* 374 */,
-/* 375 */,
-/* 376 */,
-/* 377 */,
-/* 378 */,
-/* 379 */,
-/* 380 */,
-/* 381 */,
-/* 382 */,
-/* 383 */,
-/* 384 */,
-/* 385 */,
-/* 386 */,
-/* 387 */,
-/* 388 */,
-/* 389 */,
-/* 390 */,
-/* 391 */,
-/* 392 */,
-/* 393 */,
-/* 394 */,
-/* 395 */,
-/* 396 */,
-/* 397 */,
-/* 398 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
@@ -35643,11 +35512,11 @@
 	module.exports = WorkoutInfo;
 
 /***/ },
-/* 399 */
+/* 284 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var WorkoutTableRow = __webpack_require__(400);
+	var WorkoutTableRow = __webpack_require__(285);
 	
 	var WorkoutTable = React.createClass({
 	  displayName: 'WorkoutTable',
@@ -35692,6 +35561,13 @@
 	    }));
 	    this.setState({ rows: rows });
 	    this.props.addExercise();
+	  },
+	  removeLastRow: function (e) {
+	    e.preventDefault();
+	    this.row--;
+	    this.state.rows.pop();
+	    this.setState({ rows: this.state.rows });
+	    this.props.removeExercise();
 	  },
 	  tableHead: function () {
 	    return React.createElement(
@@ -35739,6 +35615,11 @@
 	        type: 'button',
 	        value: '+',
 	        onClick: this.appendRow
+	      }),
+	      React.createElement('input', {
+	        type: 'button',
+	        value: '-',
+	        onClick: this.removeLastRow
 	      })
 	    );
 	  }
@@ -35747,11 +35628,11 @@
 	module.exports = WorkoutTable;
 
 /***/ },
-/* 400 */
+/* 285 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ExerciseList = __webpack_require__(401);
+	var ExerciseList = __webpack_require__(286);
 	
 	var WorkoutTableRow = React.createClass({
 	  displayName: 'WorkoutTableRow',
@@ -35809,11 +35690,11 @@
 	module.exports = WorkoutTableRow;
 
 /***/ },
-/* 401 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ExerciseStore = __webpack_require__(282);
+	var ExerciseStore = __webpack_require__(287);
 	
 	var ExerciseList = React.createClass({
 	  displayName: 'ExerciseList',
@@ -35857,6 +35738,38 @@
 	});
 	
 	module.exports = ExerciseList;
+
+/***/ },
+/* 287 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var AppDispatcher = __webpack_require__(220);
+	var Store = __webpack_require__(224).Store;
+	
+	var ExerciseStore = new Store(AppDispatcher);
+	
+	var _exercises;
+	
+	ExerciseStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case "ALL_EXERCISES":
+	      ExerciseStore.updateExercises(payload.index);
+	  }
+	};
+	
+	ExerciseStore.updateExercises = function (exercises) {
+	  _exercises = exercises;
+	};
+	
+	ExerciseStore.all = function () {
+	  if (_exercises) {
+	    return $.extend({}, _exercises);
+	  }
+	};
+	
+	window.ExerciseStore = ExerciseStore;
+	
+	module.exports = ExerciseStore;
 
 /***/ }
 /******/ ]);

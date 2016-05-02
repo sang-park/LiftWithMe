@@ -50,6 +50,13 @@ var WorkoutTable = React.createClass({
     this.setState({rows: rows});
     this.props.addExercise();
   },
+  removeLastRow: function(e){
+    e.preventDefault();
+    this.row--;
+    this.state.rows.pop();
+    this.setState({rows: this.state.rows});
+    this.props.removeExercise();
+  },
   tableHead: function(){
     return (
       <thead>
@@ -79,6 +86,11 @@ var WorkoutTable = React.createClass({
           type="button"
           value="+"
           onClick={this.appendRow}
+        />
+        <input
+          type="button"
+          value="-"
+          onClick={this.removeLastRow}
         />
       </div>
     );

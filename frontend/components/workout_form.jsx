@@ -60,6 +60,10 @@ var WorkoutForm = React.createClass({
     exercises.push(this.blankExercise());
     this.setState({exercises: exercises});
   },
+  removeExercise: function(){
+    this.state.exercises.pop();
+    this.setState({exercises: this.state.exercises});
+  },
   render: function(){
     return (
       <form onSubmit={this.handleSubmit}>
@@ -69,9 +73,11 @@ var WorkoutForm = React.createClass({
         <WorkoutTable
           exercises={this.state.exercises}
           addExercise={this.addExercise}
+          removeExercise={this.removeExercise}
           updateExercise={this.updateExercise}
           editing={this.props.editing}
-          blankAttrs={this.blankExercise()}/>
+          blankAttrs={this.blankExercise()}
+        />
         <input type="submit" />
       </form>
     );
