@@ -37,6 +37,12 @@ var WorkoutIndex = React.createClass({
       modalIsOpen: false
     };
   },
+  componentDidMount: function() {
+    ClientActions.fetchAll({ //fetch all the exercises
+      url: '/api/exercises',
+      type: "ALL_EXERCISES"
+    });
+  },
   openModal: function() {
     this.createFormClicked = false;
     this.setState({modalIsOpen: true, form: "login"});

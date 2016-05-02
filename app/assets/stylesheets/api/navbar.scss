@@ -1,20 +1,34 @@
-#navbar {
-  display :flex;
-  justify-content: space-between;
-  background-color: rgba(221, 221, 221, 1);
+// #navbar {
+//   display :flex;
+//   justify-content: space-between;
+//   background-color: rgba(221, 221, 221, 1);
+//   height: 50px;
+//   #logo {
+//     height: 50px;
+//     width: 150px;
+//     &:hover {
+//       cursor: pointer;
+//     }
+//
+//   }
+// }
+//
+//
+// #login-info {
+//   display: flex;
+//   justify-content: flex-start;
+// }
+#logo {
   height: 50px;
-  #logo {
-    height: 50px;
-    width: 150px;
-    &:hover {
-      cursor: pointer;
-    }
-
+  width: 150px;
+  display: inline-block;
+  &:hover {
+    cursor: pointer;
   }
 }
 
-
-#login-info {
-  display: flex;
-  justify-content: flex-start;
+.profile-picture {
+  height: 50px;
+  width: auto;
+  padding: 0;
 }

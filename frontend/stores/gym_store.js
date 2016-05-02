@@ -1,5 +1,6 @@
 var AppDispatcher = require('../dispatcher/dispatcher.js');
 var Store = require('flux/utils').Store;
+var UserStore = require('./user_store');
 
 var GymStore = new Store(AppDispatcher);
 
@@ -9,6 +10,7 @@ GymStore.__onDispatch = function (payload) {
   switch(payload.actionType) {
     case "CURRENT_GYM":
       GymStore.updateGym(payload.item);
+      UserStore.__emitChange();
   }
 };
 
@@ -21,16 +23,6 @@ GymStore.currentGym = function(){
   if (_gym) {
   	return $.extend({}, _gym);
   }
-};
-
-GymStore.findIdOf = function(gymName){
-  // var id;
-  // Object.keys(_allHomeCities).forEach(function(cityId){
-  //   if (_allHomeCities[cityId].name === cityName){
-  //     id = parseInt(cityId) + 1;
-  //   }
-  // });
-  // return id;
 };
 
 window.GymStore = GymStore;

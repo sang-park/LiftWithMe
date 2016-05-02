@@ -13,10 +13,6 @@ var WorkoutShow = React.createClass({
   componentDidMount: function() {
     this.listener = WorkoutStore.addListener(this.updateWorkout);
     var url = "/api/workouts/" + this.props.workout.id;
-    ClientActions.fetchAll({ //fetch all the exercises
-      url: '/api/exercises',
-      type: "ALL_EXERCISES"
-    });
     ClientActions.fetchOne({
       url: url,
       type: "CURRENT_WORKOUT"

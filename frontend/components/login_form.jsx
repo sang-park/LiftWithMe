@@ -123,12 +123,7 @@ var LoginForm = React.createClass({
   },
   form: function(){
     if (this.state.currentUser) {
-      return (
-        <button
-          onClick={this.handleLogout}
-          className="btn-0 group"
-          >logout</button>
-      ); //LOG OUT BUTTON HERE
+      return;
     } else {
       var header, button;
       if (this.state.form === "login") {
@@ -144,13 +139,13 @@ var LoginForm = React.createClass({
         this.action = UserActions.signup;
       }
       return (
-        <div>
+        <li>
           <button
             onClick={this.openModal}
             className="btn-0 group"
           >login</button>
           {this.displayModal(button,header)}
-        </div>
+        </li>
       );
     }
   },
@@ -161,14 +156,16 @@ var LoginForm = React.createClass({
   profile: function(){
     if (this.state.currentUser){
       return (
-        <div
-          onClick={this.goToUser}
-        >
-          <image
-            className="profile-picture"
-            src={this.state.currentUser.profile_image_url}
-          />
-        </div>
+        <li >
+          <a className="dropdown-toggle" data-toggle="dropdown" href="#">
+            {this.state.currentUser.username}
+          </a>
+          <ul className="dropdown-menu">
+            <li onClick={this.goToUser}><button>Go to Profile</button></li>
+            <li onClick={this.handleLogout}><button>Log Out</button></li>
+          </ul>
+
+        </li>
       );
     }
   },
@@ -189,25 +186,47 @@ var LoginForm = React.createClass({
     e.preventDefault();
     hashHistory.push('/home_cities');
   },
+  redirectToGym: function(e){
+    e.preventDefault();
+    debugger
+    var gymId = UserStore.currentGymId();
+    hashHistory.push('gym/' + gymId);
+  },
   homeCities: function(){
     return (
-      <button onClick={this.redirectToHome}>
-        Cities
-      </button>
+      <li onClick={this.redirectToHome}>
+        <a href="#">Cities</a>
+      </li>
     );
+  },
+  myGym: function(){
+    if (UserStore.currentUser()){
+      return (
+        <li onClick={this.redirectToGym}>
+          <a href="#">My Gym</a>
+        </li>
+      );
+    }
   },
 
   render: function() {
     return (
-      <div id="navbar">
-        <img src={_logoURL} id="logo" onClick={this.goToHomePage}/>
-        <div id="login-info">
-          {this.homeCities()}
-          {this.profile()}
-          {this.errors()}
-          {this.form()}
+      <nav className="navbar navbar-default navbar-static-top">
+        <div className="container-fluid">
+          <div className="navbar-header">
+            <a className="navbar-brand" href="#">
+              <img src={_logoURL} id="logo" onClick={this.goToHomePage}/>
+            </a>
+          </div>
+          <ul className="nav navbar-nav navbar-right">
+            {this.homeCities()}
+            {this.myGym()}
+            {this.profile()}
+            {this.errors()}
+            {this.form()}
+          </ul>
         </div>
-      </div>
+      </nav>
     );
   }
 

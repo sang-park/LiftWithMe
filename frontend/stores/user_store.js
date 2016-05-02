@@ -61,6 +61,13 @@ UserStore.currentUser = function(){
   }
 };
 
+UserStore.currentGymId = function(){
+  if (_currentUser) {
+    return _currentUser.gym.id;
+  }
+
+};
+
 UserStore.setErrors = function(errors){
   _errors = errors;
 };

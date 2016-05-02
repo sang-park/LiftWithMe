@@ -9,11 +9,23 @@ var UserShow = React.createClass({
   },
   componentDidMount: function() {
     var id = this.props.params.user_id;
-    UserStore.addListener(this.updateUser);
+    this.listener = UserStore.addListener(this.updateUser);
     UserActions.fetchUser(id);
   },
+  componentWillReceiveProps: function(newProps){
+    var id = newProps.params.user_id;
+    UserActions.fetchUser(id);
+  },
+  componentWillUnmount: function() {
+    this.listener.remove();
+  },
   updateUser: function(){
-    if (UserStore.user) {
+    if (UserStore.user && !this.sent) {
+      var id = this.props.params.user_id;
+      UserActions.fetchUser(id);
+      this.sent = true;
+    } else if (UserStore.user && this.sent){
+      this.sent = false;
       var user = UserStore.user();
       this.setState({user: user});
     }

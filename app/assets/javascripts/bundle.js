@@ -25215,6 +25215,12 @@
 	  }
 	};
 	
+	UserStore.currentGymId = function () {
+	  if (_currentUser) {
+	    return _currentUser.gym.id;
+	  }
+	};
+	
 	UserStore.setErrors = function (errors) {
 	  _errors = errors;
 	};
@@ -32262,44 +32268,37 @@
 	  },
 	  form: function () {
 	    if (this.state.currentUser) {
-	      return React.createElement(
-	        "button",
-	        {
-	          onClick: this.handleLogout,
-	          className: "btn-0 group"
-	        },
-	        "logout"
-	      ); //LOG OUT BUTTON HERE
+	      return;
 	    } else {
-	        var header, button;
-	        if (this.state.form === "login") {
-	          header = "Log In";
-	          button = React.createElement(
-	            "button",
-	            {
-	              onClick: this.signUpPage,
-	              className: "top-right" },
-	            "Sign Up"
-	          );
-	          this.action = UserActions.login;
-	        } else {
-	          header = "Sign Up";
-	          this.action = UserActions.signup;
-	        }
-	        return React.createElement(
-	          "div",
-	          null,
-	          React.createElement(
-	            "button",
-	            {
-	              onClick: this.openModal,
-	              className: "btn-0 group"
-	            },
-	            "login"
-	          ),
-	          this.displayModal(button, header)
+	      var header, button;
+	      if (this.state.form === "login") {
+	        header = "Log In";
+	        button = React.createElement(
+	          "button",
+	          {
+	            onClick: this.signUpPage,
+	            className: "top-right" },
+	          "Sign Up"
 	        );
+	        this.action = UserActions.login;
+	      } else {
+	        header = "Sign Up";
+	        this.action = UserActions.signup;
 	      }
+	      return React.createElement(
+	        "li",
+	        null,
+	        React.createElement(
+	          "button",
+	          {
+	            onClick: this.openModal,
+	            className: "btn-0 group"
+	          },
+	          "login"
+	        ),
+	        this.displayModal(button, header)
+	      );
+	    }
 	  },
 	  goToUser: function (e) {
 	    e.preventDefault();
@@ -32308,14 +32307,35 @@
 	  profile: function () {
 	    if (this.state.currentUser) {
 	      return React.createElement(
-	        "div",
-	        {
-	          onClick: this.goToUser
-	        },
-	        React.createElement("image", {
-	          className: "profile-picture",
-	          src: this.state.currentUser.profile_image_url
-	        })
+	        "li",
+	        null,
+	        React.createElement(
+	          "a",
+	          { className: "dropdown-toggle", "data-toggle": "dropdown", href: "#" },
+	          this.state.currentUser.username
+	        ),
+	        React.createElement(
+	          "ul",
+	          { className: "dropdown-menu" },
+	          React.createElement(
+	            "li",
+	            { onClick: this.goToUser },
+	            React.createElement(
+	              "button",
+	              null,
+	              "Go to Profile"
+	            )
+	          ),
+	          React.createElement(
+	            "li",
+	            { onClick: this.handleLogout },
+	            React.createElement(
+	              "button",
+	              null,
+	              "Log Out"
+	            )
+	          )
+	        )
 	      );
 	    }
 	  },
@@ -32340,26 +32360,62 @@
 	    e.preventDefault();
 	    hashHistory.push('/home_cities');
 	  },
+	  redirectToGym: function (e) {
+	    e.preventDefault();
+	    debugger;
+	    var gymId = UserStore.currentGymId();
+	    hashHistory.push('gym/' + gymId);
+	  },
 	  homeCities: function () {
 	    return React.createElement(
-	      "button",
+	      "li",
 	      { onClick: this.redirectToHome },
-	      "Cities"
+	      React.createElement(
+	        "a",
+	        { href: "#" },
+	        "Cities"
+	      )
 	    );
+	  },
+	  myGym: function () {
+	    if (UserStore.currentUser()) {
+	      return React.createElement(
+	        "li",
+	        { onClick: this.redirectToGym },
+	        React.createElement(
+	          "a",
+	          { href: "#" },
+	          "My Gym"
+	        )
+	      );
+	    }
 	  },
 	
 	  render: function () {
 	    return React.createElement(
-	      "div",
-	      { id: "navbar" },
-	      React.createElement("img", { src: _logoURL, id: "logo", onClick: this.goToHomePage }),
+	      "nav",
+	      { className: "navbar navbar-default navbar-static-top" },
 	      React.createElement(
 	        "div",
-	        { id: "login-info" },
-	        this.homeCities(),
-	        this.profile(),
-	        this.errors(),
-	        this.form()
+	        { className: "container-fluid" },
+	        React.createElement(
+	          "div",
+	          { className: "navbar-header" },
+	          React.createElement(
+	            "a",
+	            { className: "navbar-brand", href: "#" },
+	            React.createElement("img", { src: _logoURL, id: "logo", onClick: this.goToHomePage })
+	          )
+	        ),
+	        React.createElement(
+	          "ul",
+	          { className: "nav navbar-nav navbar-right" },
+	          this.homeCities(),
+	          this.myGym(),
+	          this.profile(),
+	          this.errors(),
+	          this.form()
+	        )
 	      )
 	    );
 	  }
@@ -34968,6 +35024,7 @@
 
 	var AppDispatcher = __webpack_require__(220);
 	var Store = __webpack_require__(224).Store;
+	var UserStore = __webpack_require__(219);
 	
 	var GymStore = new Store(AppDispatcher);
 	
@@ -34977,6 +35034,7 @@
 	  switch (payload.actionType) {
 	    case "CURRENT_GYM":
 	      GymStore.updateGym(payload.item);
+	      UserStore.__emitChange();
 	  }
 	};
 	
@@ -34989,16 +35047,6 @@
 	  if (_gym) {
 	    return $.extend({}, _gym);
 	  }
-	};
-	
-	GymStore.findIdOf = function (gymName) {
-	  // var id;
-	  // Object.keys(_allHomeCities).forEach(function(cityId){
-	  //   if (_allHomeCities[cityId].name === cityName){
-	  //     id = parseInt(cityId) + 1;
-	  //   }
-	  // });
-	  // return id;
 	};
 	
 	window.GymStore = GymStore;
@@ -35047,6 +35095,12 @@
 	    return {
 	      modalIsOpen: false
 	    };
+	  },
+	  componentDidMount: function () {
+	    ClientActions.fetchAll({ //fetch all the exercises
+	      url: '/api/exercises',
+	      type: "ALL_EXERCISES"
+	    });
 	  },
 	  openModal: function () {
 	    this.createFormClicked = false;
@@ -35208,10 +35262,6 @@
 	  componentDidMount: function () {
 	    this.listener = WorkoutStore.addListener(this.updateWorkout);
 	    var url = "/api/workouts/" + this.props.workout.id;
-	    ClientActions.fetchAll({ //fetch all the exercises
-	      url: '/api/exercises',
-	      type: "ALL_EXERCISES"
-	    });
 	    ClientActions.fetchOne({
 	      url: url,
 	      type: "CURRENT_WORKOUT"
@@ -35884,14 +35934,18 @@
 	var React = __webpack_require__(1);
 	
 	var HomePage = React.createClass({
-	  displayName: 'HomePage',
+	  displayName: "HomePage",
 	
 	
 	  render: function () {
 	    return React.createElement(
-	      'div',
-	      null,
-	      'Home Page'
+	      "div",
+	      { className: "jumbotron" },
+	      React.createElement(
+	        "h1",
+	        null,
+	        "WELCOME"
+	      )
 	    );
 	  }
 	
@@ -35916,11 +35970,23 @@
 	  },
 	  componentDidMount: function () {
 	    var id = this.props.params.user_id;
-	    UserStore.addListener(this.updateUser);
+	    this.listener = UserStore.addListener(this.updateUser);
 	    UserActions.fetchUser(id);
 	  },
+	  componentWillReceiveProps: function (newProps) {
+	    var id = newProps.params.user_id;
+	    UserActions.fetchUser(id);
+	  },
+	  componentWillUnmount: function () {
+	    this.listener.remove();
+	  },
 	  updateUser: function () {
-	    if (UserStore.user) {
+	    if (UserStore.user && !this.sent) {
+	      var id = this.props.params.user_id;
+	      UserActions.fetchUser(id);
+	      this.sent = true;
+	    } else if (UserStore.user && this.sent) {
+	      this.sent = false;
 	      var user = UserStore.user();
 	      this.setState({ user: user });
 	    }
@@ -36030,6 +36096,12 @@
 	    return {
 	      modalIsOpen: false
 	    };
+	  },
+	  componentDidMount: function () {
+	    ClientActions.fetchAll({ //fetch all the exercises
+	      url: '/api/exercises',
+	      type: "ALL_EXERCISES"
+	    });
 	  },
 	  openModal: function () {
 	    this.createFormClicked = false;
