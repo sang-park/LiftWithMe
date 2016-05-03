@@ -47,6 +47,7 @@ var LoginForm = React.createClass({
   handleLogout: function(e){
     e.preventDefault();
     UserActions.logout();
+    this.closeModal();
   },
   goToHomePage: function(e){
     e.preventDefault();
@@ -68,22 +69,10 @@ var LoginForm = React.createClass({
     if (this.state.currentUser) {
       return;
     } else {
-      var header, button;
-      if (this.state.form === "Log In") {
-        header = "Log In";
-        button = <input
-          type="button"
-          onClick={this.signUpPage}
-          value="Sign Up" />;
-        this.action = UserActions.login;
-      } else {
-        header = "Sign Up";
-        this.action = UserActions.signup;
-      }
       return (
         <li onClick={this.openModal} >
           Login
-          {this.displayModal(button,header)}
+          {this.displayModal()}
         </li>
       );
     }

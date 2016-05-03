@@ -59,12 +59,12 @@
 	var UserStore = __webpack_require__(219);
 	//components
 	var LoginForm = __webpack_require__(244);
-	var HomeCityIndex = __webpack_require__(269);
-	var HomeCityShow = __webpack_require__(274);
-	var GymShow = __webpack_require__(276);
-	var WorkoutShow = __webpack_require__(279);
+	var HomeCityIndex = __webpack_require__(270);
+	var HomeCityShow = __webpack_require__(275);
+	var GymShow = __webpack_require__(277);
+	var WorkoutShow = __webpack_require__(280);
 	var UserShow = __webpack_require__(289);
-	var HomePage = __webpack_require__(288);
+	var HomePage = __webpack_require__(291);
 	
 	var App = React.createClass({
 	  displayName: 'App',
@@ -32121,9 +32121,9 @@
 	var React = __webpack_require__(1);
 	var LinkedStateMixin = __webpack_require__(245);
 	var UserActions = __webpack_require__(242);
-	var LoginModal = __webpack_require__(292);
+	var LoginModal = __webpack_require__(249);
 	var CurrentUserState = __webpack_require__(218);
-	var Modal = __webpack_require__(249);
+	var Modal = __webpack_require__(250);
 	var UserStore = __webpack_require__(219);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	
@@ -32169,6 +32169,7 @@
 	  handleLogout: function (e) {
 	    e.preventDefault();
 	    UserActions.logout();
+	    this.closeModal();
 	  },
 	  goToHomePage: function (e) {
 	    e.preventDefault();
@@ -32190,23 +32191,11 @@
 	    if (this.state.currentUser) {
 	      return;
 	    } else {
-	      var header, button;
-	      if (this.state.form === "Log In") {
-	        header = "Log In";
-	        button = React.createElement("input", {
-	          type: "button",
-	          onClick: this.signUpPage,
-	          value: "Sign Up" });
-	        this.action = UserActions.login;
-	      } else {
-	        header = "Sign Up";
-	        this.action = UserActions.signup;
-	      }
 	      return React.createElement(
 	        "li",
 	        { onClick: this.openModal },
 	        "Login",
-	        this.displayModal(button, header)
+	        this.displayModal()
 	      );
 	    }
 	  },
@@ -32539,22 +32528,197 @@
 /* 249 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(250);
+	var React = __webpack_require__(1);
+	var UserActions = __webpack_require__(242);
 	
-
+	var LoginModal = React.createClass({
+	  displayName: "LoginModal",
+	
+	  blankAttrs: {
+	    status: "Log In",
+	    buttons: [],
+	    username: "",
+	    password: ""
+	  },
+	  getInitialState: function () {
+	    return this.blankAttrs;
+	  },
+	  handleLogin: function (e) {
+	    e.preventDefault();
+	    var user = {
+	      username: this.state.username,
+	      password: this.state.password
+	    };
+	    UserActions.login(user);
+	    this.state = this.blankAttrs;
+	  },
+	  handleSignUp: function (e) {
+	    e.preventDefault();
+	    var user = {
+	      username: this.state.username,
+	      password: this.state.password
+	    };
+	    UserActions.signup(user);
+	    this.setState(this.blankAttrs);
+	  },
+	  demoLogin: function (e) {
+	    e.preventDefault();
+	    var user = {
+	      username: "Arnold",
+	      password: "123123"
+	    };
+	    UserActions.login(user);
+	    this.setState(this.blankAttrs);
+	  },
+	  changeToLogin: function () {
+	    this.setState({ status: "Log In" });
+	  },
+	  changeToSignup: function () {
+	    this.setState({ status: "Sign Up" });
+	  },
+	  header: function () {
+	    var loginClass = "",
+	        signupClass = "";
+	    if (this.state.status === "Log In") {
+	      loginClass = "selected";
+	    } else {
+	      signupClass = "selected";
+	    }
+	    return React.createElement(
+	      "ul",
+	      { className: "auth-toggle" },
+	      React.createElement(
+	        "li",
+	        {
+	          className: loginClass,
+	          onClick: this.changeToLogin },
+	        "Log In!"
+	      ),
+	      React.createElement(
+	        "li",
+	        {
+	          className: signupClass,
+	          onClick: this.changeToSignup },
+	        "Sign Up!"
+	      )
+	    );
+	  },
+	  updateUsername: function (e) {
+	    e.preventDefault();
+	    this.setState({ username: e.target.value });
+	  },
+	  updatePassword: function (e) {
+	    e.preventDefault();
+	    this.setState({ password: e.target.value });
+	  },
+	  usernamePassword: function () {
+	    return React.createElement(
+	      "div",
+	      null,
+	      React.createElement(
+	        "label",
+	        {
+	          className: "login-section" },
+	        React.createElement("span", { className: "glyphicon glyphicon-user" }),
+	        React.createElement("input", {
+	          type: "text",
+	          placeholder: " Username",
+	          value: this.state.username,
+	          onChange: this.updateUsername,
+	          className: "login-section"
+	        })
+	      ),
+	      React.createElement("br", null),
+	      React.createElement(
+	        "label",
+	        {
+	          className: "login-section" },
+	        React.createElement("span", { className: "glyphicon glyphicon-icon-keys" }),
+	        React.createElement("input", {
+	          type: "password",
+	          placeholder: " Password",
+	          value: this.state.password,
+	          onChange: this.updatePassword,
+	          className: "login-section"
+	        })
+	      )
+	    );
+	  },
+	  buttons: function () {
+	    if (this.state.status === "Log In") {
+	      return React.createElement(
+	        "div",
+	        { className: "auth-btns" },
+	        React.createElement("input", {
+	          type: "button",
+	          value: "Log In",
+	          className: "auth-btn",
+	          onClick: this.handleLogin }),
+	        React.createElement("input", {
+	          type: "button",
+	          value: "Demo Log In",
+	          className: "auth-btn",
+	          onClick: this.demoLogin })
+	      );
+	    } else {
+	      return React.createElement(
+	        "div",
+	        null,
+	        React.createElement("input", {
+	          type: "button",
+	          value: "Sign Up",
+	          className: "auth-btn",
+	          onClick: this.handleSignup })
+	      );
+	    }
+	  },
+	  render: function () {
+	    return React.createElement(
+	      "form",
+	      { onSubmit: this.handleSubmit, className: "login-form" },
+	      React.createElement(
+	        "section",
+	        { className: "credentials" },
+	        this.header(),
+	        this.usernamePassword(),
+	        this.buttons()
+	      )
+	    );
+	  }
+	
+	});
+	
+	module.exports = LoginModal;
+	
+	// </section>
+	// <section className="form-button">
+	//   <input
+	//     type="Submit"
+	//     valueLink={this.linkState("form")}
+	//     />
+	//   {this.state.buttons}
+	//   {this.demoLoginButton()}
 
 /***/ },
 /* 250 */
 /***/ function(module, exports, __webpack_require__) {
 
+	module.exports = __webpack_require__(251);
+	
+
+
+/***/ },
+/* 251 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/* WEBPACK VAR INJECTION */(function(process) {var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var ExecutionEnvironment = __webpack_require__(251);
-	var ModalPortal = React.createFactory(__webpack_require__(252));
-	var ariaAppHider = __webpack_require__(267);
-	var elementClass = __webpack_require__(268);
+	var ExecutionEnvironment = __webpack_require__(252);
+	var ModalPortal = React.createFactory(__webpack_require__(253));
+	var ariaAppHider = __webpack_require__(268);
+	var elementClass = __webpack_require__(269);
 	var renderSubtreeIntoContainer = __webpack_require__(158).unstable_renderSubtreeIntoContainer;
-	var Assign = __webpack_require__(256);
+	var Assign = __webpack_require__(257);
 	
 	var SafeHTMLElement = ExecutionEnvironment.canUseDOM ? window.HTMLElement : {};
 	var AppElement = ExecutionEnvironment.canUseDOM ? document.body : {appendChild: function() {}};
@@ -32662,7 +32826,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 251 */
+/* 252 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -32707,14 +32871,14 @@
 
 
 /***/ },
-/* 252 */
+/* 253 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
 	var div = React.DOM.div;
-	var focusManager = __webpack_require__(253);
-	var scopeTab = __webpack_require__(255);
-	var Assign = __webpack_require__(256);
+	var focusManager = __webpack_require__(254);
+	var scopeTab = __webpack_require__(256);
+	var Assign = __webpack_require__(257);
 	
 	// so that our CSS is statically analyzable
 	var CLASS_NAMES = {
@@ -32899,10 +33063,10 @@
 
 
 /***/ },
-/* 253 */
+/* 254 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var findTabbable = __webpack_require__(254);
+	var findTabbable = __webpack_require__(255);
 	var modalElement = null;
 	var focusLaterElement = null;
 	var needToFocus = false;
@@ -32973,7 +33137,7 @@
 
 
 /***/ },
-/* 254 */
+/* 255 */
 /***/ function(module, exports) {
 
 	/*!
@@ -33029,10 +33193,10 @@
 
 
 /***/ },
-/* 255 */
+/* 256 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var findTabbable = __webpack_require__(254);
+	var findTabbable = __webpack_require__(255);
 	
 	module.exports = function(node, event) {
 	  var tabbable = findTabbable(node);
@@ -33054,7 +33218,7 @@
 
 
 /***/ },
-/* 256 */
+/* 257 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -33065,9 +33229,9 @@
 	 * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <https://lodash.com/license>
 	 */
-	var baseAssign = __webpack_require__(257),
-	    createAssigner = __webpack_require__(263),
-	    keys = __webpack_require__(259);
+	var baseAssign = __webpack_require__(258),
+	    createAssigner = __webpack_require__(264),
+	    keys = __webpack_require__(260);
 	
 	/**
 	 * A specialized version of `_.assign` for customizing assigned values without
@@ -33140,7 +33304,7 @@
 
 
 /***/ },
-/* 257 */
+/* 258 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -33151,8 +33315,8 @@
 	 * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <https://lodash.com/license>
 	 */
-	var baseCopy = __webpack_require__(258),
-	    keys = __webpack_require__(259);
+	var baseCopy = __webpack_require__(259),
+	    keys = __webpack_require__(260);
 	
 	/**
 	 * The base implementation of `_.assign` without support for argument juggling,
@@ -33173,7 +33337,7 @@
 
 
 /***/ },
-/* 258 */
+/* 259 */
 /***/ function(module, exports) {
 
 	/**
@@ -33211,7 +33375,7 @@
 
 
 /***/ },
-/* 259 */
+/* 260 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -33222,9 +33386,9 @@
 	 * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <https://lodash.com/license>
 	 */
-	var getNative = __webpack_require__(260),
-	    isArguments = __webpack_require__(261),
-	    isArray = __webpack_require__(262);
+	var getNative = __webpack_require__(261),
+	    isArguments = __webpack_require__(262),
+	    isArray = __webpack_require__(263);
 	
 	/** Used to detect unsigned integer values. */
 	var reIsUint = /^\d+$/;
@@ -33453,7 +33617,7 @@
 
 
 /***/ },
-/* 260 */
+/* 261 */
 /***/ function(module, exports) {
 
 	/**
@@ -33596,7 +33760,7 @@
 
 
 /***/ },
-/* 261 */
+/* 262 */
 /***/ function(module, exports) {
 
 	/**
@@ -33845,7 +34009,7 @@
 
 
 /***/ },
-/* 262 */
+/* 263 */
 /***/ function(module, exports) {
 
 	/**
@@ -34031,7 +34195,7 @@
 
 
 /***/ },
-/* 263 */
+/* 264 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -34042,9 +34206,9 @@
 	 * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <https://lodash.com/license>
 	 */
-	var bindCallback = __webpack_require__(264),
-	    isIterateeCall = __webpack_require__(265),
-	    restParam = __webpack_require__(266);
+	var bindCallback = __webpack_require__(265),
+	    isIterateeCall = __webpack_require__(266),
+	    restParam = __webpack_require__(267);
 	
 	/**
 	 * Creates a function that assigns properties of source object(s) to a given
@@ -34089,7 +34253,7 @@
 
 
 /***/ },
-/* 264 */
+/* 265 */
 /***/ function(module, exports) {
 
 	/**
@@ -34160,7 +34324,7 @@
 
 
 /***/ },
-/* 265 */
+/* 266 */
 /***/ function(module, exports) {
 
 	/**
@@ -34298,7 +34462,7 @@
 
 
 /***/ },
-/* 266 */
+/* 267 */
 /***/ function(module, exports) {
 
 	/**
@@ -34371,7 +34535,7 @@
 
 
 /***/ },
-/* 267 */
+/* 268 */
 /***/ function(module, exports) {
 
 	var _element = typeof document !== 'undefined' ? document.body : null;
@@ -34419,7 +34583,7 @@
 
 
 /***/ },
-/* 268 */
+/* 269 */
 /***/ function(module, exports) {
 
 	module.exports = function(opts) {
@@ -34484,12 +34648,12 @@
 
 
 /***/ },
-/* 269 */
+/* 270 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(270);
-	var HomeCityStore = __webpack_require__(273);
+	var ClientActions = __webpack_require__(271);
+	var HomeCityStore = __webpack_require__(274);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	var img_URLs = {
 	  "San Francisco": "http://res.cloudinary.com/dque3vywj/image/upload/v1461889491/San_Francisco_ebesqu.jpg",
@@ -34564,10 +34728,10 @@
 	module.exports = HomeCityIndex;
 
 /***/ },
-/* 270 */
+/* 271 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ApiUtil = __webpack_require__(271);
+	var ApiUtil = __webpack_require__(272);
 	
 	var ClientActions = {
 	  fetchAll: ApiUtil.fetchAll,
@@ -34581,10 +34745,10 @@
 	module.exports = ClientActions;
 
 /***/ },
-/* 271 */
+/* 272 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ServerActions = __webpack_require__(272);
+	var ServerActions = __webpack_require__(273);
 	
 	var ApiUtil = {
 	  fetchAll: function (options) {
@@ -34664,7 +34828,7 @@
 	module.exports = ApiUtil;
 
 /***/ },
-/* 272 */
+/* 273 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var AppDispatcher = __webpack_require__(220);
@@ -34695,7 +34859,7 @@
 	module.exports = ServerActions;
 
 /***/ },
-/* 273 */
+/* 274 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var AppDispatcher = __webpack_require__(220);
@@ -34751,14 +34915,14 @@
 	module.exports = HomeCityStore;
 
 /***/ },
-/* 274 */
+/* 275 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(270);
-	var HomeCityStore = __webpack_require__(273);
+	var ClientActions = __webpack_require__(271);
+	var HomeCityStore = __webpack_require__(274);
 	var hashHistory = __webpack_require__(159).hashHistory;
-	var GymIndex = __webpack_require__(275);
+	var GymIndex = __webpack_require__(276);
 	
 	var HomeCityShow = React.createClass({
 	  displayName: 'HomeCityShow',
@@ -34799,11 +34963,11 @@
 	module.exports = HomeCityShow;
 
 /***/ },
-/* 275 */
+/* 276 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var GymStore = __webpack_require__(273);
+	var GymStore = __webpack_require__(274);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var GymIndex = React.createClass({
@@ -34839,14 +35003,14 @@
 	module.exports = GymIndex;
 
 /***/ },
-/* 276 */
+/* 277 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(270);
-	var GymStore = __webpack_require__(277);
+	var ClientActions = __webpack_require__(271);
+	var GymStore = __webpack_require__(278);
 	var hashHistory = __webpack_require__(159).hashHistory;
-	var WorkoutIndex = __webpack_require__(278);
+	var WorkoutIndex = __webpack_require__(279);
 	
 	var GymShow = React.createClass({
 	  displayName: 'GymShow',
@@ -34900,7 +35064,7 @@
 	module.exports = GymShow;
 
 /***/ },
-/* 277 */
+/* 278 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var AppDispatcher = __webpack_require__(220);
@@ -34935,16 +35099,16 @@
 	module.exports = GymStore;
 
 /***/ },
-/* 278 */
+/* 279 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
 	var UserStore = __webpack_require__(219);
-	var WorkoutShow = __webpack_require__(279);
+	var WorkoutShow = __webpack_require__(280);
 	var hashHistory = __webpack_require__(159).hashHistory;
-	var Modal = __webpack_require__(249);
-	var WorkoutForm = __webpack_require__(282);
-	var ClientActions = __webpack_require__(270);
+	var Modal = __webpack_require__(250);
+	var WorkoutForm = __webpack_require__(283);
+	var ClientActions = __webpack_require__(271);
 	
 	var _style = {
 	  overlay: {
@@ -35124,13 +35288,13 @@
 	module.exports = WorkoutIndex;
 
 /***/ },
-/* 279 */
+/* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(270);
-	var WorkoutStore = __webpack_require__(280);
-	var WorkoutEditForm = __webpack_require__(281);
+	var ClientActions = __webpack_require__(271);
+	var WorkoutStore = __webpack_require__(281);
+	var WorkoutEditForm = __webpack_require__(282);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	var UserStore = __webpack_require__(219);
 	
@@ -35325,7 +35489,7 @@
 	module.exports = WorkoutShow;
 
 /***/ },
-/* 280 */
+/* 281 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var AppDispatcher = __webpack_require__(220);
@@ -35358,14 +35522,14 @@
 	module.exports = WorkoutStore;
 
 /***/ },
-/* 281 */
+/* 282 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(270);
-	var WorkoutStore = __webpack_require__(280);
+	var ClientActions = __webpack_require__(271);
+	var WorkoutStore = __webpack_require__(281);
 	var hashHistory = __webpack_require__(159).hashHistory;
-	var WorkoutForm = __webpack_require__(282);
+	var WorkoutForm = __webpack_require__(283);
 	
 	var WorkoutEditForm = React.createClass({
 	  displayName: 'WorkoutEditForm',
@@ -35387,13 +35551,13 @@
 	module.exports = WorkoutEditForm;
 
 /***/ },
-/* 282 */
+/* 283 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(270);
-	var WorkoutInfo = __webpack_require__(283);
-	var WorkoutTable = __webpack_require__(284);
+	var ClientActions = __webpack_require__(271);
+	var WorkoutInfo = __webpack_require__(284);
+	var WorkoutTable = __webpack_require__(285);
 	
 	var WorkoutForm = React.createClass({
 	  displayName: 'WorkoutForm',
@@ -35480,7 +35644,7 @@
 	module.exports = WorkoutForm;
 
 /***/ },
-/* 283 */
+/* 284 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
@@ -35549,11 +35713,11 @@
 	module.exports = WorkoutInfo;
 
 /***/ },
-/* 284 */
+/* 285 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var WorkoutTableRow = __webpack_require__(285);
+	var WorkoutTableRow = __webpack_require__(286);
 	
 	var WorkoutTable = React.createClass({
 	  displayName: 'WorkoutTable',
@@ -35665,11 +35829,11 @@
 	module.exports = WorkoutTable;
 
 /***/ },
-/* 285 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ExerciseList = __webpack_require__(286);
+	var ExerciseList = __webpack_require__(287);
 	
 	var WorkoutTableRow = React.createClass({
 	  displayName: 'WorkoutTableRow',
@@ -35727,11 +35891,11 @@
 	module.exports = WorkoutTableRow;
 
 /***/ },
-/* 286 */
+/* 287 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ExerciseStore = __webpack_require__(287);
+	var ExerciseStore = __webpack_require__(288);
 	
 	var ExerciseList = React.createClass({
 	  displayName: 'ExerciseList',
@@ -35777,7 +35941,7 @@
 	module.exports = ExerciseList;
 
 /***/ },
-/* 287 */
+/* 288 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var AppDispatcher = __webpack_require__(220);
@@ -35807,32 +35971,6 @@
 	window.ExerciseStore = ExerciseStore;
 	
 	module.exports = ExerciseStore;
-
-/***/ },
-/* 288 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var React = __webpack_require__(1);
-	
-	var HomePage = React.createClass({
-	  displayName: "HomePage",
-	
-	
-	  render: function () {
-	    return React.createElement(
-	      "div",
-	      { className: "splash" },
-	      React.createElement(
-	        "span",
-	        null,
-	        "WELCOME"
-	      )
-	    );
-	  }
-	
-	});
-	
-	module.exports = HomePage;
 
 /***/ },
 /* 289 */
@@ -35941,11 +36079,11 @@
 
 	var React = __webpack_require__(1);
 	var UserStore = __webpack_require__(219);
-	var WorkoutShow = __webpack_require__(279);
+	var WorkoutShow = __webpack_require__(280);
 	var hashHistory = __webpack_require__(159).hashHistory;
-	var Modal = __webpack_require__(249);
-	var WorkoutForm = __webpack_require__(282);
-	var ClientActions = __webpack_require__(270);
+	var Modal = __webpack_require__(250);
+	var WorkoutForm = __webpack_require__(283);
+	var ClientActions = __webpack_require__(271);
 	
 	var _style = {
 	  overlay: {
@@ -36125,97 +36263,111 @@
 	module.exports = WorkoutIndex;
 
 /***/ },
-/* 291 */,
-/* 292 */
+/* 291 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var UserActions = __webpack_require__(242);
+	var UserStore = __webpack_require__(219);
+	var hashHistory = __webpack_require__(159).hashHistory;
+	var LoginModal = __webpack_require__(249);
 	
-	var LoginModal = React.createClass({
-	  displayName: "LoginModal",
+	var HomePage = React.createClass({
+	  displayName: 'HomePage',
 	
-	  getInitialState: function () {
-	    return {
-	      username: "",
-	      password: ""
-	    };
+	  openModal: function () {
+	    this.setState({ modalIsOpen: true, form: "Log In" });
 	  },
-	  handleSubmit: function (e) {
-	    e.preventDefault();
-	    var user = {
-	      username: this.state.username,
-	      password: this.state.password
-	    };
-	    this.action(user);
-	    this.setState(this.blankAttrs);
+	  closeModal: function () {
+	    this.setState({ modalIsOpen: false });
 	  },
-	  demoLogin: function (e) {
+	  handleClick: function (e) {
 	    e.preventDefault();
-	    var user = {
-	      username: "Arnold",
-	      password: "123123"
-	    };
-	    UserActions.login(user);
-	    this.setState(this.blankAttrs);
+	    $(".login-info li:nth-child(2)")[0].click();
 	  },
 	
 	  render: function () {
-	    var header = this.props.header;
-	    var button = this.props.button;
 	    return React.createElement(
-	      "form",
-	      { onSubmit: this.handleSubmit, className: "login-form" },
+	      'div',
+	      { className: 'splash' },
 	      React.createElement(
-	        "section",
-	        { className: "credentials" },
+	        'div',
+	        { className: 'workout-splash' },
 	        React.createElement(
-	          "h2",
-	          null,
-	          header,
-	          "!"
-	        ),
-	        React.createElement(
-	          "label",
-	          {
-	            className: "login-section" },
-	          "Username:",
-	          React.createElement("input", { type: "text",
-	            placeholder: " username",
-	            valueLink: this.linkState("username"),
-	            className: "login-section"
-	          })
-	        ),
-	        " ",
-	        React.createElement("br", null),
-	        React.createElement(
-	          "label",
-	          {
-	            className: "login-section" },
-	          "Password:",
-	          React.createElement("input", { type: "password",
-	            placeholder: " password",
-	            valueLink: this.linkState("password"),
-	            className: "login-section"
-	          })
+	          'div',
+	          { className: 'gray-overlay' },
+	          React.createElement(
+	            'h1',
+	            null,
+	            'WORKOUT'
+	          ),
+	          React.createElement(
+	            'p',
+	            null,
+	            'Never workout without a spotter again'
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'button-cover' },
+	            React.createElement(
+	              'button',
+	              { onClick: this.handleClick },
+	              'Find Your Gym Buddy'
+	            )
+	          )
 	        )
 	      ),
 	      React.createElement(
-	        "section",
-	        { className: "form-button" },
-	        React.createElement("input", {
-	          type: "Submit",
-	          valueLink: this.linkState("form")
-	        }),
-	        button,
-	        this.demoLoginButton()
+	        'div',
+	        { className: 'info' },
+	        React.createElement(
+	          'div',
+	          null,
+	          React.createElement(
+	            'span',
+	            null,
+	            'We do this!'
+	          ),
+	          React.createElement(
+	            'p',
+	            null,
+	            'like so'
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          null,
+	          React.createElement(
+	            'span',
+	            null,
+	            'Also this'
+	          ),
+	          React.createElement(
+	            'p',
+	            null,
+	            'wow'
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          null,
+	          React.createElement(
+	            'span',
+	            null,
+	            'Much Style'
+	          ),
+	          React.createElement(
+	            'p',
+	            null,
+	            'such website'
+	          )
+	        )
 	      )
 	    );
 	  }
 	
 	});
 	
-	module.exports = LoginModal;
+	module.exports = HomePage;
 
 /***/ }
 /******/ ]);
