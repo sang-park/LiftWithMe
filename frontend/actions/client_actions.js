@@ -5,8 +5,8 @@ var ClientActions = {
   fetchOne: ApiUtil.fetchOne,
   createWorkout: ApiUtil.addWorkout,
   deleteWorkout: ApiUtil.deleteWorkout,
-  updateWorkout: ApiUtil.updateWorkout
-
+  updateWorkout: ApiUtil.updateWorkout,
+  pairUp: ApiUtil.pairUp
 };
 
 module.exports = ClientActions;

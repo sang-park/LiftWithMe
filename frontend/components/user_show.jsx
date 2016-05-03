@@ -59,6 +59,27 @@ var UserShow = React.createClass({
         <WorkoutIndex
           workouts={workouts}
           view="true"
+          gymName={this.state.user.username + "\'s Workouts"}
+        />
+      );
+    }
+  },
+  pairedWorkouts: function(){
+    if (this.state.user.paired_workouts){
+      var workouts = this.state.user.paired_workouts.sort(function(a,b){
+        if (a.date > b.date) {
+          return 1;
+        } else if (a.date < b.date) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+      return (
+        <WorkoutIndex
+          workouts={workouts}
+          view="true"
+          gymName="Paired Workouts"
         />
       );
     }
@@ -68,6 +89,7 @@ var UserShow = React.createClass({
       <div>
         {this.profile()}
         {this.workouts()}
+        {this.pairedWorkouts()}
       </div>
     );
   }

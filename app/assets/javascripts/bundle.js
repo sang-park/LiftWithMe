@@ -32530,9 +32530,10 @@
 
 	var React = __webpack_require__(1);
 	var UserActions = __webpack_require__(242);
+	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var LoginModal = React.createClass({
-	  displayName: "LoginModal",
+	  displayName: 'LoginModal',
 	
 	  blankAttrs: {
 	    status: "Log In",
@@ -32551,6 +32552,7 @@
 	    };
 	    UserActions.login(user);
 	    this.state = this.blankAttrs;
+	    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
 	  },
 	  handleSignUp: function (e) {
 	    e.preventDefault();
@@ -32560,6 +32562,7 @@
 	    };
 	    UserActions.signup(user);
 	    this.setState(this.blankAttrs);
+	    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
 	  },
 	  demoLogin: function (e) {
 	    e.preventDefault();
@@ -32569,6 +32572,7 @@
 	    };
 	    UserActions.login(user);
 	    this.setState(this.blankAttrs);
+	    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
 	  },
 	  changeToLogin: function () {
 	    this.setState({ status: "Log In" });
@@ -32585,21 +32589,21 @@
 	      signupClass = "selected";
 	    }
 	    return React.createElement(
-	      "ul",
-	      { className: "auth-toggle" },
+	      'ul',
+	      { className: 'auth-toggle' },
 	      React.createElement(
-	        "li",
+	        'li',
 	        {
 	          className: loginClass,
 	          onClick: this.changeToLogin },
-	        "Log In!"
+	        'Log In!'
 	      ),
 	      React.createElement(
-	        "li",
+	        'li',
 	        {
 	          className: signupClass,
 	          onClick: this.changeToSignup },
-	        "Sign Up!"
+	        'Sign Up!'
 	      )
 	    );
 	  },
@@ -32613,33 +32617,33 @@
 	  },
 	  usernamePassword: function () {
 	    return React.createElement(
-	      "div",
+	      'div',
 	      null,
 	      React.createElement(
-	        "label",
+	        'label',
 	        {
-	          className: "login-section" },
-	        React.createElement("span", { className: "glyphicon glyphicon-user" }),
-	        React.createElement("input", {
-	          type: "text",
-	          placeholder: " Username",
+	          className: 'login-section' },
+	        React.createElement('span', { className: 'glyphicon glyphicon-user' }),
+	        React.createElement('input', {
+	          type: 'text',
+	          placeholder: ' Username',
 	          value: this.state.username,
 	          onChange: this.updateUsername,
-	          className: "login-section"
+	          className: 'login-section'
 	        })
 	      ),
-	      React.createElement("br", null),
+	      React.createElement('br', null),
 	      React.createElement(
-	        "label",
+	        'label',
 	        {
-	          className: "login-section" },
-	        React.createElement("span", { className: "glyphicon glyphicon-icon-keys" }),
-	        React.createElement("input", {
-	          type: "password",
-	          placeholder: " Password",
+	          className: 'login-section' },
+	        React.createElement('span', { className: 'glyphicon glyphicon-icon-keys' }),
+	        React.createElement('input', {
+	          type: 'password',
+	          placeholder: ' Password',
 	          value: this.state.password,
 	          onChange: this.updatePassword,
-	          className: "login-section"
+	          className: 'login-section'
 	        })
 	      )
 	    );
@@ -32647,38 +32651,38 @@
 	  buttons: function () {
 	    if (this.state.status === "Log In") {
 	      return React.createElement(
-	        "div",
-	        { className: "auth-btns" },
-	        React.createElement("input", {
-	          type: "button",
-	          value: "Log In",
-	          className: "auth-btn",
+	        'div',
+	        { className: 'auth-btns' },
+	        React.createElement('input', {
+	          type: 'button',
+	          value: 'Log In',
+	          className: 'auth-btn',
 	          onClick: this.handleLogin }),
-	        React.createElement("input", {
-	          type: "button",
-	          value: "Demo Log In",
-	          className: "auth-btn",
+	        React.createElement('input', {
+	          type: 'button',
+	          value: 'Demo Log In',
+	          className: 'auth-btn',
 	          onClick: this.demoLogin })
 	      );
 	    } else {
 	      return React.createElement(
-	        "div",
+	        'div',
 	        null,
-	        React.createElement("input", {
-	          type: "button",
-	          value: "Sign Up",
-	          className: "auth-btn",
+	        React.createElement('input', {
+	          type: 'button',
+	          value: 'Sign Up',
+	          className: 'auth-btn',
 	          onClick: this.handleSignup })
 	      );
 	    }
 	  },
 	  render: function () {
 	    return React.createElement(
-	      "form",
-	      { onSubmit: this.handleSubmit, className: "login-form" },
+	      'form',
+	      { className: 'login-form' },
 	      React.createElement(
-	        "section",
-	        { className: "credentials" },
+	        'section',
+	        { className: 'credentials' },
 	        this.header(),
 	        this.usernamePassword(),
 	        this.buttons()
@@ -34738,8 +34742,8 @@
 	  fetchOne: ApiUtil.fetchOne,
 	  createWorkout: ApiUtil.addWorkout,
 	  deleteWorkout: ApiUtil.deleteWorkout,
-	  updateWorkout: ApiUtil.updateWorkout
-	
+	  updateWorkout: ApiUtil.updateWorkout,
+	  pairUp: ApiUtil.pairUp
 	};
 	
 	module.exports = ClientActions;
@@ -34749,6 +34753,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var ServerActions = __webpack_require__(273);
+	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var ApiUtil = {
 	  fetchAll: function (options) {
@@ -34816,6 +34821,20 @@
 	      success: function (gym) {
 	        ServerActions.receiveOne(gym, "CURRENT_GYM");
 	        options.success();
+	      },
+	      error: function (error) {
+	        ServerActions.handleError(error);
+	      }
+	    });
+	  },
+	  pairUp: function (workoutId, userId) {
+	
+	    $.ajax({
+	      url: 'api/workouts/' + workoutId,
+	      type: "PATCH",
+	      data: { user_id: userId },
+	      success: function (user) {
+	        hashHistory.push('/users/' + user.id);
 	      },
 	      error: function (error) {
 	        ServerActions.handleError(error);
@@ -35439,6 +35458,7 @@
 	
 	  pairUp: function (e) {
 	    e.preventDefault();
+	    ClientActions.pairUp(this.props.workout.id, UserStore.currentUser().id);
 	  },
 	
 	  openEditForm: function (workout) {
@@ -36056,7 +36076,26 @@
 	      });
 	      return React.createElement(WorkoutIndex, {
 	        workouts: workouts,
-	        view: 'true'
+	        view: 'true',
+	        gymName: this.state.user.username + "\'s Workouts"
+	      });
+	    }
+	  },
+	  pairedWorkouts: function () {
+	    if (this.state.user.paired_workouts) {
+	      var workouts = this.state.user.paired_workouts.sort(function (a, b) {
+	        if (a.date > b.date) {
+	          return 1;
+	        } else if (a.date < b.date) {
+	          return -1;
+	        } else {
+	          return 0;
+	        }
+	      });
+	      return React.createElement(WorkoutIndex, {
+	        workouts: workouts,
+	        view: 'true',
+	        gymName: 'Paired Workouts'
 	      });
 	    }
 	  },
@@ -36065,7 +36104,8 @@
 	      'div',
 	      null,
 	      this.profile(),
-	      this.workouts()
+	      this.workouts(),
+	      this.pairedWorkouts()
 	    );
 	  }
 	
@@ -36298,7 +36338,7 @@
 	          React.createElement(
 	            'h1',
 	            null,
-	            'WORKOUT'
+	            'Need a Spot?'
 	          ),
 	          React.createElement(
 	            'p',
@@ -36310,8 +36350,10 @@
 	            { className: 'button-cover' },
 	            React.createElement(
 	              'button',
-	              { onClick: this.handleClick },
-	              'Find Your Gym Buddy'
+	              {
+	                className: 'animated pulse',
+	                onClick: this.handleClick },
+	              'Let\'s workout'
 	            )
 	          )
 	        )
@@ -36325,12 +36367,12 @@
 	          React.createElement(
 	            'span',
 	            null,
-	            'We do this!'
+	            'Push your limits'
 	          ),
 	          React.createElement(
 	            'p',
 	            null,
-	            'like so'
+	            'No need to worry about getting a spotter'
 	          )
 	        ),
 	        React.createElement(
@@ -36339,12 +36381,12 @@
 	          React.createElement(
 	            'span',
 	            null,
-	            'Also this'
+	            'Sign up for a workout!'
 	          ),
 	          React.createElement(
 	            'p',
 	            null,
-	            'wow'
+	            'You get to pick which workout you want to join'
 	          )
 	        ),
 	        React.createElement(
@@ -36353,12 +36395,78 @@
 	          React.createElement(
 	            'span',
 	            null,
-	            'Much Style'
+	            'Such gains'
 	          ),
 	          React.createElement(
 	            'p',
 	            null,
-	            'such website'
+	            'Much swole'
+	          )
+	        )
+	      ),
+	      React.createElement(
+	        'div',
+	        { className: 'why' },
+	        React.createElement(
+	          'p',
+	          { className: 'but-why' },
+	          'Why use LiftWithMe?'
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'reasons' },
+	          React.createElement('img', { src: 'http://res.cloudinary.com/dque3vywj/image/upload/v1462316042/lifting_too_much_krupsj.png' }),
+	          React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	              'span',
+	              null,
+	              'It\'s Dangerous to Work Out Alone'
+	            ),
+	            React.createElement(
+	              'p',
+	              null,
+	              'With LiftWithMe, you\'ll always have a spotter. No need to be awkward, and ask around for a spotter. Always be able to max out on your workout'
+	            )
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'reasons' },
+	          React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	              'span',
+	              null,
+	              'Motivate One Another'
+	            ),
+	            React.createElement(
+	              'p',
+	              null,
+	              'It\'s so easy to drop a rep, or even a set, when you\'re working out by yourself. Having someone there means you won\'t be takeing any shortcuts!'
+	            )
+	          ),
+	          React.createElement('img', { src: 'http://res.cloudinary.com/dque3vywj/image/upload/v1462316702/motivation_etahk1.png' })
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'reasons' },
+	          React.createElement('img', { src: 'http://res.cloudinary.com/dque3vywj/image/upload/v1462318736/workout_buddy_ycanf4.png' }),
+	          React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	              'span',
+	              null,
+	              'Make New Friends!'
+	            ),
+	            React.createElement(
+	              'p',
+	              null,
+	              'Meet and connect with people you won\'t meet otherwise. If you\'re new to the city, it\'d be a great way to get yourself out there and make new friends who share mutual goals.'
+	            )
 	          )
 	        )
 	      )

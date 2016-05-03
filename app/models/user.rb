@@ -15,6 +15,11 @@ class User < ActiveRecord::Base
 
   has_many :workouts
 
+  has_many :paired_workouts,
+    foreign_key: :buddy_id,
+    primary_key: :id,
+    class_name: :Workout
+
   def self.find_by_credentials(username, password)
     user = User.find_by(username: username)
     user.try(:is_password?, password) ? user : nil

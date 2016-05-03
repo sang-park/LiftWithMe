@@ -104,7 +104,10 @@ var WorkoutShow = React.createClass({
 
   pairUp: function(e){
     e.preventDefault();
-
+    ClientActions.pairUp(
+      this.props.workout.id,
+      UserStore.currentUser().id
+    );
   },
 
   openEditForm: function(workout){

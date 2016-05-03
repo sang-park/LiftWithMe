@@ -1,4 +1,5 @@
 var ServerActions = require('../actions/server_actions');
+var hashHistory = require('react-router').hashHistory;
 
 var ApiUtil = {
   fetchAll: function(options){
@@ -71,6 +72,21 @@ var ApiUtil = {
         ServerActions.handleError(error);
       }
     });
+  },
+  pairUp: function(workoutId, userId) {
+
+    $.ajax({
+      url: 'api/workouts/' + workoutId,
+      type: "PATCH",
+      data: {user_id: userId},
+      success: function(user){
+        hashHistory.push('/users/' + user.id);
+      },
+      error: function(error){
+        ServerActions.handleError(error);
+      }
+    });
+
   }
 
 };

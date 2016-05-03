@@ -13,7 +13,6 @@ var HomePage = React.createClass({
   handleClick: function(e){
     e.preventDefault();
     $(".login-info li:nth-child(2)")[0].click();
-
   },
 
   render: function() {
@@ -21,27 +20,74 @@ var HomePage = React.createClass({
       <div className="splash">
         <div className="workout-splash">
           <div className="gray-overlay">
-            <h1>WORKOUT</h1>
+            <h1>Need a Spot?</h1>
             <p>Never workout without a spotter again</p>
             <div className="button-cover">
-              <button onClick={this.handleClick}>Find Your Gym Buddy</button>
+              <button
+                className="animated pulse"
+                onClick={this.handleClick}>Let's workout</button>
             </div>
           </div>
         </div>
 
         <div className="info">
           <div>
-            <span>We do this!</span>
-            <p>like so</p>
+            <span>Push your limits</span>
+            <p>No need to worry about getting a spotter</p>
           </div>
           <div>
-            <span>Also this</span>
-            <p>wow</p>
+            <span>Sign up for a workout!</span>
+            <p>You get to pick which workout you want to join</p>
           </div>
           <div>
-            <span>Much Style</span>
-            <p>such website</p>
+            <span>Such gains</span>
+            <p>Much swole</p>
           </div>
+        </div>
+
+        <div className="why">
+
+          <p className="but-why">Why use LiftWithMe?</p>
+
+          <div className="reasons">
+            <img src="http://res.cloudinary.com/dque3vywj/image/upload/v1462316042/lifting_too_much_krupsj.png" />
+
+            <div>
+              <span>It's Dangerous to Work Out Alone</span>
+              <p>
+                With LiftWithMe, you'll always have a spotter. No need to be
+                awkward, and ask around for a spotter. Always be able to max
+                out on your workout
+              </p>
+            </div>
+          </div>
+
+          <div className="reasons">
+
+            <div>
+              <span>Motivate One Another</span>
+              <p>
+                It's so easy to drop a rep, or even a set, when you're working
+                out by yourself. Having someone there means you won't be takeing
+                any shortcuts!</p>
+            </div>
+
+            <img src="http://res.cloudinary.com/dque3vywj/image/upload/v1462316702/motivation_etahk1.png" />
+          </div>
+
+          <div className="reasons">
+            <img src="http://res.cloudinary.com/dque3vywj/image/upload/v1462318736/workout_buddy_ycanf4.png" />
+
+            <div>
+              <span>Make New Friends!</span>
+              <p>
+                Meet and connect with people you won't meet otherwise. If you're
+                new to the city, it'd be a great way to get yourself out there
+                and make new friends who share mutual goals.
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
 

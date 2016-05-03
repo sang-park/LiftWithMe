@@ -6,7 +6,7 @@
 
   .workout-splash {
     height: 100%;
-    background-image: url("http://www.bodybuilding.com/images/2016/january/7-ways-to-get-a-great-workout-in-a-packed-gym-graphics-2.jpg");
+    background-image: url("http://static1.squarespace.com/static/54dbf34ce4b05cd95c721a07/t/54dbf4c9e4b066babee77003/1423701200225/Untitled_Panorama1-2.jpg?format=2500w");
     overflow: hidden;
     background-size: cover;
     background-repeat: no-repeat;
@@ -64,7 +64,7 @@
   display: flex;
   flex-direction: row;
   justify-content: space-around;
-  height: 100px;
+  height: 150px;
   padding: 20px;
   background-color: rgba(244,244,244,1);
 
@@ -73,6 +73,8 @@
     width: 30%;
     height: 100%;
     text-align: center;
+    min-width: 200px;
+    max-width: 300px;
 
     span {
       font-size: 24px;
@@ -81,8 +83,61 @@
     }
 
     p {
+      position: relative;
+      top: 10px;
       font-size: 18px;
       color: #3d3d3d;
+    }
+  }
+}
+
+.why {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  color: black;
+
+  .but-why {
+    font-size: 36px;
+    padding: 20px;
+
+  }
+
+  .reasons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 70%;
+    height: 300px;
+    overflow: hidden;
+    margin-left: 15%;
+    margin-right: 15%;
+    margin-top: 10px;
+
+    img {
+      width: 30%;
+      height: auto;
+      border-radius: 5%;
+    }
+
+    div {
+      min-width: 300px;
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      * {
+        padding: 10px;
+      }
+      span {
+        font-size: 24px
+
+      }
+
+      p {
+        font-size: 18px;
+      }
     }
   }
 }

@@ -5,7 +5,9 @@ class Workout < ActiveRecord::Base
   belongs_to :buddy,
     foreign_key: :buddy_id,
     class_name: :User
+
   has_many :workout_exercises
+  
   has_many :exercises,
     through: :workout_exercises,
     source: :exercise

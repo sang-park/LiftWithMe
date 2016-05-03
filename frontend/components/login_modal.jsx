@@ -1,5 +1,6 @@
 var React = require('react');
 var UserActions = require("../actions/user_actions");
+var hashHistory = require('react-router').hashHistory;
 
 var LoginModal = React.createClass({
   blankAttrs: {
@@ -19,6 +20,7 @@ var LoginModal = React.createClass({
     };
     UserActions.login(user);
     this.state = this.blankAttrs;
+    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
   },
   handleSignUp: function(e){
     e.preventDefault();
@@ -28,6 +30,7 @@ var LoginModal = React.createClass({
     };
     UserActions.signup(user);
     this.setState(this.blankAttrs);
+    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
   },
   demoLogin: function(e){
     e.preventDefault();
@@ -37,6 +40,8 @@ var LoginModal = React.createClass({
     };
     UserActions.login(user);
     this.setState(this.blankAttrs);
+    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
+
   },
   changeToLogin: function(){
     this.setState({status: "Log In"});
@@ -128,7 +133,7 @@ var LoginModal = React.createClass({
   },
   render: function() {
     return (
-      <form onSubmit={this.handleSubmit} className="login-form">
+      <form className="login-form">
         <section className="credentials">
           {this.header()}
           {this.usernamePassword()}

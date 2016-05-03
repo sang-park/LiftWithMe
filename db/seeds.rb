@@ -61,9 +61,9 @@ Exercise.create!({name: "Lat Pulldowns"})
   time = Time.new
   date = Date.current
 
-  Workout.create!({name: "Workout 1" + i.to_s, user_id: i+1, buddy_id: 2, date: date + 1, time: time + rand(1000)})
-  Workout.create!({name: "Workout 2" + i.to_s, user_id: i+1, date: date + 20, time: time + rand(1000)})
-  Workout.create!({name: "Workout 3" + i.to_s, user_id: i+1, date: date + 30, time: time + rand(1000)})
+  Workout.create!({name: "Workout 1" + i.to_s, user_id: i+1, buddy_id: 2, date: date + rand(20), time: time + rand(1000)})
+  Workout.create!({name: "Workout 2" + i.to_s, user_id: i+1, date: date + rand(20), time: time + rand(1000)})
+  Workout.create!({name: "Workout 3" + i.to_s, user_id: i+1, date: date + rand(20), time: time + rand(1000)})
 end
 
 

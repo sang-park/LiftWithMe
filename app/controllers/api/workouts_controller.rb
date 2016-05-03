@@ -28,13 +28,11 @@ class Api::WorkoutsController < ApplicationController
   end
 
   def update
-    debugger
     @workout = Workout.find(params["id"])
-    if @workout && @workout.user_id == current_user.id
-
-      @workout.updateAttributes(params[])
-      @gym = Gym.find(current_user.gym_id)
-      render 'api/gyms/show'
+    if @workout
+      @workout.update_attributes({buddy_id: params['user_id'].to_i})
+      @user = current_user
+      render 'api/user/show'
     else
       @errors = ['Cannot delete this workout']
       render "api/shared/error", status: 404
