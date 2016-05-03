@@ -1,6 +1,7 @@
 var React = require("react");
 var LinkedStateMixin = require('react-addons-linked-state-mixin');
 var UserActions = require("../actions/user_actions");
+var LoginModal = require("./login_modal");
 var CurrentUserState = require("../mixins/current_user_state");
 var Modal = require('react-modal');
 var UserStore = require('../stores/user_store');
@@ -30,59 +31,26 @@ var _style = {
 
 var LoginForm = React.createClass({
 	mixins: [LinkedStateMixin, CurrentUserState],
-  blankAttrs: { form: "login",
-    modalIsOpen: false,
-    username: "",
-    password: ""
+  blankAttrs: { form: "Log In",
+    modalIsOpen: false
   },
   getInitialState: function() {
     Modal.setAppElement(document.getElementById("root"));
     return this.blankAttrs;
   },
-  openModal: function() {
-    this.setState({modalIsOpen: true, form: "login"});
+  openModal: function(){
+    this.setState({modalIsOpen: true, form: "Log In"});
   },
   closeModal: function() {
     this.setState({modalIsOpen: false});
   },
-  handleSubmit: function(e){
-    e.preventDefault();
-    var user = {
-      username: this.state.username,
-      password: this.state.password
-    };
-    this.action(user);
-    this.setState(this.blankAttrs);
-  },
-
   handleLogout: function(e){
     e.preventDefault();
     UserActions.logout();
   },
-
-  signUpPage: function(e){
-    e.preventDefault();
-    this.setState({form: "sign up"});
-  },
   goToHomePage: function(e){
     e.preventDefault();
     hashHistory.push("/");
-  },
-  demoLogin: function(e){
-    e.preventDefault();
-    var user = {
-      username: "Arnold",
-      password: "123123"
-    };
-    UserActions.login(user);
-    this.setState(this.blankAttrs);
-  },
-  demoLoginButton: function(){
-    return (
-      <button
-        onClick={this.demoLogin}
-        className="form-button">Demo Log In</button>
-    );
   },
   displayModal: function(button,header){
     return (
@@ -92,32 +60,7 @@ var LoginForm = React.createClass({
         onRequestClose={this.closeModal}
         style={_style}
       >
-        <form onSubmit={this.handleSubmit} className="login-form">
-          <section> <h2>{header}!</h2>
-            <label
-              className="login-section">Username:
-              <input type="text"
-                valueLink={this.linkState("username")}
-                className="login-section"
-              />
-            </label> <br />
-            <label
-              className="login-section">Password:
-              <input type="password"
-                valueLink={this.linkState("password")}
-                className="login-section"
-              />
-            </label>
-          </section>
-          <section className="form-button">
-            <input
-              type="Submit"
-              valueLink={this.linkState("form")}
-            />
-          {button}
-          {this.demoLoginButton()}
-          </section>
-        </form>
+        <LoginModal button={button} header={header}/>
       </Modal>
     );
   },
@@ -126,24 +69,20 @@ var LoginForm = React.createClass({
       return;
     } else {
       var header, button;
-      if (this.state.form === "login") {
+      if (this.state.form === "Log In") {
         header = "Log In";
-        button = <button
+        button = <input
+          type="button"
           onClick={this.signUpPage}
-          className="top-right">
-            Sign Up
-          </button>;
+          value="Sign Up" />;
         this.action = UserActions.login;
       } else {
         header = "Sign Up";
         this.action = UserActions.signup;
       }
       return (
-        <li>
-          <button
-            onClick={this.openModal}
-            className="btn-0 group"
-          >login</button>
+        <li onClick={this.openModal} >
+          Login
           {this.displayModal(button,header)}
         </li>
       );
@@ -157,7 +96,7 @@ var LoginForm = React.createClass({
     if (this.state.currentUser){
       return (
         <li className="dropdown drop-button">
-          {this.state.currentUser.username}
+          Hi, {this.state.currentUser.username}
           <ul className="dropdown-content">
             <li onClick={this.goToUser}>Go to Profile</li>
             <li onClick={this.handleLogout}>Log Out</li>
@@ -204,12 +143,11 @@ var LoginForm = React.createClass({
       );
     }
   },
-
   render: function() {
     return (
       <nav className="navbar">
         <div>
-          <img src={_logoURL} id="logo" onClick={this.goToHomePage}/>
+          <img src={_logoURL} id="logo" onClick={this.goToHomePage} />
         </div>
         <ul className="login-info">
           {this.homeCities()}

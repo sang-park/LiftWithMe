@@ -1,0 +1,24 @@
+h2 {
+  margin: 0 !important;
+}
+
+.login-form {
+
+  .credentials {
+    margin-bottom: 10px;
+  }
+  .form-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    input {
+      border: 0px;
+      padding: 5px;
+      background: #00AE68;
+
+      &:hover {
+        background: #21825B;
+      }
+    }
+  }
+}

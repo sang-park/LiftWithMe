@@ -4,8 +4,8 @@ var HomePage = React.createClass({
 
   render: function() {
     return (
-      <div className="jumbotron">
-        <h1>WELCOME</h1>
+      <div className="splash">
+        <span>WELCOME</span>
       </div>
 
     );

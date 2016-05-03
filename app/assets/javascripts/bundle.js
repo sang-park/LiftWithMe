@@ -32121,6 +32121,7 @@
 	var React = __webpack_require__(1);
 	var LinkedStateMixin = __webpack_require__(245);
 	var UserActions = __webpack_require__(242);
+	var LoginModal = __webpack_require__(292);
 	var CurrentUserState = __webpack_require__(218);
 	var Modal = __webpack_require__(249);
 	var UserStore = __webpack_require__(219);
@@ -32152,61 +32153,26 @@
 	  displayName: "LoginForm",
 	
 	  mixins: [LinkedStateMixin, CurrentUserState],
-	  blankAttrs: { form: "login",
-	    modalIsOpen: false,
-	    username: "",
-	    password: ""
+	  blankAttrs: { form: "Log In",
+	    modalIsOpen: false
 	  },
 	  getInitialState: function () {
 	    Modal.setAppElement(document.getElementById("root"));
 	    return this.blankAttrs;
 	  },
 	  openModal: function () {
-	    this.setState({ modalIsOpen: true, form: "login" });
+	    this.setState({ modalIsOpen: true, form: "Log In" });
 	  },
 	  closeModal: function () {
 	    this.setState({ modalIsOpen: false });
 	  },
-	  handleSubmit: function (e) {
-	    e.preventDefault();
-	    var user = {
-	      username: this.state.username,
-	      password: this.state.password
-	    };
-	    this.action(user);
-	    this.setState(this.blankAttrs);
-	  },
-	
 	  handleLogout: function (e) {
 	    e.preventDefault();
 	    UserActions.logout();
 	  },
-	
-	  signUpPage: function (e) {
-	    e.preventDefault();
-	    this.setState({ form: "sign up" });
-	  },
 	  goToHomePage: function (e) {
 	    e.preventDefault();
 	    hashHistory.push("/");
-	  },
-	  demoLogin: function (e) {
-	    e.preventDefault();
-	    var user = {
-	      username: "Arnold",
-	      password: "123123"
-	    };
-	    UserActions.login(user);
-	    this.setState(this.blankAttrs);
-	  },
-	  demoLoginButton: function () {
-	    return React.createElement(
-	      "button",
-	      {
-	        onClick: this.demoLogin,
-	        className: "form-button" },
-	      "Demo Log In"
-	    );
 	  },
 	  displayModal: function (button, header) {
 	    return React.createElement(
@@ -32217,53 +32183,7 @@
 	        onRequestClose: this.closeModal,
 	        style: _style
 	      },
-	      React.createElement(
-	        "form",
-	        { onSubmit: this.handleSubmit, className: "login-form" },
-	        React.createElement(
-	          "section",
-	          null,
-	          " ",
-	          React.createElement(
-	            "h2",
-	            null,
-	            header,
-	            "!"
-	          ),
-	          React.createElement(
-	            "label",
-	            {
-	              className: "login-section" },
-	            "Username:",
-	            React.createElement("input", { type: "text",
-	              valueLink: this.linkState("username"),
-	              className: "login-section"
-	            })
-	          ),
-	          " ",
-	          React.createElement("br", null),
-	          React.createElement(
-	            "label",
-	            {
-	              className: "login-section" },
-	            "Password:",
-	            React.createElement("input", { type: "password",
-	              valueLink: this.linkState("password"),
-	              className: "login-section"
-	            })
-	          )
-	        ),
-	        React.createElement(
-	          "section",
-	          { className: "form-button" },
-	          React.createElement("input", {
-	            type: "Submit",
-	            valueLink: this.linkState("form")
-	          }),
-	          button,
-	          this.demoLoginButton()
-	        )
-	      )
+	      React.createElement(LoginModal, { button: button, header: header })
 	    );
 	  },
 	  form: function () {
@@ -32271,15 +32191,12 @@
 	      return;
 	    } else {
 	      var header, button;
-	      if (this.state.form === "login") {
+	      if (this.state.form === "Log In") {
 	        header = "Log In";
-	        button = React.createElement(
-	          "button",
-	          {
-	            onClick: this.signUpPage,
-	            className: "top-right" },
-	          "Sign Up"
-	        );
+	        button = React.createElement("input", {
+	          type: "button",
+	          onClick: this.signUpPage,
+	          value: "Sign Up" });
 	        this.action = UserActions.login;
 	      } else {
 	        header = "Sign Up";
@@ -32287,15 +32204,8 @@
 	      }
 	      return React.createElement(
 	        "li",
-	        null,
-	        React.createElement(
-	          "button",
-	          {
-	            onClick: this.openModal,
-	            className: "btn-0 group"
-	          },
-	          "login"
-	        ),
+	        { onClick: this.openModal },
+	        "Login",
 	        this.displayModal(button, header)
 	      );
 	    }
@@ -32309,6 +32219,7 @@
 	      return React.createElement(
 	        "li",
 	        { className: "dropdown drop-button" },
+	        "Hi, ",
 	        this.state.currentUser.username,
 	        React.createElement(
 	          "ul",
@@ -32369,7 +32280,6 @@
 	      );
 	    }
 	  },
-	
 	  render: function () {
 	    return React.createElement(
 	      "nav",
@@ -35911,9 +35821,9 @@
 	  render: function () {
 	    return React.createElement(
 	      "div",
-	      { className: "jumbotron" },
+	      { className: "splash" },
 	      React.createElement(
-	        "h1",
+	        "span",
 	        null,
 	        "WELCOME"
 	      )
@@ -36213,6 +36123,99 @@
 	});
 	
 	module.exports = WorkoutIndex;
+
+/***/ },
+/* 291 */,
+/* 292 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var UserActions = __webpack_require__(242);
+	
+	var LoginModal = React.createClass({
+	  displayName: "LoginModal",
+	
+	  getInitialState: function () {
+	    return {
+	      username: "",
+	      password: ""
+	    };
+	  },
+	  handleSubmit: function (e) {
+	    e.preventDefault();
+	    var user = {
+	      username: this.state.username,
+	      password: this.state.password
+	    };
+	    this.action(user);
+	    this.setState(this.blankAttrs);
+	  },
+	  demoLogin: function (e) {
+	    e.preventDefault();
+	    var user = {
+	      username: "Arnold",
+	      password: "123123"
+	    };
+	    UserActions.login(user);
+	    this.setState(this.blankAttrs);
+	  },
+	
+	  render: function () {
+	    var header = this.props.header;
+	    var button = this.props.button;
+	    return React.createElement(
+	      "form",
+	      { onSubmit: this.handleSubmit, className: "login-form" },
+	      React.createElement(
+	        "section",
+	        { className: "credentials" },
+	        React.createElement(
+	          "h2",
+	          null,
+	          header,
+	          "!"
+	        ),
+	        React.createElement(
+	          "label",
+	          {
+	            className: "login-section" },
+	          "Username:",
+	          React.createElement("input", { type: "text",
+	            placeholder: " username",
+	            valueLink: this.linkState("username"),
+	            className: "login-section"
+	          })
+	        ),
+	        " ",
+	        React.createElement("br", null),
+	        React.createElement(
+	          "label",
+	          {
+	            className: "login-section" },
+	          "Password:",
+	          React.createElement("input", { type: "password",
+	            placeholder: " password",
+	            valueLink: this.linkState("password"),
+	            className: "login-section"
+	          })
+	        )
+	      ),
+	      React.createElement(
+	        "section",
+	        { className: "form-button" },
+	        React.createElement("input", {
+	          type: "Submit",
+	          valueLink: this.linkState("form")
+	        }),
+	        button,
+	        this.demoLoginButton()
+	      )
+	    );
+	  }
+	
+	});
+	
+	module.exports = LoginModal;
 
 /***/ }
 /******/ ]);
