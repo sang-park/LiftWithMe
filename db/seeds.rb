@@ -1,13 +1,18 @@
 
 
 
-User.create!({username: "Arnold",password: "123123", gym_id: 1,
+User.create!({username: "Arnold.S",password: "123123", gym_id: 1,
   age: 68, weight: 249, profile_image_url: "http://daily.barbellshrugged.com/wp-content/uploads/2015/02/Screen-Shot-2015-02-05-at-10.52.48-AM.png"})
-User.create!({username: "sang",password: "123123", gym_id: 1})
-User.create!({username: "sang1",password: "123123", gym_id: 1})
-User.create!({username: "sang2",password: "123123", gym_id: 2})
-User.create!({username: "sang3",password: "123123", gym_id: 3})
-User.create!({username: "sang4",password: "123123", gym_id: 4})
+User.create!({username: "Kai.G",password: "123123", gym_id: 1,
+  age: 40, weight: 310, profile_image_url: 'http://broscience.co/wp-content/uploads/2015/01/Kai-greene-workout-routine.jpg'})
+User.create!({username: "Jay.Cutler",password: "123123", gym_id: 1,
+  age: 42, weight: 274, profile_image_url: "http://cdn.nextimpulsesports.com/wp-content/uploads/2015/01/a236f_ORIG-JayCutler_MD_Dec2012_PerBernal_612JJ_B.jpg" })
+User.create!({username: "Dom.M",password: "123123", gym_id: 1,
+  age: 25, weight: 183, profile_image_url: "https://bodywhat.com/uploads/media/report/0001/09/thumb_8981_report_extra_eac14c103849acaa85f8ccbc4a1264414a066aca.png"})
+User.create!({username: "Timothy.E",password: "123123", gym_id: 1,
+  age: 23, weight: 180, profile_image_url: "https://scontent.xx.fbcdn.net/hphotos-xap1/v/t1.0-9/10858351_10152974780013203_7558280172421105113_n.jpg?oh=788c74308a3fd394904a4848e99dde13&oe=57BA63DD"})
+User.create!({username: "Max.L",password: "123123", gym_id: 1,
+  age: 22, weight: 165, profile_image_url: "https://scontent.xx.fbcdn.net/t31.0-8/11895031_10153073140616009_5004617786088603322_o.jpg"})
 
 
 HomeCity.create!({name: "San Francisco"})
@@ -18,7 +23,7 @@ HomeCity.create!({name: "Boston"})
 Gym.create!({name: "Crunch", home_city_id: 1})
 Gym.create!({name: "LA Fitness", home_city_id: 1})
 Gym.create!({name: "24 Hour", home_city_id: 1})
-Gym.create!({name: "Golds Gym", home_city_id: 2})
+Gym.create!({name: "Golds Gym", home_city_id: 1})
 
 Exercise.create!({name: "Sit Up"})
 Exercise.create!({name: "Plank"})
@@ -52,66 +57,25 @@ Exercise.create!({name: "Deltoid Raise"})
 Exercise.create!({name: "Pullups"})
 Exercise.create!({name: "Lat Pulldowns"})
 
-time = Time.new
-date = Date.current
-Workout.create!({name: "Workout 1", user_id: 1, buddy_id: 2, date: date + 1, time: time + 30})
-Workout.create!({name: "Workout 2", user_id: 2, buddy_id: 4, date: date + 2, time: time + 45})
-Workout.create!({name: "Workout 3", user_id: 1, date: date + 3, time: time + 60})
-Workout.create!({name: "Workout 4", user_id: 1, buddy_id: 2, date: date + 1, time: time + 30})
-Workout.create!({name: "Workout 5", user_id: 2, buddy_id: 4, date: date + 2, time: time + 45})
-Workout.create!({name: "Workout 6", user_id: 1, date: date + 3, time: time + 60})
-Workout.create!({name: "Workout 7", user_id: 1, buddy_id: 2, date: date + 1, time: time + 30})
-Workout.create!({name: "Workout 8", user_id: 2, buddy_id: 4, date: date + 2, time: time + 45})
-Workout.create!({name: "Workout 9", user_id: 1, date: date + 3, time: time + 60})
-Workout.create!({name: "Workout 10", user_id: 1, buddy_id: 2, date: date + 1, time: time + 30})
-Workout.create!({name: "Workout 11", user_id: 2, buddy_id: 4, date: date + 2, time: time + 45})
-Workout.create!({name: "Workout 12", user_id: 1, date: date + 3, time: time + 60})
+6.times do |i|
+  time = Time.new
+  date = Date.current
 
-WorkoutExercise.create!({workout_id: 1, exercise_id: 1, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 1, exercise_id: 2, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 1, exercise_id: 3, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 1, exercise_id: 4, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 1, exercise_id: 5, sets: 3, reps: 12})
-WorkoutExercise.create!({workout_id: 2, exercise_id: 1, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 2, exercise_id: 2, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 2, exercise_id: 3, sets: 3, reps: 8})
-WorkoutExercise.create!({workout_id: 2, exercise_id: 4, sets: 3, reps: 8})
-WorkoutExercise.create!({workout_id: 3, exercise_id: 1, sets: 3, reps: 20})
-WorkoutExercise.create!({workout_id: 3, exercise_id: 2, sets: 3, reps: 15})
-WorkoutExercise.create!({workout_id: 3, exercise_id: 3, sets: 3, reps: 10})
-WorkoutExercise.create!({workout_id: 4, exercise_id: 1, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 4, exercise_id: 2, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 4, exercise_id: 3, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 4, exercise_id: 4, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 5, exercise_id: 5, sets: 3, reps: 12})
-WorkoutExercise.create!({workout_id: 5, exercise_id: 1, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 5, exercise_id: 2, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 5, exercise_id: 3, sets: 3, reps: 8})
-WorkoutExercise.create!({workout_id: 6, exercise_id: 4, sets: 3, reps: 8})
-WorkoutExercise.create!({workout_id: 6, exercise_id: 1, sets: 3, reps: 20})
-WorkoutExercise.create!({workout_id: 6, exercise_id: 2, sets: 3, reps: 15})
-WorkoutExercise.create!({workout_id: 6, exercise_id: 3, sets: 3, reps: 10})
-WorkoutExercise.create!({workout_id: 7, exercise_id: 1, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 7, exercise_id: 2, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 7, exercise_id: 3, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 7, exercise_id: 4, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 8, exercise_id: 5, sets: 3, reps: 12})
-WorkoutExercise.create!({workout_id: 8, exercise_id: 1, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 8, exercise_id: 2, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 8, exercise_id: 3, sets: 3, reps: 8})
-WorkoutExercise.create!({workout_id: 9, exercise_id: 4, sets: 3, reps: 8})
-WorkoutExercise.create!({workout_id: 9, exercise_id: 1, sets: 3, reps: 20})
-WorkoutExercise.create!({workout_id: 9, exercise_id: 2, sets: 3, reps: 15})
-WorkoutExercise.create!({workout_id: 9, exercise_id: 3, sets: 3, reps: 10})
-WorkoutExercise.create!({workout_id: 10, exercise_id: 1, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 10, exercise_id: 2, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 10, exercise_id: 3, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 10, exercise_id: 4, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 11, exercise_id: 5, sets: 3, reps: 12})
-WorkoutExercise.create!({workout_id: 11, exercise_id: 1, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 11, exercise_id: 2, sets: 5, reps: 5})
-WorkoutExercise.create!({workout_id: 11, exercise_id: 3, sets: 3, reps: 8})
-WorkoutExercise.create!({workout_id: 12, exercise_id: 4, sets: 3, reps: 8})
-WorkoutExercise.create!({workout_id: 12, exercise_id: 1, sets: 3, reps: 20})
-WorkoutExercise.create!({workout_id: 12, exercise_id: 2, sets: 3, reps: 15})
-WorkoutExercise.create!({workout_id: 12, exercise_id: 3, sets: 3, reps: 10})
+  Workout.create!({name: "Workout 1" + i.to_s, user_id: i+1, buddy_id: 2, date: date + 1, time: time + rand(1000)})
+  Workout.create!({name: "Workout 2" + i.to_s, user_id: i+1, date: date + 20, time: time + rand(1000)})
+  Workout.create!({name: "Workout 3" + i.to_s, user_id: i+1, date: date + 30, time: time + rand(1000)})
+end
+
+
+18.times do |i|
+  exercises = []
+  while exercises.length < 5 do
+    num = rand(21) + 1
+    exercises << num unless exercises.include?(num)
+  end
+  WorkoutExercise.create!({workout_id: i+1, exercise_id: exercises.pop, sets: rand(10)+1, reps: rand(5)+5})
+  WorkoutExercise.create!({workout_id: i+1, exercise_id: exercises.pop, sets: rand(10)+1, reps: rand(5)+5})
+  WorkoutExercise.create!({workout_id: i+1, exercise_id: exercises.pop, sets: rand(10)+1, reps: rand(5)+5})
+  WorkoutExercise.create!({workout_id: i+1, exercise_id: exercises.pop, sets: rand(10)+1, reps: rand(5)+5})
+  WorkoutExercise.create!({workout_id: i+1, exercise_id: exercises.pop, sets: rand(10)+1, reps: rand(5)+5})
+end

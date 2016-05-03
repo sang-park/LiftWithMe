@@ -32564,7 +32564,7 @@
 	  demoLogin: function (e) {
 	    e.preventDefault();
 	    var user = {
-	      username: "Arnold",
+	      username: "Arnold.S",
 	      password: "123123"
 	    };
 	    UserActions.login(user);
