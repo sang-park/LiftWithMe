@@ -3,10 +3,8 @@
   display:block;
   height: 300px;
   font-family: 'Oxygen', sans-serif;
-  background: red; ///for debugging
 
   .workout-splash {
-    opacity: 1; //can be removed with ^^ red
     height: 100%;
     background-image: url("/assets/workoutsplash.jpg");
     overflow: hidden;
