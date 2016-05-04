@@ -1,3 +1,21 @@
+$magenta: #C70062;
+$magenta1: #DD4992;
+$magenta2: #D8207A;
+$magenta3: #9F004E;
+$magenta4: #79003B;
+
+$gold: #F09A00;
+$gold1: #FFC255;
+$gold2: #FFB226;
+$gold3: #C07B00;
+$gold4: #925E00;
+
+$blue: #151FA6;
+$blue1: #553BC2;
+$blue2: #313BB9;
+$blue3: #0F1885;
+$blue4: #091065;
+
 $center-padding: 13px;
 
 #root > div > nav {
@@ -6,12 +24,14 @@ $center-padding: 13px;
 
 .navbar {
   display :block;
-  background-color: #f4f4f4;
+  background-color: $gold2;
   height: 50px;
+  color: white;
   #logo {
+    padding: 5px;
     float: left;
-    height: 49px;
-    width: 150px;
+    height: 45px;
+    width: 135px;
 
     &:hover {
       cursor: pointer;
@@ -27,7 +47,7 @@ $center-padding: 13px;
       padding: $center-padding;
 
       &:hover {
-        background-color: #f1f1f1;
+        background-color: $gold2;
         cursor: pointer;
       }
     }
@@ -47,7 +67,7 @@ $center-padding: 13px;
   display: none;
   flex-direction: column;
   position: absolute;
-  background-color: #f9f9f9;
+  background-color: $gold;
   top: 48px;
   min-width: 150px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
@@ -58,7 +78,7 @@ $center-padding: 13px;
 }
 
 .dropdown-content li:hover {
-  background-color: #f1f1f1;
+  background-color: $gold3;
 }
 
 .dropdown:hover .dropdown-content {

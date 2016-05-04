@@ -7,7 +7,7 @@ var Modal = require('react-modal');
 var UserStore = require('../stores/user_store');
 var hashHistory = require('react-router').hashHistory;
 
-var _logoURL = "http://res.cloudinary.com/dque3vywj/image/upload/v1461889490/logo_ksdmj0.png";
+var _logoURL = "http://res.cloudinary.com/dque3vywj/image/upload/v1462342954/logo_dit3rz.png";
 
 var _style = {
   overlay : {

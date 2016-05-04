@@ -1,12 +1,31 @@
+$magenta: #C70062;
+$magenta1: #DD4992;
+$magenta2: #D8207A;
+$magenta3: #9F004E;
+$magenta4: #79003B;
+
+$gold: #F09A00;
+$gold1: #FFC255;
+$gold2: #FFB226;
+$gold3: #C07B00;
+$gold4: #925E00;
+
+$blue: #151FA6;
+$blue1: #525BC2;
+$blue2: #313BB9;
+$blue3: #0F1885;
+$blue4: #091065;
+
 .splash {
   margin: 0 !important;
   display:block;
-  height: 300px;
+  height: 500px;
   font-family: 'Oxygen', sans-serif;
 
   .workout-splash {
     height: 100%;
-    background-image: url("http://static1.squarespace.com/static/54dbf34ce4b05cd95c721a07/t/54dbf4c9e4b066babee77003/1423701200225/Untitled_Panorama1-2.jpg?format=2500w");
+    background-image: url("http://upl.stack.com/wp-content/uploads/2015/11/21003026/Awkward-Spotter-STACK1.jpg");
+    // background-image: url("http://static1.squarespace.com/static/54dbf34ce4b05cd95c721a07/t/54dbf4c9e4b066babee77003/1423701200225/Untitled_Panorama1-2.jpg?format=2500w");
     overflow: hidden;
     background-size: cover;
     background-repeat: no-repeat;
@@ -16,13 +35,16 @@
 
 
 .gray-overlay {
-  background: rgba(133,133,133, 0.6);
+  background: rgba(199, 0, 98, 0.5);
   height: 100%;
   text-align: center;
   color: white;
+  text-shadow: 1px 1px $blue4;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
 
   h1 {
-    padding-top: 100px;
     font-size: 48px;
     font-weight: 700;
 
@@ -31,34 +53,40 @@
   p {
     font-size: 24px;
   }
+}
 
-  .button-cover {
+.button-cover {
+  color: white;
+  text-shadow: 1px 1px $blue4;
+  margin-top: 20px;
+  border: 0;
+  background: none;
+  box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+
+  button {
     border: 0;
-    background: none;
-    box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.5);
-    width: 100%;
-    display: flex;
-    justify-content: center;
+    background: $gold2;
+    padding: 15px;
+    display: block;
+    width: 20%;
+    height: auto;
+    border-radius: 10px;
+    transition: all 0.2s ;
 
-    button {
-      border: 0;
-      background: #C0B283;
-      padding: 10px;
-      display: block;
-      width: 30%;
-      height: auto;
-      border-radius: 5px;
-      transition: all 0.2s ;
-    }
+  }
 
-    button:hover {
-      margin-top: -2px;
-      margin-left: 0px;
-      transform: scale3d(1.05, 1.05, 1.05);
-      box-shadow: 0px 5px 5px -2px rgba(0, 0, 0, 0.25);
-    }
+  button:hover {
+    margin-top: -2px;
+    margin-left: 0px;
+    transform: scale3d(1.05, 1.05, 1.05);
+    box-shadow: 0px 5px 5px -2px rgba(0, 0, 0, 0.25);
   }
 }
+
 
 .info {
   display: flex;
@@ -66,7 +94,7 @@
   justify-content: space-around;
   height: 150px;
   padding: 20px;
-  background-color: rgba(244,244,244,1);
+  background-color: #ffda99;
 
 
   div {
@@ -79,14 +107,14 @@
     span {
       font-size: 24px;
       font-weight: 700;
-      color: #373737;
+      color: $magenta1;
     }
 
     p {
       position: relative;
       top: 10px;
       font-size: 18px;
-      color: #3d3d3d;
+      color: black;
     }
   }
 }
@@ -95,48 +123,60 @@
   text-align: center;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  color: black;
+  color: $magenta1;
 
   .but-why {
     font-size: 36px;
     padding: 20px;
+    margin-top: 50px;
+    font-weight: 700;
 
   }
 
   .reasons {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
     width: 70%;
     height: 300px;
     overflow: hidden;
     margin-left: 15%;
     margin-right: 15%;
-    margin-top: 10px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+
+
+    .filler {
+      margin: 0;
+      min-width: 0;
+      width: 100px;
+    }
 
     img {
-      width: 30%;
-      height: auto;
+      width: 300px;
+      height: 300px;
       border-radius: 5%;
     }
 
     div {
-      min-width: 300px;
-      width: 40%;
+      width: 300px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      text-align: left;
+
       * {
         padding: 10px;
       }
       span {
-        font-size: 24px
-
+        font-size: 24px;
+        font-weight: 700;
+        color: $gold;
       }
 
       p {
         font-size: 18px;
+        color: #222222;
       }
     }
   }

@@ -32135,7 +32135,7 @@
 	var UserStore = __webpack_require__(219);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	
-	var _logoURL = "http://res.cloudinary.com/dque3vywj/image/upload/v1461889490/logo_ksdmj0.png";
+	var _logoURL = "http://res.cloudinary.com/dque3vywj/image/upload/v1462342954/logo_dit3rz.png";
 	
 	var _style = {
 	  overlay: {
@@ -32630,7 +32630,8 @@
 	        'label',
 	        {
 	          className: 'login-section' },
-	        React.createElement('span', { className: 'glyphicon glyphicon-user' }),
+	        'Username:',
+	        React.createElement('br', null),
 	        React.createElement('input', {
 	          type: 'text',
 	          placeholder: ' Username',
@@ -32644,7 +32645,8 @@
 	        'label',
 	        {
 	          className: 'login-section' },
-	        React.createElement('span', { className: 'glyphicon glyphicon-icon-keys' }),
+	        'Password:',
+	        React.createElement('br', null),
 	        React.createElement('input', {
 	          type: 'password',
 	          placeholder: ' Password',
@@ -36006,7 +36008,7 @@
 	var React = __webpack_require__(1);
 	var UserActions = __webpack_require__(242);
 	var UserStore = __webpack_require__(219);
-	var WorkoutIndex = __webpack_require__(290);
+	var WorkoutIndex = __webpack_require__(279);
 	
 	var UserShow = React.createClass({
 	  displayName: 'UserShow',
@@ -36121,195 +36123,7 @@
 	module.exports = UserShow;
 
 /***/ },
-/* 290 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var React = __webpack_require__(1);
-	var UserStore = __webpack_require__(219);
-	var WorkoutShow = __webpack_require__(280);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var Modal = __webpack_require__(250);
-	var WorkoutForm = __webpack_require__(283);
-	var ClientActions = __webpack_require__(271);
-	
-	var _style = {
-	  overlay: {
-	    position: 'fixed',
-	    top: 0,
-	    left: 0,
-	    right: 0,
-	    bottom: 0,
-	    backgroundColor: 'rgba(255, 255, 255, 0.75)'
-	  },
-	  content: {
-	    top: '30%',
-	    left: '50%',
-	    right: 'auto',
-	    bottom: 'auto',
-	    transform: 'translate(-50%, -50%)',
-	    padding: '0'
-	  }
-	};
-	
-	var WEEKDAYS = ["MON", "TUE", "WED", "THUR", "FRI", "SAT", "SUN"];
-	
-	var WorkoutIndex = React.createClass({
-	  displayName: 'WorkoutIndex',
-	
-	  getInitialState: function () {
-	    this.workout = [];
-	    this.createFormClicked = false;
-	    return {
-	      modalIsOpen: false
-	    };
-	  },
-	  componentDidMount: function () {
-	    ClientActions.fetchAll({ //fetch all the exercises
-	      url: '/api/exercises',
-	      type: "ALL_EXERCISES"
-	    });
-	  },
-	  openModal: function () {
-	    this.createFormClicked = false;
-	    this.setState({ modalIsOpen: true, form: "login" });
-	  },
-	  closeModal: function () {
-	    this.workout = [];
-	    this.setState({ modalIsOpen: false });
-	  },
-	
-	  handleClick: function (workout) {
-	    return function (e) {
-	      e.preventDefault();
-	      this.openModal();
-	      this.workout = React.createElement(WorkoutShow, {
-	        view: this.props.view,
-	        workout: workout,
-	        closeModal: this.closeModal
-	      });
-	    }.bind(this);
-	  },
-	  parseTime: function (time) {
-	    var hr = time.split("T")[1].slice(0, 2);
-	    var min = time.split("T")[1].slice(3, 5);
-	    if (parseInt(hr) < 12) {
-	      return hr + ":" + min + " AM";
-	    } else if (parseInt(hr) === 12) {
-	      return hr + ":" + min + " PM";
-	    } else {
-	      return parseInt(hr) - 12 + ":" + min + " PM";
-	    }
-	  },
-	  workouts: function () {
-	    var workouts = [];
-	    var self = this;
-	    this.props.workouts.forEach(function (workout) {
-	      if (this.props.view || !workout.buddy_id) {
-	        var date = new Date(workout.date.split("-").join("/"));
-	        var wday = WEEKDAYS[date.getDay()];
-	        var time = self.parseTime(workout.time);
-	        var myWorkout = " ";
-	        if (UserStore.currentUser() && UserStore.currentUser().id === workout.user_id) {
-	          myWorkout += "my-workout";
-	        }
-	        workouts.push(React.createElement(
-	          'tr',
-	          {
-	            className: "workout-index-view" + myWorkout,
-	            key: workout.name + workout.time,
-	            onClick: self.handleClick(workout)
-	          },
-	          React.createElement(
-	            'td',
-	            null,
-	            wday
-	          ),
-	          React.createElement(
-	            'td',
-	            null,
-	            date.getMonth() + 1 + "/" + date.getDate(),
-	            ' '
-	          ),
-	          React.createElement(
-	            'td',
-	            null,
-	            time
-	          ),
-	          React.createElement(
-	            'td',
-	            { value: workout.id },
-	            workout.name
-	          ),
-	          React.createElement(
-	            'td',
-	            null,
-	            workout.username
-	          )
-	        ));
-	      }
-	    }.bind(this));
-	    return React.createElement(
-	      'table',
-	      { className: 'workouts' },
-	      React.createElement(
-	        'caption',
-	        null,
-	        this.props.gymName
-	      ),
-	      React.createElement(
-	        'tbody',
-	        null,
-	        workouts
-	      )
-	    );
-	  },
-	  workoutForm: function () {
-	    if (this.createFormClicked) {
-	      return React.createElement(WorkoutForm, {
-	        closeModal: this.closeModal,
-	        view: this.props.view
-	      });
-	    } else {
-	      return [];
-	    }
-	  },
-	  openCreateForm: function () {
-	    this.openModal();
-	    this.createFormClicked = true;
-	  },
-	  render: function () {
-	    var button = [];
-	    if (UserStore.currentUser() && !this.props.view) {
-	      button = React.createElement(
-	        'button',
-	        { onClick: this.openCreateForm },
-	        'Create New Workout'
-	      );
-	    }
-	    return React.createElement(
-	      'div',
-	      null,
-	      this.workouts(),
-	      button,
-	      React.createElement(
-	        Modal,
-	        {
-	          isOpen: this.state.modalIsOpen,
-	          onAfterOpen: this.afterOpenModal,
-	          onRequestClose: this.closeModal,
-	          style: _style
-	        },
-	        this.workoutForm(),
-	        this.workout
-	      )
-	    );
-	  }
-	
-	});
-	
-	module.exports = WorkoutIndex;
-
-/***/ },
+/* 290 */,
 /* 291 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -36350,7 +36164,7 @@
 	          React.createElement(
 	            'p',
 	            null,
-	            'Never workout without a spotter again'
+	            'Never work out without a spotter again'
 	          ),
 	          React.createElement(
 	            'div',
@@ -36421,7 +36235,8 @@
 	        React.createElement(
 	          'div',
 	          { className: 'reasons' },
-	          React.createElement('img', { src: 'http://res.cloudinary.com/dque3vywj/image/upload/v1462316042/lifting_too_much_krupsj.png' }),
+	          React.createElement('img', { src: 'http://res.cloudinary.com/dque3vywj/image/upload/v1462340683/lift_and_fall_navdyo.png' }),
+	          React.createElement('div', { className: 'filler' }),
 	          React.createElement(
 	            'div',
 	            null,
@@ -36454,12 +36269,14 @@
 	              'It\'s so easy to drop a rep, or even a set, when you\'re working out by yourself. Having someone there means you won\'t be takeing any shortcuts!'
 	            )
 	          ),
+	          React.createElement('div', { className: 'filler' }),
 	          React.createElement('img', { src: 'http://res.cloudinary.com/dque3vywj/image/upload/v1462316702/motivation_etahk1.png' })
 	        ),
 	        React.createElement(
 	          'div',
 	          { className: 'reasons' },
-	          React.createElement('img', { src: 'http://res.cloudinary.com/dque3vywj/image/upload/v1462318736/workout_buddy_ycanf4.png' }),
+	          React.createElement('img', { src: 'http://res.cloudinary.com/dque3vywj/image/upload/v1462341001/friends_xkgqim.png' }),
+	          React.createElement('div', { className: 'filler' }),
 	          React.createElement(
 	            'div',
 	            null,
@@ -36474,6 +36291,16 @@
 	              'Meet and connect with people you won\'t meet otherwise. If you\'re new to the city, it\'d be a great way to get yourself out there and make new friends who share mutual goals.'
 	            )
 	          )
+	        )
+	      ),
+	      React.createElement(
+	        'div',
+	        { className: 'button-cover' },
+	        React.createElement(
+	          'button',
+	          {
+	            onClick: this.handleClick },
+	          'Sign Up Now!'
 	        )
 	      )
 	    );

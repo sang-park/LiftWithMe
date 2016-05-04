@@ -79,7 +79,8 @@ var LoginModal = React.createClass({
       <div>
         <label
           className="login-section">
-          <span className="glyphicon glyphicon-user"></span>
+          Username:
+          <br />
           <input
             type="text"
             placeholder=" Username"
@@ -90,7 +91,8 @@ var LoginModal = React.createClass({
         </label><br/>
         <label
           className="login-section">
-          <span className="glyphicon glyphicon-icon-keys"></span>
+          Password:
+          <br />
           <input
             type="password"
             placeholder=" Password"

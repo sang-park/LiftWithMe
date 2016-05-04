@@ -1,7 +1,7 @@
 var React = require('react');
 var UserActions = require('../actions/user_actions');
 var UserStore = require('../stores/user_store');
-var WorkoutIndex = require('../components/Workout_index');
+var WorkoutIndex = require('../components/workout_index');
 
 var UserShow = React.createClass({
   getInitialState: function() {

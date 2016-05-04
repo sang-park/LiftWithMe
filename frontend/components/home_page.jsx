@@ -21,14 +21,14 @@ var HomePage = React.createClass({
         <div className="workout-splash">
           <div className="gray-overlay">
             <h1>Need a Spot?</h1>
-            <p>Never workout without a spotter again</p>
+            <p>Never work out without a spotter again</p>
             <div className="button-cover">
               <button
                 onClick={this.handleClick}>Let's workout</button>
             </div>
           </div>
         </div>
-
+        
         <div className="info">
           <div>
             <span>Push your limits</span>
@@ -49,8 +49,8 @@ var HomePage = React.createClass({
           <p className="but-why">Why use LiftWithMe?</p>
 
           <div className="reasons">
-            <img src="http://res.cloudinary.com/dque3vywj/image/upload/v1462316042/lifting_too_much_krupsj.png" />
-
+            <img src="http://res.cloudinary.com/dque3vywj/image/upload/v1462340683/lift_and_fall_navdyo.png" />
+            <div className="filler" />
             <div>
               <span>It's Dangerous to Work Out Alone</span>
               <p>
@@ -70,13 +70,13 @@ var HomePage = React.createClass({
                 out by yourself. Having someone there means you won't be takeing
                 any shortcuts!</p>
             </div>
-
+            <div className="filler" />
             <img src="http://res.cloudinary.com/dque3vywj/image/upload/v1462316702/motivation_etahk1.png" />
           </div>
 
           <div className="reasons">
-            <img src="http://res.cloudinary.com/dque3vywj/image/upload/v1462318736/workout_buddy_ycanf4.png" />
-
+            <img src="http://res.cloudinary.com/dque3vywj/image/upload/v1462341001/friends_xkgqim.png" />
+              <div className="filler" />
             <div>
               <span>Make New Friends!</span>
               <p>
@@ -88,6 +88,12 @@ var HomePage = React.createClass({
           </div>
 
         </div>
+
+        <div className="button-cover">
+          <button
+            onClick={this.handleClick}>Sign Up Now!</button>
+        </div>
+
       </div>
 
     );
