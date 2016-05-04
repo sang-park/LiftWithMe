@@ -24,7 +24,6 @@ var HomePage = React.createClass({
             <p>Never workout without a spotter again</p>
             <div className="button-cover">
               <button
-                className="animated pulse"
                 onClick={this.handleClick}>Let's workout</button>
             </div>
           </div>

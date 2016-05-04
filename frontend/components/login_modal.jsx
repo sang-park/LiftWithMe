@@ -20,7 +20,6 @@ var LoginModal = React.createClass({
     };
     UserActions.login(user);
     this.state = this.blankAttrs;
-    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
   },
   handleSignUp: function(e){
     e.preventDefault();

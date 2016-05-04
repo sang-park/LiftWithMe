@@ -1,4 +1,5 @@
 var AppDispatcher = require('../dispatcher/dispatcher.js');
+var hashHistory = require('react-router').hashHistory;
 var Store = require('flux/utils').Store;
 var UserConstants = require('../constants/user_constants');
 
@@ -6,12 +7,20 @@ var UserStore = new Store(AppDispatcher);
 
 var _currentUser, _user = {}, _errors, _loaded = false;
 
+var goToGym = function(){
+  hashHistory.push('/gyms/' + _currentUser.gym.id);
+};
+
 UserStore.__onDispatch = function (payload) {
   switch(payload.actionType) {
     case UserConstants.LOGIN:
       if (payload.user.errors !== null){
     	  UserStore.login(payload.user);
         UserStore.__emitChange();
+        if (_currentUser){
+          goToGym();
+
+        }
       }
       break;
     case UserConstants.LOGOUT:

@@ -2,6 +2,7 @@ var UserConstants = require('../constants/user_constants');
 var UserApiUtil = require('../util/user_api_util');
 var UserStore = require('../stores/user_store');
 var AppDispatcher = require('../dispatcher/dispatcher');
+var hashHistory = require('react-router').hashHistory;
 
 var UserActions = {
   //clientactions
@@ -38,7 +39,6 @@ var UserActions = {
       UserActions.handleError
     );
 	},
-
   //serveractions
 	receiveCurrentUser: function(user){
 		AppDispatcher.dispatch({

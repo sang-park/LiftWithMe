@@ -25150,6 +25150,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var AppDispatcher = __webpack_require__(220);
+	var hashHistory = __webpack_require__(159).hashHistory;
 	var Store = __webpack_require__(224).Store;
 	var UserConstants = __webpack_require__(241);
 	
@@ -25160,12 +25161,19 @@
 	    _errors,
 	    _loaded = false;
 	
+	var goToGym = function () {
+	  hashHistory.push('/gyms/' + _currentUser.gym.id);
+	};
+	
 	UserStore.__onDispatch = function (payload) {
 	  switch (payload.actionType) {
 	    case UserConstants.LOGIN:
 	      if (payload.user.errors !== null) {
 	        UserStore.login(payload.user);
 	        UserStore.__emitChange();
+	        if (_currentUser) {
+	          goToGym();
+	        }
 	      }
 	      break;
 	    case UserConstants.LOGOUT:
@@ -32013,6 +32021,7 @@
 	var UserApiUtil = __webpack_require__(243);
 	var UserStore = __webpack_require__(219);
 	var AppDispatcher = __webpack_require__(220);
+	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var UserActions = {
 		//clientactions
@@ -32031,7 +32040,6 @@
 		logout: function () {
 			UserApiUtil.logout(UserActions.removeCurrentUser, UserActions.handleError);
 		},
-	
 		//serveractions
 		receiveCurrentUser: function (user) {
 			AppDispatcher.dispatch({
@@ -32552,7 +32560,6 @@
 	    };
 	    UserActions.login(user);
 	    this.state = this.blankAttrs;
-	    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
 	  },
 	  handleSignUp: function (e) {
 	    e.preventDefault();
@@ -36351,7 +36358,6 @@
 	            React.createElement(
 	              'button',
 	              {
-	                className: 'animated pulse',
 	                onClick: this.handleClick },
 	              'Let\'s workout'
 	            )
