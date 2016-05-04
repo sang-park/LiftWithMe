@@ -64,45 +64,45 @@ var WorkoutIndex = React.createClass({
     }.bind(this);
   },
   parseTime: function(time){
-    var tdate = new Date(time);
-    var hr = tdate.getHours();
-    var min = tdate.getMinutes();
-    if (min < 10) {
-      min = "0" + min;
-    }
-    if (hr < 12){
+    var hr = time.split("T")[1].slice(0,2);
+    var min = time.split("T")[1].slice(3,5);
+    if (parseInt(hr) < 12){
       return (hr + ":" + min + " AM");
+    } else if (parseInt(hr) === 12){
+      return (hr + ":" + min + " PM");
     } else {
-      return ((hr-12) + ":" + min + " PM");
+      return ((parseInt(hr)-12) + ":" + min + " PM");
     }
   },
   workouts: function(){
     var workouts = [];
     var self = this;
     this.props.workouts.forEach(function(workout){
-      var date = new Date(workout.date);
-      var wday = WEEKDAYS[date.getDay()];
-      var time = self.parseTime(workout.time);
-      var myWorkout = " ";
-      if ( UserStore.currentUser() &&
+      if (this.props.view || !workout.buddy_id) {
+        var date = new Date(workout.date.split("-").join("/"));
+        var wday = WEEKDAYS[date.getDay()];
+        var time = self.parseTime(workout.time);
+        var myWorkout = " ";
+        if ( UserStore.currentUser() &&
         UserStore.currentUser().id === workout.user_id) {
-        myWorkout += "my-workout";
+          myWorkout += "my-workout";
+        }
+        workouts.push(
+          <tr
+            className = {"workout-index-view" + myWorkout}
+            key={workout.name + workout.time}
+            onClick={self.handleClick(workout)}
+            >
+            <td>{wday}</td>
+            <td>{(date.getMonth()+1) + "/" + date.getDate()} </td>
+            <td>{time}</td>
+            <td value={workout.id} >
+              {workout.name}
+            </td>
+            <td>{workout.username}</td>
+          </tr>);
       }
-      workouts.push(
-        <tr
-          className = {"workout-index-view" + myWorkout}
-          key={workout.name + workout.time}
-          onClick={self.handleClick(workout)}
-        >
-          <td>{wday}</td>
-          <td>{date.getMonth() + "/" + date.getDate()} </td>
-          <td>{time}</td>
-          <td value={workout.id} >
-            {workout.name}
-          </td>
-          <td>{workout.username}</td>
-      </tr>);
-    });
+    }.bind(this));
     return (
       <table className="workouts">
         <caption>{this.props.gymName}</caption>

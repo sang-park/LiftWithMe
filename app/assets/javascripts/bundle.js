@@ -25171,7 +25171,7 @@
 	      if (payload.user.errors !== null) {
 	        UserStore.login(payload.user);
 	        UserStore.__emitChange();
-	        if (_currentUser) {
+	        if (_currentUser && _currentUser.gym) {
 	          goToGym();
 	        }
 	      }
@@ -35194,64 +35194,64 @@
 	    }.bind(this);
 	  },
 	  parseTime: function (time) {
-	    var tdate = new Date(time);
-	    var hr = tdate.getHours();
-	    var min = tdate.getMinutes();
-	    if (min < 10) {
-	      min = "0" + min;
-	    }
-	    if (hr < 12) {
+	    var hr = time.split("T")[1].slice(0, 2);
+	    var min = time.split("T")[1].slice(3, 5);
+	    if (parseInt(hr) < 12) {
 	      return hr + ":" + min + " AM";
+	    } else if (parseInt(hr) === 12) {
+	      return hr + ":" + min + " PM";
 	    } else {
-	      return hr - 12 + ":" + min + " PM";
+	      return parseInt(hr) - 12 + ":" + min + " PM";
 	    }
 	  },
 	  workouts: function () {
 	    var workouts = [];
 	    var self = this;
 	    this.props.workouts.forEach(function (workout) {
-	      var date = new Date(workout.date);
-	      var wday = WEEKDAYS[date.getDay()];
-	      var time = self.parseTime(workout.time);
-	      var myWorkout = " ";
-	      if (UserStore.currentUser() && UserStore.currentUser().id === workout.user_id) {
-	        myWorkout += "my-workout";
+	      if (this.props.view || !workout.buddy_id) {
+	        var date = new Date(workout.date.split("-").join("/"));
+	        var wday = WEEKDAYS[date.getDay()];
+	        var time = self.parseTime(workout.time);
+	        var myWorkout = " ";
+	        if (UserStore.currentUser() && UserStore.currentUser().id === workout.user_id) {
+	          myWorkout += "my-workout";
+	        }
+	        workouts.push(React.createElement(
+	          'tr',
+	          {
+	            className: "workout-index-view" + myWorkout,
+	            key: workout.name + workout.time,
+	            onClick: self.handleClick(workout)
+	          },
+	          React.createElement(
+	            'td',
+	            null,
+	            wday
+	          ),
+	          React.createElement(
+	            'td',
+	            null,
+	            date.getMonth() + 1 + "/" + date.getDate(),
+	            ' '
+	          ),
+	          React.createElement(
+	            'td',
+	            null,
+	            time
+	          ),
+	          React.createElement(
+	            'td',
+	            { value: workout.id },
+	            workout.name
+	          ),
+	          React.createElement(
+	            'td',
+	            null,
+	            workout.username
+	          )
+	        ));
 	      }
-	      workouts.push(React.createElement(
-	        'tr',
-	        {
-	          className: "workout-index-view" + myWorkout,
-	          key: workout.name + workout.time,
-	          onClick: self.handleClick(workout)
-	        },
-	        React.createElement(
-	          'td',
-	          null,
-	          wday
-	        ),
-	        React.createElement(
-	          'td',
-	          null,
-	          date.getMonth() + "/" + date.getDate(),
-	          ' '
-	        ),
-	        React.createElement(
-	          'td',
-	          null,
-	          time
-	        ),
-	        React.createElement(
-	          'td',
-	          { value: workout.id },
-	          workout.name
-	        ),
-	        React.createElement(
-	          'td',
-	          null,
-	          workout.username
-	        )
-	      ));
-	    });
+	    }.bind(this));
 	    return React.createElement(
 	      'table',
 	      { className: 'workouts' },
@@ -36190,64 +36190,64 @@
 	    }.bind(this);
 	  },
 	  parseTime: function (time) {
-	    var tdate = new Date(time);
-	    var hr = tdate.getHours();
-	    var min = tdate.getMinutes();
-	    if (min < 10) {
-	      min = "0" + min;
-	    }
-	    if (hr < 12) {
+	    var hr = time.split("T")[1].slice(0, 2);
+	    var min = time.split("T")[1].slice(3, 5);
+	    if (parseInt(hr) < 12) {
 	      return hr + ":" + min + " AM";
+	    } else if (parseInt(hr) === 12) {
+	      return hr + ":" + min + " PM";
 	    } else {
-	      return hr - 12 + ":" + min + " PM";
+	      return parseInt(hr) - 12 + ":" + min + " PM";
 	    }
 	  },
 	  workouts: function () {
 	    var workouts = [];
 	    var self = this;
 	    this.props.workouts.forEach(function (workout) {
-	      var date = new Date(workout.date);
-	      var wday = WEEKDAYS[date.getDay()];
-	      var time = self.parseTime(workout.time);
-	      var myWorkout = " ";
-	      if (UserStore.currentUser() && UserStore.currentUser().id === workout.user_id) {
-	        myWorkout += "my-workout";
+	      if (this.props.view || !workout.buddy_id) {
+	        var date = new Date(workout.date.split("-").join("/"));
+	        var wday = WEEKDAYS[date.getDay()];
+	        var time = self.parseTime(workout.time);
+	        var myWorkout = " ";
+	        if (UserStore.currentUser() && UserStore.currentUser().id === workout.user_id) {
+	          myWorkout += "my-workout";
+	        }
+	        workouts.push(React.createElement(
+	          'tr',
+	          {
+	            className: "workout-index-view" + myWorkout,
+	            key: workout.name + workout.time,
+	            onClick: self.handleClick(workout)
+	          },
+	          React.createElement(
+	            'td',
+	            null,
+	            wday
+	          ),
+	          React.createElement(
+	            'td',
+	            null,
+	            date.getMonth() + 1 + "/" + date.getDate(),
+	            ' '
+	          ),
+	          React.createElement(
+	            'td',
+	            null,
+	            time
+	          ),
+	          React.createElement(
+	            'td',
+	            { value: workout.id },
+	            workout.name
+	          ),
+	          React.createElement(
+	            'td',
+	            null,
+	            workout.username
+	          )
+	        ));
 	      }
-	      workouts.push(React.createElement(
-	        'tr',
-	        {
-	          className: "workout-index-view" + myWorkout,
-	          key: workout.name + workout.time,
-	          onClick: self.handleClick(workout)
-	        },
-	        React.createElement(
-	          'td',
-	          null,
-	          wday
-	        ),
-	        React.createElement(
-	          'td',
-	          null,
-	          date.getMonth() + "/" + date.getDate(),
-	          ' '
-	        ),
-	        React.createElement(
-	          'td',
-	          null,
-	          time
-	        ),
-	        React.createElement(
-	          'td',
-	          { value: workout.id },
-	          workout.name
-	        ),
-	        React.createElement(
-	          'td',
-	          null,
-	          workout.username
-	        )
-	      ));
-	    });
+	    }.bind(this));
 	    return React.createElement(
 	      'table',
 	      { className: 'workouts' },

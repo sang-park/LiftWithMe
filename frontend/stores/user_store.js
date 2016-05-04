@@ -17,7 +17,7 @@ UserStore.__onDispatch = function (payload) {
       if (payload.user.errors !== null){
     	  UserStore.login(payload.user);
         UserStore.__emitChange();
-        if (_currentUser){
+        if (_currentUser && _currentUser.gym){
           goToGym();
 
         }
