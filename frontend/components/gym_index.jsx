@@ -1,11 +1,14 @@
 var React = require('react');
 var GymStore = require('../stores/home_city_store');
 var hashHistory = require('react-router').hashHistory;
+var Map = require('./map');
+
+
 
 var GymIndex = React.createClass({
   handleClick: function(e){
     e.preventDefault();
-    var id = e.target.value;
+    var id = e.currentTarget.value;
     hashHistory.push('/gyms/' + id);
   },
   render: function() {
@@ -15,10 +18,22 @@ var GymIndex = React.createClass({
         onClick={this.handleClick}
         key={gym.name}
         value={gym.id}
-      >{gym.name}</li>);
+        className="gym-each"
+      >
+      <img src={gym.logo_url} className="gym-logo" />
+      <span>{gym.name}</span>
+      <p>{gym.address}</p>
+      </li>);
     }.bind(this));
     return (
-      <ul>{gyms}</ul>
+      <div className="gym-index-pane">
+        <ul className="gym-index">
+          {gyms}
+        </ul>
+        <Map
+          gyms={this.props.gyms}
+          cityName={this.props.cityName}/>
+      </div>
     );
   }
 

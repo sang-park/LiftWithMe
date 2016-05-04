@@ -27,7 +27,9 @@ var HomeCityShow = React.createClass({
     return (
       <div>
         <h2>{this.state.homeCity.name}</h2>
-        <GymIndex gyms={this.state.homeCity.gyms}/>
+        <GymIndex
+          gyms={this.state.homeCity.gyms}
+          cityName={this.state.homeCity.name} />
       </div>
     );
   }

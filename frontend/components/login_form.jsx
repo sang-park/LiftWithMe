@@ -113,8 +113,12 @@ var LoginForm = React.createClass({
   },
   redirectToGym: function(e){
     e.preventDefault();
-    var gymId = UserStore.currentGymId();
-    hashHistory.push('gyms/' + gymId);
+    var gym = UserStore.currentUser().gym;
+    if (gym){
+      hashHistory.push('gyms/' + gym.id);
+    } else {
+      hashHistory.push('home_cities/');
+    }
   },
   homeCities: function(){
     return (

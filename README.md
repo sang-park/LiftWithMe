@@ -8,10 +8,10 @@
 
 LiftWithMe's overall design was inspired by Tea With Strangers, an app that allows you to meet, drink tea, and have meaningful conversations with strangers. LiftWithMe is a web application that will be built using Ruby on Rails and React.js. The finished product will meet the following minimum critera:
 
-- [ ] Sign-up, sign-in, and a demo sign-in feature
+- [x] Sign-up, sign-in, and a demo sign-in feature
 - [ ] Smooth, bug-free navigation
-- [ ] Populating the website with seeding data
-- [ ] 'Hosting' a gym session, signing up for a session, profile look-up
+- [x] Populating the website with seeding data
+- [x] 'Hosting' a gym session, signing up for a session, profile look-up
 - [x] Hosting on Heroku
 - [ ] CSS styling that is satisfactorily visually appealing
 - [ ] A production README, replacing this README
@@ -21,10 +21,10 @@ LiftWithMe's overall design was inspired by Tea With Strangers, an app that allo
 LiftWithMe will allow users to do the following:
 
 - [x] Create an account (MVP)
-- [ ] Log in / Log out, including as a Guest/Demo User (MVP)
-- [ ] Create, edit, and delete a gym session (MVP)
+- [x] Log in / Log out, including as a Guest/Demo User (MVP)
+- [x] Create, edit, and delete a gym session (MVP)
 - [x] Able to look at all possible sessions (MVP)
-- [ ] Sign up for a gym session (MVP)
+- [x] Sign up for a gym session (MVP)
 - [ ] Profile look ups (MVP)
 
 ## Design Docs
@@ -81,9 +81,9 @@ user interface.
 
 **Objective:** Existing pages (including singup/signin) will look good.
 
-- [ ] create a basic style guide
-- [ ] position elements on the page
-- [ ] add basic colors & styles
+- [x] create a basic style guide
+- [x] position elements on the page
+- [x] add basic colors & styles
 
 ### Phase 5: Muscle Tagging (1 day)
 
@@ -108,14 +108,10 @@ user interface.
 
 ### Bonus Features (TBD)
 - [ ] Search through workouts by time
-- [ ] Pagination / infinite scroll for gym sessions
 - [ ] Friend system with other users
 - [ ] Search users by how much they lift
 - [ ] Save Workouts like a playlist
 - [ ] Multiple sessions
-
-### To-do
-- [ ] time on form and screen is off by 8 hours... and 2 months
 
 [phase-one]: ./docs/phases/phase1.md
 [phase-two]: ./docs/phases/phase2.md

@@ -7,7 +7,10 @@ var LoginModal = React.createClass({
     status: "Log In",
     buttons: [],
     username: "",
-    password: ""
+    password: "",
+    age: "",
+    weight: "",
+    profile_url: ""
   },
   getInitialState: function() {
     return this.blankAttrs;
@@ -20,16 +23,6 @@ var LoginModal = React.createClass({
     };
     UserActions.login(user);
     this.state = this.blankAttrs;
-  },
-  handleSignUp: function(e){
-    e.preventDefault();
-    var user = {
-      username: this.state.username,
-      password: this.state.password
-    };
-    UserActions.signup(user);
-    this.setState(this.blankAttrs);
-    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
   },
   demoLogin: function(e){
     e.preventDefault();
@@ -76,31 +69,28 @@ var LoginModal = React.createClass({
   },
   usernamePassword : function(){
     return (
-      <div>
+      <div className="credentials">
         <label
           className="login-section">
-          Username:
-          <br />
+          <span className="username-icon my-glyph"/>
           <input
             type="text"
-            placeholder=" Username"
+            placeholder="Username"
             value={this.state.username}
             onChange={this.updateUsername}
-            className="login-section"
-            />
-        </label><br/>
-        <label
-          className="login-section">
-          Password:
-          <br />
-          <input
-            type="password"
-            placeholder=" Password"
-            value={this.state.password}
-            onChange={this.updatePassword}
-            className="login-section"
             />
         </label>
+        <label
+          className="login-section">
+          <span className="password-icon my-glyph"/>
+          <input
+            type="password"
+            placeholder="Password"
+            value={this.state.password}
+            onChange={this.updatePassword}
+            />
+        </label>
+        {this.personalInfo()}
       </div>
     );
   },
@@ -122,12 +112,63 @@ var LoginModal = React.createClass({
       );
     } else {
       return (
-        <div>
+        <div className="auth-btns">
           <input
             type="button"
             value="Sign Up"
             className="auth-btn"
-            onClick={this.handleSignup} />
+            onClick={this.handleSubmit} />
+        </div>
+      );
+    }
+  },
+  handleSubmit: function(e){
+    e.preventDefault();
+    var user = {
+      username: this.state.username,
+      password: this.state.password,
+      age: this.state.age,
+      weight: this.state.weight,
+      profile_url: this.state.profile_url
+    };
+    UserActions.signup(user);
+    this.setState(this.blankAttrs);
+    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
+    },
+  handleSignupValueChange:  function(state){
+    return function(e){
+      e.preventDefault();
+      var updateAttrs = {};
+      updateAttrs[state] = e.target.value;
+      this.setState(updateAttrs);
+    }.bind(this);
+  },
+  personalInfo: function(){
+    if (this.state.status === "Sign Up") {
+      return (
+        <div className="user-info">
+          <label>
+            <input
+              type="number"
+              value={this.state.age}
+              placeholder="Age"
+              onChange={this.handleSignupValueChange("age")}/>
+          </label>
+          <label>
+            <input
+              type="number"
+              value={this.state.weight}
+              placeholder="Weight"
+              onChange={this.handleSignupValueChange("weight")}/>
+            </label>
+          <label>
+            <input
+              type="text"
+              value={this.state.profile_url}
+              placeholder="Profile Image URL (Optional)"
+              className="longer"
+              onChange={this.handleSignupValueChange("profile_url")}/>
+            </label> <br />
         </div>
       );
     }
@@ -135,11 +176,9 @@ var LoginModal = React.createClass({
   render: function() {
     return (
       <form className="login-form">
-        <section className="credentials">
-          {this.header()}
-          {this.usernamePassword()}
-          {this.buttons()}
-        </section>
+        {this.header()}
+        {this.usernamePassword()}
+        {this.buttons()}
       </form>
     );
   }
@@ -147,22 +186,3 @@ var LoginModal = React.createClass({
 });
 
 module.exports = LoginModal;
-
-
-
-
-
-
-
-
-
-
-
-// </section>
-// <section className="form-button">
-//   <input
-//     type="Submit"
-//     valueLink={this.linkState("form")}
-//     />
-//   {this.state.buttons}
-//   {this.demoLoginButton()}

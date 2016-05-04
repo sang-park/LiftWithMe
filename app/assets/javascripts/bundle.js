@@ -64,7 +64,7 @@
 	var GymShow = __webpack_require__(277);
 	var WorkoutShow = __webpack_require__(280);
 	var UserShow = __webpack_require__(289);
-	var HomePage = __webpack_require__(291);
+	var HomePage = __webpack_require__(290);
 	
 	var App = React.createClass({
 	  displayName: 'App',
@@ -32258,8 +32258,12 @@
 	  },
 	  redirectToGym: function (e) {
 	    e.preventDefault();
-	    var gymId = UserStore.currentGymId();
-	    hashHistory.push('gyms/' + gymId);
+	    var gym = UserStore.currentUser().gym;
+	    if (gym) {
+	      hashHistory.push('gyms/' + gym.id);
+	    } else {
+	      hashHistory.push('home_cities/');
+	    }
 	  },
 	  homeCities: function () {
 	    return React.createElement(
@@ -32547,7 +32551,10 @@
 	    status: "Log In",
 	    buttons: [],
 	    username: "",
-	    password: ""
+	    password: "",
+	    age: "",
+	    weight: "",
+	    profile_url: ""
 	  },
 	  getInitialState: function () {
 	    return this.blankAttrs;
@@ -32560,16 +32567,6 @@
 	    };
 	    UserActions.login(user);
 	    this.state = this.blankAttrs;
-	  },
-	  handleSignUp: function (e) {
-	    e.preventDefault();
-	    var user = {
-	      username: this.state.username,
-	      password: this.state.password
-	    };
-	    UserActions.signup(user);
-	    this.setState(this.blankAttrs);
-	    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
 	  },
 	  demoLogin: function (e) {
 	    e.preventDefault();
@@ -32625,36 +32622,32 @@
 	  usernamePassword: function () {
 	    return React.createElement(
 	      'div',
-	      null,
+	      { className: 'credentials' },
 	      React.createElement(
 	        'label',
 	        {
 	          className: 'login-section' },
-	        'Username:',
-	        React.createElement('br', null),
+	        React.createElement('span', { className: 'username-icon my-glyph' }),
 	        React.createElement('input', {
 	          type: 'text',
-	          placeholder: ' Username',
+	          placeholder: 'Username',
 	          value: this.state.username,
-	          onChange: this.updateUsername,
-	          className: 'login-section'
+	          onChange: this.updateUsername
 	        })
 	      ),
-	      React.createElement('br', null),
 	      React.createElement(
 	        'label',
 	        {
 	          className: 'login-section' },
-	        'Password:',
-	        React.createElement('br', null),
+	        React.createElement('span', { className: 'password-icon my-glyph' }),
 	        React.createElement('input', {
 	          type: 'password',
-	          placeholder: ' Password',
+	          placeholder: 'Password',
 	          value: this.state.password,
-	          onChange: this.updatePassword,
-	          className: 'login-section'
+	          onChange: this.updatePassword
 	        })
-	      )
+	      ),
+	      this.personalInfo()
 	    );
 	  },
 	  buttons: function () {
@@ -32676,12 +32669,71 @@
 	    } else {
 	      return React.createElement(
 	        'div',
-	        null,
+	        { className: 'auth-btns' },
 	        React.createElement('input', {
 	          type: 'button',
 	          value: 'Sign Up',
 	          className: 'auth-btn',
-	          onClick: this.handleSignup })
+	          onClick: this.handleSubmit })
+	      );
+	    }
+	  },
+	  handleSubmit: function (e) {
+	    e.preventDefault();
+	    var user = {
+	      username: this.state.username,
+	      password: this.state.password,
+	      age: this.state.age,
+	      weight: this.state.weight,
+	      profile_url: this.state.profile_url
+	    };
+	    UserActions.signup(user);
+	    this.setState(this.blankAttrs);
+	    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
+	  },
+	  handleSignupValueChange: function (state) {
+	    return function (e) {
+	      e.preventDefault();
+	      var updateAttrs = {};
+	      updateAttrs[state] = e.target.value;
+	      this.setState(updateAttrs);
+	    }.bind(this);
+	  },
+	  personalInfo: function () {
+	    if (this.state.status === "Sign Up") {
+	      return React.createElement(
+	        'div',
+	        { className: 'user-info' },
+	        React.createElement(
+	          'label',
+	          null,
+	          React.createElement('input', {
+	            type: 'number',
+	            value: this.state.age,
+	            placeholder: 'Age',
+	            onChange: this.handleSignupValueChange("age") })
+	        ),
+	        React.createElement(
+	          'label',
+	          null,
+	          React.createElement('input', {
+	            type: 'number',
+	            value: this.state.weight,
+	            placeholder: 'Weight',
+	            onChange: this.handleSignupValueChange("weight") })
+	        ),
+	        React.createElement(
+	          'label',
+	          null,
+	          React.createElement('input', {
+	            type: 'text',
+	            value: this.state.profile_url,
+	            placeholder: 'Profile Image URL (Optional)',
+	            className: 'longer',
+	            onChange: this.handleSignupValueChange("profile_url") })
+	        ),
+	        ' ',
+	        React.createElement('br', null)
 	      );
 	    }
 	  },
@@ -32689,28 +32741,15 @@
 	    return React.createElement(
 	      'form',
 	      { className: 'login-form' },
-	      React.createElement(
-	        'section',
-	        { className: 'credentials' },
-	        this.header(),
-	        this.usernamePassword(),
-	        this.buttons()
-	      )
+	      this.header(),
+	      this.usernamePassword(),
+	      this.buttons()
 	    );
 	  }
 	
 	});
 	
 	module.exports = LoginModal;
-	
-	// </section>
-	// <section className="form-button">
-	//   <input
-	//     type="Submit"
-	//     valueLink={this.linkState("form")}
-	//     />
-	//   {this.state.buttons}
-	//   {this.demoLoginButton()}
 
 /***/ },
 /* 250 */
@@ -34982,7 +35021,9 @@
 	        null,
 	        this.state.homeCity.name
 	      ),
-	      React.createElement(GymIndex, { gyms: this.state.homeCity.gyms })
+	      React.createElement(GymIndex, {
+	        gyms: this.state.homeCity.gyms,
+	        cityName: this.state.homeCity.name })
 	    );
 	  }
 	
@@ -34997,13 +35038,14 @@
 	var React = __webpack_require__(1);
 	var GymStore = __webpack_require__(274);
 	var hashHistory = __webpack_require__(159).hashHistory;
+	var Map = __webpack_require__(291);
 	
 	var GymIndex = React.createClass({
 	  displayName: 'GymIndex',
 	
 	  handleClick: function (e) {
 	    e.preventDefault();
-	    var id = e.target.value;
+	    var id = e.currentTarget.value;
 	    hashHistory.push('/gyms/' + id);
 	  },
 	  render: function () {
@@ -35014,15 +35056,33 @@
 	        {
 	          onClick: this.handleClick,
 	          key: gym.name,
-	          value: gym.id
+	          value: gym.id,
+	          className: 'gym-each'
 	        },
-	        gym.name
+	        React.createElement('img', { src: gym.logo_url, className: 'gym-logo' }),
+	        React.createElement(
+	          'span',
+	          null,
+	          gym.name
+	        ),
+	        React.createElement(
+	          'p',
+	          null,
+	          gym.address
+	        )
 	      ));
 	    }.bind(this));
 	    return React.createElement(
-	      'ul',
-	      null,
-	      gyms
+	      'div',
+	      { className: 'gym-index-pane' },
+	      React.createElement(
+	        'ul',
+	        { className: 'gym-index' },
+	        gyms
+	      ),
+	      React.createElement(Map, {
+	        gyms: this.props.gyms,
+	        cityName: this.props.cityName })
 	    );
 	  }
 	
@@ -36040,13 +36100,17 @@
 	    }
 	  },
 	  profile: function () {
+	    var profileUrl = "https://www.drupal.org/files/profile_default.png";
+	    if (this.state.user.profile_image_url) {
+	      profileUrl = this.state.user.profile_image_url;
+	    }
 	    return React.createElement(
 	      'div',
 	      { className: 'profile-show' },
 	      React.createElement(
 	        'div',
 	        null,
-	        React.createElement('img', { src: this.state.user.profile_image_url })
+	        React.createElement('img', { src: profileUrl })
 	      ),
 	      React.createElement(
 	        'div',
@@ -36123,8 +36187,7 @@
 	module.exports = UserShow;
 
 /***/ },
-/* 290 */,
-/* 291 */
+/* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
@@ -36309,6 +36372,147 @@
 	});
 	
 	module.exports = HomePage;
+
+/***/ },
+/* 291 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ReactDOM = __webpack_require__(158);
+	var hashHistory = __webpack_require__(159).hashHistory;
+	var geocoder = new google.maps.Geocoder();
+	
+	function _getCoordsObj(latLng) {
+	  return {
+	    lat: latLng.lat(),
+	    lng: latLng.lng()
+	  };
+	}
+	
+	var mapOptions = {
+	  "San Francisco": {
+	    center: { lat: 37.783972, lng: -122.405297 }, //San Francisco
+	    zoom: 14
+	  },
+	  "New York": {
+	    center: { lat: 40.7478201, lng: -73.9894112 },
+	    zoom: 13
+	  },
+	  "Los Angeles": {
+	    center: { lat: 34.0165323, lng: -118.4581099 }, //San Francisco
+	    zoom: 11
+	  },
+	  "Boston": {
+	    center: { lat: 42.3539036, lng: -71.060599 }, //San Francisco
+	    zoom: 14
+	  }
+	
+	};
+	
+	var NotMap = React.createClass({
+	  displayName: 'NotMap',
+	
+	  componentDidMount: function () {
+	    var map = ReactDOM.findDOMNode(this.refs.map);
+	    this.map = new google.maps.Map(map, mapOptions[this.props.cityName]);
+	    this.registerListeners();
+	    this.markers = [];
+	    this.eachGym(this.createMarkerFromGym);
+	  },
+	  componentWillReceiveProps: function (nextProps) {
+	    var map = ReactDOM.findDOMNode(this.refs.map);
+	    this.map = new google.maps.Map(map, mapOptions[nextProps.cityName]);
+	    this.registerListeners();
+	    this.markers = [];
+	    this.eachGym(this.createMarkerFromGym);
+	  },
+	  eachGym: function (callback) {
+	    var gyms = this.props.gyms;
+	    var keys = Object.keys(gyms);
+	    keys.forEach(function (key) {
+	      callback(gyms[key]);
+	    });
+	  },
+	
+	  componentDidUpdate: function () {
+	    this._onChange();
+	  },
+	
+	  _onChange: function () {
+	    var gymsToAdd = [];
+	    var markersToRemove = [];
+	    //Collect markers to remove
+	    this.markers.forEach(function (marker) {
+	      if (!this.props.gyms.hasOwnProperty(marker.gymId)) {
+	        markersToRemove.push(marker);
+	      }
+	    }.bind(this));
+	    // Collect gyms to add
+	    var currentGymIds = this.markers.map(function (marker) {
+	      return marker.id;
+	    });
+	    this.eachGym(function (gym) {
+	      if (!currentGymIds.includes(gym.id)) {
+	        gymsToAdd.push(gym);
+	      }
+	    });
+	    //Do the adding / removing
+	    gymsToAdd.forEach(this.createMarkerFromGym);
+	    markersToRemove.forEach(this.removeMarker);
+	  },
+	  registerListeners: function () {
+	    var that = this;
+	    google.maps.event.addListener(this.map, 'idle', function () {
+	      var bounds = that.map.getBounds();
+	      var northEast = _getCoordsObj(bounds.getNorthEast());
+	      var southWest = _getCoordsObj(bounds.getSouthWest());
+	      //actually issue the request
+	      bounds = {
+	        northEast: northEast,
+	        southWest: southWest
+	      };
+	    });
+	    // google.maps.event.addListener(this.map, 'mouseover', function(event) {
+	    //   var coords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
+	    //   // that._handleClick(coords);
+	    //   debugger
+	    // });
+	  },
+	  createMarkerFromGym: function (gym) {
+	    var lat, lng;
+	    var self = this;
+	    geocoder.geocode({ 'address': gym.address }, function (results, status) {
+	      if (status === google.maps.GeocoderStatus.OK) {
+	        lat = results[0].geometry.location.lat();
+	        lng = results[0].geometry.location.lng();
+	        var pos = new google.maps.LatLng(lat, lng);
+	        var marker = new google.maps.Marker({
+	          position: pos,
+	          map: self.map,
+	          gymId: gym.id,
+	          icon: {
+	            url: gym.logo_url,
+	            scaledSize: new google.maps.Size(50, 50)
+	          }
+	        });
+	        marker.addListener('click', function () {
+	          hashHistory.push("gyms/" + gym.id);
+	        });
+	        marker.addListener('mouseover', function () {});
+	        self.markers.push(marker);
+	      }
+	    });
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      { className: 'half', ref: 'map' },
+	      'Map'
+	    );
+	  }
+	});
+	
+	module.exports = NotMap;
 
 /***/ }
 /******/ ]);

@@ -83,6 +83,7 @@ $center-padding: 13px;
 
 .dropdown:hover .dropdown-content {
     display: flex;
+    z-index: 2;
 }
 
 .dropdown:hover .drop-button {

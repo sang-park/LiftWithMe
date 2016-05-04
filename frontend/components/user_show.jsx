@@ -3,6 +3,8 @@ var UserActions = require('../actions/user_actions');
 var UserStore = require('../stores/user_store');
 var WorkoutIndex = require('../components/workout_index');
 
+
+
 var UserShow = React.createClass({
   getInitialState: function() {
     return {user: {}};
@@ -31,10 +33,14 @@ var UserShow = React.createClass({
     }
   },
   profile: function(){
+    var profileUrl = "https://www.drupal.org/files/profile_default.png";
+    if (this.state.user.profile_image_url) {
+      profileUrl = this.state.user.profile_image_url;
+    }
     return (
       <div className="profile-show">
         <div>
-          <img src={this.state.user.profile_image_url} />
+          <img src={profileUrl} />
         </div>
         <div>
           <div>Name:{this.state.user.username}</div>

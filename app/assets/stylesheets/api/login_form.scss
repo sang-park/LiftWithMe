@@ -23,22 +23,44 @@ h2 {
 .login-form {
 
   .credentials {
+    margin: 30px;
     margin-bottom: 10px;
-  }
-  .form-button {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    input {
-      border: 0px;
-      padding: 5px;
-      background: #00AE68;
+    flex-direction: column;
+    box-sizing: border-box;
 
-      &:hover {
-        background: #21825B;
+    .login-section {
+      border-radius: 5px;
+      border: 1px solid gray;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: row;
+
+      .my-glyph {
+        width: 20px;
+        height: 20px;
+        margin: 15px 10px;
+      }
+      .username-icon {
+        background-image: url("http://www.maxqtech.com/wp-content/uploads/2015/05/user-1-glyph-icon_MkuBPp8O-150x150.png");
+        background-size: cover;
+      }
+      .password-icon {
+        background-image: url("http://res.cloudinary.com/dque3vywj/image/upload/v1462402246/key-solid_bs98j9.png");
+        background-size: cover;
+      }
+
+      input {
+        padding: 10px;
+        margin: 0;
+        height: 50px;
+        border: 0px;
+        font-size: 24px;
+
       }
     }
   }
+
 }
 
 .auth-toggle {
@@ -54,7 +76,7 @@ h2 {
     padding: 10px 30px;
     min-width: 200px;
     text-align: center;
-    background: gray;
+    background: lightgray;
   }
 
   .selected {
@@ -62,40 +84,49 @@ h2 {
   }
 }
 
+
 .ReactModalPortal > div > div {
   padding: 0px !important;
 }
 
-.credentials {
+.auth-btns {
+  margin: 0;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: space-around;
 
-  div {
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .auth-btns {
-    margin: 0;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-
-    .auth-btn {
-      width: 50%;
-      height: 40px;
-      text-align: center;
-      border: 0;
-      background: $magenta1;
-      border-radius: 5px;
-      transition: all 0.2s ;
-      &:hover {
-        background: green;
-      }
+  .auth-btn {
+    width: 50%;
+    height: 40px;
+    text-align: center;
+    border: 0;
+    background: $gold1;
+    border-radius: 5px;
+    transition: all 0.2s ;
+    &:hover {
+      cursor: pointer;
+      background: $gold2;
     }
   }
 }
 
-.glyphicons {
+.user-info {
+  display: flex;
+  flex-direction: column;
+
+  label {
+    input {
+      width: 50%;
+      border-radius: 5px;
+      border: 1px solid gray;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: row;
+      padding: 6px;
+    }
+    .longer {
+      width: 80%;
+    }
+  }
+
 }
