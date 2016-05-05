@@ -79,6 +79,12 @@ class Api::UsersController < ApplicationController
     render 'api/users/preview'
   end
 
+  def update
+    @user = User.find(params['userId'])
+    @user.update_attributes({gym_id: params['gymId']})
+    render 'api/user/show'
+  end
+
   private
   def user_params
     params.require(:user).permit(

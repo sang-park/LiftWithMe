@@ -13,7 +13,9 @@ var LoginModal = React.createClass({
     profile_url: ""
   },
   getInitialState: function() {
-    return this.blankAttrs;
+    var blank = this.blankAttrs;
+    blank.status = this.props.status || "Log In";
+    return blank;
   },
   handleLogin: function(e){
     e.preventDefault();

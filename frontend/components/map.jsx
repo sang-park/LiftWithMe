@@ -21,7 +21,7 @@ var mapOptions = {
   },
   "Los Angeles" : {
     center: {lat: 34.0165323, lng: -118.4581099}, //San Francisco
-    zoom: 11
+    zoom: 12
   },
   "Boston" : {
     center: {lat: 42.3539036, lng: -71.060599}, //San Francisco

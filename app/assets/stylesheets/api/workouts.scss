@@ -1,13 +1,31 @@
 // Place all the styles related to the API::workouts controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
+$magenta: #C70062;
+$magenta1: #DD4992;
+$magenta2: #D8207A;
+$magenta3: #9F004E;
+$magenta4: #79003B;
+
+$gold: #F09A00;
+$gold1: #FFC255;
+$gold2: #FFB226;
+$gold3: #C07B00;
+$gold4: #925E00;
+
+$blue: #151FA6;
+$blue1: #525BC2;
+$blue2: #313BB9;
+$blue3: #0F1885;
+$blue4: #091065;
+
 
 table {
   border-collapse: collapse;
 }
 
 table {
-  border: 1px solid black;
+  border: 1 solid lightgray;
 }
 
 tr {
@@ -30,8 +48,9 @@ thead tr {
   font-size: 20px;
 }
 
+
 table.workouts {
-  width: 80%;
+  width: 100%;
   margin: 0 auto;
   border-spacing: 0 6px;
 }
@@ -39,13 +58,13 @@ table.workouts {
 table.workouts th, table.workouts td {
   padding: 12px;
   vertical-align: center;
-  color: rgb(68,68,68);
+  color: $blue4;
 }
 table.workouts caption {
-  background-color: rgb(90,85,90);
+  background-color: $magenta1;
   text-align: center;
   font-weight: bold;
-  color: rgb(255,255,255);
+  color: black;
   padding-top: .7em;
   padding-bottom: .7em;
   letter-spacing: .085em;
@@ -55,10 +74,10 @@ table.workouts th {
 }
 table.workouts {
   tr {
-    background-color: rgb(170,200,209);
+    background-color: $gold1;
     cursor: pointer;
     &:hover {
-      background-color: rgb(0,200,209);
+      background-color: $gold2;
     }
   }
 }

@@ -6,7 +6,8 @@ var ClientActions = {
   createWorkout: ApiUtil.addWorkout,
   deleteWorkout: ApiUtil.deleteWorkout,
   updateWorkout: ApiUtil.updateWorkout,
-  pairUp: ApiUtil.pairUp
+  pairUp: ApiUtil.pairUp,
+  chooseGym: ApiUtil.chooseGym
 };
 
 module.exports = ClientActions;

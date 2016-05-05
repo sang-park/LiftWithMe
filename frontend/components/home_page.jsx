@@ -1,7 +1,31 @@
 var React = require('react');
 var UserStore = require('../stores/user_store');
 var hashHistory = require('react-router').hashHistory;
+var Modal = require('react-modal');
 var LoginModal = require('./login_modal');
+
+
+var _style = {
+  overlay : {
+    position          : 'fixed',
+    top               : 0,
+    left              : 0,
+    right             : 0,
+    bottom            : 0,
+    backgroundColor   : 'rgba(255, 255, 255, 0.75)'
+  },
+  content : {
+    top                   : '40%',
+    left                  : '50%',
+    right                 : 'auto',
+    bottom                : 'auto',
+    marginRight           : '-50%',
+    transform             : 'translate(-50%, -50%)',
+    padding : '20px'
+  }
+};
+
+
 
 var HomePage = React.createClass({
   openModal: function(){
@@ -12,7 +36,11 @@ var HomePage = React.createClass({
   },
   handleClick: function(e){
     e.preventDefault();
-    $(".login-info li:nth-child(2)")[0].click();
+    this.openModal();
+  },
+  getInitialState: function() {
+    Modal.setAppElement(document.getElementById("root"));
+    return {modalIsOpen: false};
   },
 
   render: function() {
@@ -28,7 +56,7 @@ var HomePage = React.createClass({
             </div>
           </div>
         </div>
-        
+
         <div className="info">
           <div>
             <span>Push your limits</span>
@@ -92,6 +120,14 @@ var HomePage = React.createClass({
         <div className="button-cover">
           <button
             onClick={this.handleClick}>Sign Up Now!</button>
+            <Modal
+              isOpen={this.state.modalIsOpen}
+              onAfterOpen={this.afterOpenModal}
+              onRequestClose={this.closeModal}
+              style={_style}
+            >
+              <LoginModal status="Sign Up"/>
+            </Modal>
         </div>
 
       </div>

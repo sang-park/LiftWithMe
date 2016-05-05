@@ -25165,6 +25165,10 @@
 	  hashHistory.push('/gyms/' + id);
 	};
 	
+	var goBack = function (location) {
+	  hashHistory.push(location);
+	};
+	
 	UserStore.__onDispatch = function (payload) {
 	  switch (payload.actionType) {
 	    case UserConstants.LOGIN:
@@ -25177,12 +25181,9 @@
 	      }
 	      break;
 	    case UserConstants.LOGOUT:
-	      var gym = _currentUser.gym;
 	      UserStore.logout();
 	      UserStore.__emitChange();
-	      if (gym) {
-	        goToGym(gym.id);
-	      }
+	      goBack(location.hash.slice(1).split("?")[0]);
 	      break;
 	    case UserConstants.ERROR:
 	      UserStore.setErrors(payload.errors);
@@ -32151,7 +32152,7 @@
 	    backgroundColor: 'rgba(255, 255, 255, 0.75)'
 	  },
 	  content: {
-	    top: '30%',
+	    top: '40%',
 	    left: '50%',
 	    right: 'auto',
 	    bottom: 'auto',
@@ -32188,7 +32189,7 @@
 	    e.preventDefault();
 	    hashHistory.push("/");
 	  },
-	  displayModal: function (button, header) {
+	  displayModal: function () {
 	    return React.createElement(
 	      Modal,
 	      {
@@ -32197,7 +32198,7 @@
 	        onRequestClose: this.closeModal,
 	        style: _style
 	      },
-	      React.createElement(LoginModal, { button: button, header: header })
+	      React.createElement(LoginModal, null)
 	    );
 	  },
 	  form: function () {
@@ -32221,8 +32222,12 @@
 	      return React.createElement(
 	        "li",
 	        { className: "dropdown drop-button" },
-	        "Hi, ",
-	        this.state.currentUser.username,
+	        React.createElement(
+	          "span",
+	          { onClick: this.goToUser },
+	          "Hi, ",
+	          this.state.currentUser.username
+	        ),
 	        React.createElement(
 	          "ul",
 	          { className: "dropdown-content" },
@@ -32562,7 +32567,9 @@
 	    profile_url: ""
 	  },
 	  getInitialState: function () {
-	    return this.blankAttrs;
+	    var blank = this.blankAttrs;
+	    blank.status = this.props.status || "Log In";
+	    return blank;
 	  },
 	  handleLogin: function (e) {
 	    e.preventDefault();
@@ -34797,7 +34804,8 @@
 	  createWorkout: ApiUtil.addWorkout,
 	  deleteWorkout: ApiUtil.deleteWorkout,
 	  updateWorkout: ApiUtil.updateWorkout,
-	  pairUp: ApiUtil.pairUp
+	  pairUp: ApiUtil.pairUp,
+	  chooseGym: ApiUtil.chooseGym
 	};
 	
 	module.exports = ClientActions;
@@ -34807,6 +34815,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var ServerActions = __webpack_require__(273);
+	var UserActions = __webpack_require__(242);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var ApiUtil = {
@@ -34882,7 +34891,6 @@
 	    });
 	  },
 	  pairUp: function (workoutId, userId) {
-	
 	    $.ajax({
 	      url: 'api/workouts/' + workoutId,
 	      type: "PATCH",
@@ -34894,8 +34902,20 @@
 	        ServerActions.handleError(error);
 	      }
 	    });
+	  },
+	  chooseGym: function (params) {
+	    $.ajax({
+	      url: 'api/user/',
+	      type: "PATCH",
+	      data: params,
+	      success: function (user) {
+	        UserActions.receiveCurrentUser(user);
+	      },
+	      error: function (error) {
+	        ServerActions.handleError(error);
+	      }
+	    });
 	  }
-	
 	};
 	
 	module.exports = ApiUtil;
@@ -35169,12 +35189,19 @@
 	      );
 	    }
 	  },
+	  chooseGym: function () {
+	    var params = {
+	      userId: UserStore.currentUser().id,
+	      gymId: GymStore.currentGym().id
+	    };
+	    ClientActions.chooseGym(params);
+	  },
 	  chooseButton: function () {
 	    var cUser = UserStore.currentUser();
 	    if (cUser && (!cUser.gym || cUser.gym.id !== this.state.id)) {
 	      return React.createElement(
 	        'button',
-	        null,
+	        { onClick: this.chooseGym },
 	        'Choose ',
 	        this.state.name,
 	        ' as your gym!'
@@ -36237,7 +36264,28 @@
 	var React = __webpack_require__(1);
 	var UserStore = __webpack_require__(219);
 	var hashHistory = __webpack_require__(159).hashHistory;
+	var Modal = __webpack_require__(250);
 	var LoginModal = __webpack_require__(249);
+	
+	var _style = {
+	  overlay: {
+	    position: 'fixed',
+	    top: 0,
+	    left: 0,
+	    right: 0,
+	    bottom: 0,
+	    backgroundColor: 'rgba(255, 255, 255, 0.75)'
+	  },
+	  content: {
+	    top: '40%',
+	    left: '50%',
+	    right: 'auto',
+	    bottom: 'auto',
+	    marginRight: '-50%',
+	    transform: 'translate(-50%, -50%)',
+	    padding: '20px'
+	  }
+	};
 	
 	var HomePage = React.createClass({
 	  displayName: 'HomePage',
@@ -36250,7 +36298,11 @@
 	  },
 	  handleClick: function (e) {
 	    e.preventDefault();
-	    $(".login-info li:nth-child(2)")[0].click();
+	    this.openModal();
+	  },
+	  getInitialState: function () {
+	    Modal.setAppElement(document.getElementById("root"));
+	    return { modalIsOpen: false };
 	  },
 	
 	  render: function () {
@@ -36408,6 +36460,16 @@
 	          {
 	            onClick: this.handleClick },
 	          'Sign Up Now!'
+	        ),
+	        React.createElement(
+	          Modal,
+	          {
+	            isOpen: this.state.modalIsOpen,
+	            onAfterOpen: this.afterOpenModal,
+	            onRequestClose: this.closeModal,
+	            style: _style
+	          },
+	          React.createElement(LoginModal, { status: 'Sign Up' })
 	        )
 	      )
 	    );
@@ -36444,7 +36506,7 @@
 	  },
 	  "Los Angeles": {
 	    center: { lat: 34.0165323, lng: -118.4581099 }, //San Francisco
-	    zoom: 11
+	    zoom: 12
 	  },
 	  "Boston": {
 	    center: { lat: 42.3539036, lng: -71.060599 }, //San Francisco

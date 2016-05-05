@@ -19,7 +19,7 @@ var _style = {
     backgroundColor   : 'rgba(255, 255, 255, 0.75)'
   },
   content : {
-    top                   : '30%',
+    top                   : '40%',
     left                  : '50%',
     right                 : 'auto',
     bottom                : 'auto',
@@ -54,7 +54,7 @@ var LoginForm = React.createClass({
     e.preventDefault();
     hashHistory.push("/");
   },
-  displayModal: function(button,header){
+  displayModal: function(){
     return (
       <Modal
         isOpen={this.state.modalIsOpen}
@@ -62,7 +62,7 @@ var LoginForm = React.createClass({
         onRequestClose={this.closeModal}
         style={_style}
       >
-        <LoginModal button={button} header={header}/>
+        <LoginModal/>
       </Modal>
     );
   },
@@ -86,7 +86,9 @@ var LoginForm = React.createClass({
     if (this.state.currentUser){
       return (
         <li className="dropdown drop-button">
-          Hi, {this.state.currentUser.username}
+          <span onClick={this.goToUser}>
+            Hi, {this.state.currentUser.username}
+          </span>
           <ul className="dropdown-content">
             <li onClick={this.goToUser}>Go to Profile</li>
             <li onClick={this.handleLogout}>Log Out</li>

@@ -60,11 +60,18 @@ var GymShow = React.createClass({
       );
     }
   },
+  chooseGym: function(){
+    var params = {
+      userId: UserStore.currentUser().id,
+      gymId: GymStore.currentGym().id
+    };
+    ClientActions.chooseGym(params);
+  },
   chooseButton: function(){
     var cUser = UserStore.currentUser();
     if (cUser && (!cUser.gym || cUser.gym.id !== this.state.id)) {
       return (
-        <button>
+        <button onClick={this.chooseGym}>
           Choose {this.state.name} as your gym!
         </button>
       );

@@ -11,6 +11,10 @@ var goToGym = function(id){
   hashHistory.push('/gyms/' + id);
 };
 
+var goBack = function(location){
+  hashHistory.push(location);
+};
+
 UserStore.__onDispatch = function (payload) {
   switch(payload.actionType) {
     case UserConstants.LOGIN:
@@ -24,12 +28,9 @@ UserStore.__onDispatch = function (payload) {
       }
       break;
     case UserConstants.LOGOUT:
-      var gym = _currentUser.gym;
     	UserStore.logout();
       UserStore.__emitChange();
-      if (gym) {
-        goToGym(gym.id);
-      }
+      goBack(location.hash.slice(1).split("?")[0]);
       break;
     case UserConstants.ERROR:
       UserStore.setErrors(payload.errors);

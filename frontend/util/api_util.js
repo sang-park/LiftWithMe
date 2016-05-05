@@ -1,4 +1,5 @@
 var ServerActions = require('../actions/server_actions');
+var UserActions = require('../actions/user_actions');
 var hashHistory = require('react-router').hashHistory;
 
 var ApiUtil = {
@@ -74,7 +75,6 @@ var ApiUtil = {
     });
   },
   pairUp: function(workoutId, userId) {
-
     $.ajax({
       url: 'api/workouts/' + workoutId,
       type: "PATCH",
@@ -86,9 +86,20 @@ var ApiUtil = {
         ServerActions.handleError(error);
       }
     });
-
-  }
-
+  },
+  chooseGym: function(params) {
+    $.ajax({
+      url: 'api/user/',
+      type: "PATCH",
+      data: params,
+      success: function(user){
+        UserActions.receiveCurrentUser(user);
+      },
+      error: function(error){
+        ServerActions.handleError(error);
+      }
+    });
+  },
 };
 
 module.exports = ApiUtil;
