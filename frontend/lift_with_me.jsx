@@ -44,6 +44,7 @@ var router =  (
   </Router>
 );
 
+
 document.addEventListener('DOMContentLoaded', function(){
   ReactDOM.render( router ,document.getElementById('root'));
 });

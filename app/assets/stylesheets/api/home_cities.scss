@@ -1,7 +1,32 @@
 // Place all the styles related to the API::home_cities controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
+$magenta: #C70062;
+$magenta1: #DD4992;
+$magenta2: #D8207A;
+$magenta3: #9F004E;
+$magenta4: #79003B;
 
+$gold: #F09A00;
+$gold1: #FFC255;
+$gold2: #FFB226;
+$gold3: #C07B00;
+$gold4: #925E00;
+
+$blue: #151FA6;
+$blue1: #553BC2;
+$blue2: #313BB9;
+$blue3: #0F1885;
+$blue4: #091065;
+
+$SF : "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/San_Francisco_c9izct.jpg";
+$NY : "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/New_York_znvcdo.jpg";
+$LA : "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/Los_Angeles_lfbneb.jpg";
+$BOS : "http://res.cloudinary.com/dque3vywj/image/upload/v1462427551/Boston_zt9rwz.jpg";
+
+.home-cities-full-page {
+  margin-top: 60px;
+}
 .home-city-index {
   display: flex;
   flex-direction: row;
@@ -15,21 +40,42 @@
 
   li {
     min-width: 300px;
-    max-width: 45%;
-    width: auto;
-    height: auto;
+    max-width: 600px;
+    min-height: 300px;
+    height: 30%;
+    width: 40%;
     border: 1px solid black;
     position: relative;
     cursor: pointer;
+    margin: 10px;
 
-    img {
+    &:nth-child(1) {
+      background-image: url($SF);
+      background-size: cover;
+
+    }
+    &:nth-child(2) {
+      background-image: url($NY);
+      background-size: cover;
+    }
+    &:nth-child(3) {
+      background-image: url($LA);
+      background-size: cover;
+    }
+    &:nth-child(4) {
+      background-image: url($BOS);
+      background-size: cover;
+    }
+
+    div {
+      height: 300px;
       width: 100%;
-      height: auto;
-      opacity: 0.8;
-
+      background: rgba(199, 0, 98, 0.4);
+      z-index: -1;
     }
     p {
       position: absolute;
+      height: auto;
       left: 0;
       top: 40%;
       width: 100%;

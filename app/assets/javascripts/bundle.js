@@ -34721,10 +34721,10 @@
 	var HomeCityStore = __webpack_require__(274);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	var img_URLs = {
-	  "San Francisco": "http://res.cloudinary.com/dque3vywj/image/upload/v1461889491/San_Francisco_ebesqu.jpg",
-	  "New York": "http://res.cloudinary.com/dque3vywj/image/upload/v1461889493/New_York_bd25nv.jpg",
-	  "Los Angeles": "http://res.cloudinary.com/dque3vywj/image/upload/v1461889492/Los_Angeles_lo8tqs.jpg",
-	  "Boston": "http://res.cloudinary.com/dque3vywj/image/upload/v1461889491/Boston_my2trf.jpg"
+	  "San Francisco": "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/San_Francisco_c9izct.jpg",
+	  "New York": "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/New_York_znvcdo.jpg",
+	  "Los Angeles": "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/Los_Angeles_lfbneb.jpg",
+	  "Boston": "http://res.cloudinary.com/dque3vywj/image/upload/v1462427551/Boston_zt9rwz.jpg"
 	};
 	
 	var HomeCityIndex = React.createClass({
@@ -34763,18 +34763,21 @@
 	        { onClick: this.handleClick,
 	          key: city.name
 	        },
-	        React.createElement('img', { src: img_URLs[city.name] }),
 	        React.createElement(
-	          'p',
+	          'div',
 	          null,
-	          city.name
+	          React.createElement(
+	            'p',
+	            null,
+	            city.name
+	          )
 	        )
 	      ));
 	    }.bind(this));
 	
 	    return React.createElement(
 	      'div',
-	      null,
+	      { className: 'home-cities-full-page' },
 	      React.createElement(
 	        'h2',
 	        null,
@@ -35201,20 +35204,35 @@
 	    if (cUser && (!cUser.gym || cUser.gym.id !== this.state.id)) {
 	      return React.createElement(
 	        'button',
-	        { onClick: this.chooseGym },
+	        {
+	          className: 'choose-button',
+	          onClick: this.chooseGym },
 	        'Choose ',
 	        this.state.name,
 	        ' as your gym!'
 	      );
+	    } else {
+	      return React.createElement('div', { key: 'choose-btn group' });
 	    }
 	  },
 	  render: function () {
 	    return React.createElement(
 	      'div',
 	      null,
-	      this.returnButton(),
-	      this.chooseButton(),
-	      React.createElement(WorkoutIndex, { workouts: this.state.workouts, gymName: this.state.name })
+	      React.createElement(
+	        'h2',
+	        null,
+	        this.state.name
+	      ),
+	      React.createElement(
+	        'div',
+	        null,
+	        this.returnButton(),
+	        this.chooseButton()
+	      ),
+	      React.createElement(WorkoutIndex, {
+	        workouts: this.state.workouts,
+	        gymName: this.state.name })
 	    );
 	  }
 	
@@ -35288,7 +35306,7 @@
 	  }
 	};
 	
-	var WEEKDAYS = ["MON", "TUE", "WED", "THUR", "FRI", "SAT", "SUN"];
+	var WEEKDAYS = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"];
 	
 	var WorkoutIndex = React.createClass({
 	  displayName: 'WorkoutIndex',
@@ -35346,8 +35364,10 @@
 	        var wday = WEEKDAYS[date.getDay()];
 	        var time = self.parseTime(workout.time);
 	        var myWorkout = " ";
+	        var username = workout.username;
 	        if (UserStore.currentUser() && UserStore.currentUser().id === workout.user_id) {
 	          myWorkout += "my-workout";
+	          username = "My Workout";
 	        }
 	        workouts.push(React.createElement(
 	          'tr',
@@ -35358,14 +35378,18 @@
 	          },
 	          React.createElement(
 	            'td',
-	            null,
-	            wday
-	          ),
-	          React.createElement(
-	            'td',
-	            null,
-	            date.getMonth() + 1 + "/" + date.getDate(),
-	            ' '
+	            { className: 'workout-date' },
+	            React.createElement(
+	              'span',
+	              null,
+	              wday
+	            ),
+	            React.createElement(
+	              'span',
+	              null,
+	              date.getMonth() + 1 + "/" + date.getDate(),
+	              ' '
+	            )
 	          ),
 	          React.createElement(
 	            'td',
@@ -35380,18 +35404,42 @@
 	          React.createElement(
 	            'td',
 	            null,
-	            workout.username
+	            username
 	          )
 	        ));
 	      }
 	    }.bind(this));
+	
 	    return React.createElement(
 	      'table',
 	      { className: 'workouts' },
 	      React.createElement(
-	        'caption',
+	        'thead',
 	        null,
-	        this.props.gymName
+	        React.createElement(
+	          'tr',
+	          null,
+	          React.createElement(
+	            'td',
+	            null,
+	            'Date'
+	          ),
+	          React.createElement(
+	            'td',
+	            null,
+	            'Time'
+	          ),
+	          React.createElement(
+	            'td',
+	            null,
+	            'Workout Name'
+	          ),
+	          React.createElement(
+	            'td',
+	            null,
+	            'Username'
+	          )
+	        )
 	      ),
 	      React.createElement(
 	        'tbody',
@@ -35529,9 +35577,9 @@
 	      React.createElement(
 	        'tbody',
 	        null,
-	        exercises,
-	        this.editAndDeleteOrPairUp()
-	      )
+	        exercises
+	      ),
+	      this.editAndDeleteOrPairUp()
 	    );
 	  },
 	
@@ -35564,28 +35612,24 @@
 	      );
 	    } else {
 	      return React.createElement(
-	        'tr',
-	        null,
+	        'caption',
+	        { className: 'workout-show-buttons' },
 	        React.createElement(
-	          'td',
-	          null,
-	          React.createElement(
-	            'button',
-	            {
-	              className: 'pair-up',
-	              onClick: this.pairUp,
-	              value: this.props.workout.id
-	            },
-	            'Pair Up!'
-	          ),
-	          React.createElement(
-	            'button',
-	            {
-	              onClick: this.goToUser
-	            },
-	            'More from ',
-	            this.props.workout.username
-	          )
+	          'button',
+	          {
+	            className: 'pair-up',
+	            onClick: this.pairUp,
+	            value: this.props.workout.id
+	          },
+	          'Pair Up!'
+	        ),
+	        React.createElement(
+	          'button',
+	          {
+	            onClick: this.goToUser
+	          },
+	          'More from ',
+	          this.props.workout.username
 	        )
 	      );
 	    }

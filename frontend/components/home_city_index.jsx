@@ -3,10 +3,10 @@ var ClientActions = require('../actions/client_actions');
 var HomeCityStore = require('../stores/home_city_store');
 var hashHistory = require('react-router').hashHistory;
 var img_URLs = {
-  "San Francisco" : "http://res.cloudinary.com/dque3vywj/image/upload/v1461889491/San_Francisco_ebesqu.jpg",
-  "New York" : "http://res.cloudinary.com/dque3vywj/image/upload/v1461889493/New_York_bd25nv.jpg",
-  "Los Angeles" : "http://res.cloudinary.com/dque3vywj/image/upload/v1461889492/Los_Angeles_lo8tqs.jpg",
-  "Boston" : "http://res.cloudinary.com/dque3vywj/image/upload/v1461889491/Boston_my2trf.jpg"
+  "San Francisco" : "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/San_Francisco_c9izct.jpg",
+  "New York" : "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/New_York_znvcdo.jpg",
+  "Los Angeles" : "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/Los_Angeles_lfbneb.jpg",
+  "Boston" : "http://res.cloudinary.com/dque3vywj/image/upload/v1462427551/Boston_zt9rwz.jpg"
 };
 
 var HomeCityIndex = React.createClass({
@@ -42,13 +42,14 @@ var HomeCityIndex = React.createClass({
         <li onClick={this.handleClick}
           key={city.name}
         >
-          <img src={img_URLs[city.name]}/>
-          <p>{city.name}</p>
+          <div>
+            <p>{city.name}</p>
+          </div>
         </li>);
     }.bind(this));
 
     return (
-      <div>
+      <div className="home-cities-full-page">
         <h2>Pick Your City:</h2>
         <ul className="home-city-index">{cities}</ul>
       </div>

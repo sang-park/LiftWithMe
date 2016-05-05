@@ -54,7 +54,7 @@ var GymShow = React.createClass({
         <button
           className="return-button"
           onClick={this.handleClick}
-        >
+          >
           Return to {GymStore.currentGym().home_city.name}
         </button>
       );
@@ -71,18 +71,27 @@ var GymShow = React.createClass({
     var cUser = UserStore.currentUser();
     if (cUser && (!cUser.gym || cUser.gym.id !== this.state.id)) {
       return (
-        <button onClick={this.chooseGym}>
+        <button
+          className="choose-button"
+          onClick={this.chooseGym}>
           Choose {this.state.name} as your gym!
         </button>
       );
+    } else {
+      return (<div key="choose-btn group"/>);
     }
   },
   render: function() {
     return (
       <div>
-        {this.returnButton()}
-        {this.chooseButton()}
-        <WorkoutIndex workouts={this.state.workouts} gymName={this.state.name}/>
+        <h2>{this.state.name}</h2>
+        <div>
+          {this.returnButton()}
+          {this.chooseButton()}
+        </div>
+        <WorkoutIndex
+          workouts={this.state.workouts}
+          gymName={this.state.name}/>
       </div>
     );
   }

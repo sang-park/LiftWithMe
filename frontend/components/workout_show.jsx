@@ -46,8 +46,8 @@ var WorkoutShow = React.createClass({
         </thead>
         <tbody>
           {exercises}
-          {this.editAndDeleteOrPairUp()}
         </tbody>
+        {this.editAndDeleteOrPairUp()}
 
       </table>
     );
@@ -77,8 +77,7 @@ var WorkoutShow = React.createClass({
       );
     } else {
       return (
-        <tr>
-          <td>
+        <caption className="workout-show-buttons">
             <button
               className="pair-up"
               onClick={this.pairUp}
@@ -91,8 +90,7 @@ var WorkoutShow = React.createClass({
             >
               More from {this.props.workout.username}
             </button>
-          </td>
-        </tr>
+        </caption>
       );
     }
   },

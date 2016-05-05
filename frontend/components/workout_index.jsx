@@ -26,7 +26,7 @@ var _style = {
 };
 
 var WEEKDAYS = [
-  "MON", "TUE", "WED", "THUR", "FRI", "SAT", "SUN"
+  "Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"
 ];
 
 var WorkoutIndex = React.createClass({
@@ -83,9 +83,11 @@ var WorkoutIndex = React.createClass({
         var wday = WEEKDAYS[date.getDay()];
         var time = self.parseTime(workout.time);
         var myWorkout = " ";
+        var username = workout.username;
         if ( UserStore.currentUser() &&
         UserStore.currentUser().id === workout.user_id) {
           myWorkout += "my-workout";
+          username = "My Workout";
         }
         workouts.push(
           <tr
@@ -93,19 +95,29 @@ var WorkoutIndex = React.createClass({
             key={workout.name + workout.time}
             onClick={self.handleClick(workout)}
             >
-            <td>{wday}</td>
-            <td>{(date.getMonth()+1) + "/" + date.getDate()} </td>
+            <td className="workout-date">
+              <span>{wday}</span>
+              <span>{(date.getMonth()+1) + "/" + date.getDate()} </span>
+            </td>
             <td>{time}</td>
             <td value={workout.id} >
               {workout.name}
             </td>
-            <td>{workout.username}</td>
+            <td>{username}</td>
           </tr>);
       }
     }.bind(this));
+
     return (
       <table className="workouts">
-        <caption>{this.props.gymName}</caption>
+        <thead>
+          <tr>
+            <td>Date</td>
+            <td>Time</td>
+            <td>Workout Name</td>
+            <td>Username</td>
+          </tr>
+        </thead>
         <tbody>
           {workouts}
         </tbody>

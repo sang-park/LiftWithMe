@@ -19,12 +19,35 @@ $blue2: #313BB9;
 $blue3: #0F1885;
 $blue4: #091065;
 
+.workout-modal {
+  margin: 20px;
+  table {
+    tr {
+      border-left: 1px solid gray;
+      border-right: 1px solid gray;
 
-table {
-  border-collapse: collapse;
+      &:last-child {
+
+        border-bottom: 1px solid gray;
+      }
+    }
+
+  }
+
+}
+
+.workout-show-buttons {
+  background-color:white;
+  display:flex;
+  flex-direction: row;
+  font-size: 12px;
+  font-weight: 600;
+  justify-content: center;
+  position: relative;
 }
 
 table {
+  border-collapse: collapse;
   border: 1 solid lightgray;
 }
 
@@ -39,58 +62,79 @@ tr {
 }
 
 thead tr {
-  background-color: lightgray;
+  background-color: $gold1;
 }
 
 .workout-title {
   display: block;
   text-align: center;
-  font-size: 20px;
+  font-size: 24px;
 }
+
 
 
 table.workouts {
-  width: 100%;
-  margin: 0 auto;
+  width: 90%;
+  margin: 0 auto   ;
   border-spacing: 0 6px;
 }
 
-table.workouts th, table.workouts td {
+table.workouts td {
   padding: 12px;
   vertical-align: center;
-  color: $blue4;
+  color: black;
 }
 table.workouts caption {
-  background-color: $magenta1;
+  background-color: white;
+  font-size: 18px;
+  font-weight: 700;
   text-align: center;
-  font-weight: bold;
   color: black;
   padding-top: .7em;
   padding-bottom: .7em;
   letter-spacing: .085em;
+  width: 100%;
+  div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+  }
 }
-table.workouts th {
+table.workouts thead tr {
   text-align: left;
+  background-color: white;
+  border: 1px 1px 1px 0 solid gray;
+  &:hover {
+    background-color: white;
+    cursor: inherit;
+  }
 }
 table.workouts {
   tr {
-    background-color: $gold1;
+    background-color: $gold2;
     cursor: pointer;
+
+    .workout-date {
+      display: flex;
+      flex-direction: column;
+    }
     &:hover {
-      background-color: $gold2;
+      background-color: $gold;
+      cursor: pointer;
     }
   }
 }
 
-
-.date {
-  display: inline-block;
-  background-color: rgb(68,68,68);
-  color: #fff;
-  padding: 10px;
-  border-radius: 50%;
-}
-
 div > table > tbody > .my-workout {
-  background-color: coral;
+  background-color: $magenta2;
+
+  &:hover {
+    background-color: $magenta;
+    cursor: pointer;
+
+  }
+
+  td {
+    color: white;
+  }
 }

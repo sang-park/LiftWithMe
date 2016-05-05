@@ -2,6 +2,26 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+$magenta: #C70062;
+$magenta1: #DD4992;
+$magenta2: #D8207A;
+$magenta3: #9F004E;
+$magenta4: #79003B;
+
+$gold: #F09A00;
+$gold1: #FFC255;
+$gold2: #FFB226;
+$gold3: #C07B00;
+$gold4: #925E00;
+
+$blue: #151FA6;
+$blue1: #553BC2;
+$blue2: #313BB9;
+$blue3: #0F1885;
+$blue4: #091065;
+
+
+
  html, body, header, nav, h1, a,
  ul, li, strong, main, button, i,
  section, img, div, h2, p, form,
@@ -59,8 +79,16 @@
  }
 
 button {
-  border: 1px solid black;
-  padding: 5px;
+  border: 0;
+  padding: 10px 20px;
+  background-color: $gold1;
+  border-radius: 10px;
+  margin: 10px;
+  z-index: 3000;
+  &:hover {
+    background-color: $gold;
+  }
+
 }
 
 
