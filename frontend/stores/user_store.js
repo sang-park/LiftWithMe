@@ -7,8 +7,8 @@ var UserStore = new Store(AppDispatcher);
 
 var _currentUser, _user = {}, _errors, _loaded = false;
 
-var goToGym = function(){
-  hashHistory.push('/gyms/' + _currentUser.gym.id);
+var goToGym = function(id){
+  hashHistory.push('/gyms/' + id);
 };
 
 UserStore.__onDispatch = function (payload) {
@@ -18,14 +18,18 @@ UserStore.__onDispatch = function (payload) {
     	  UserStore.login(payload.user);
         UserStore.__emitChange();
         if (_currentUser && _currentUser.gym){
-          goToGym();
+          goToGym(_currentUser.gym.id);
 
         }
       }
       break;
     case UserConstants.LOGOUT:
+      var gym = _currentUser.gym;
     	UserStore.logout();
       UserStore.__emitChange();
+      if (gym) {
+        goToGym(gym.id);
+      }
       break;
     case UserConstants.ERROR:
       UserStore.setErrors(payload.errors);

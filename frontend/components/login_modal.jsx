@@ -23,6 +23,7 @@ var LoginModal = React.createClass({
     };
     UserActions.login(user);
     this.state = this.blankAttrs;
+    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
   },
   demoLogin: function(e){
     e.preventDefault();
@@ -33,7 +34,6 @@ var LoginModal = React.createClass({
     UserActions.login(user);
     this.setState(this.blankAttrs);
     hashHistory.push(location.hash.split("#")[1].split("?")[0]);
-
   },
   changeToLogin: function(){
     this.setState({status: "Log In"});

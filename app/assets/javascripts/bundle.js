@@ -25161,8 +25161,8 @@
 	    _errors,
 	    _loaded = false;
 	
-	var goToGym = function () {
-	  hashHistory.push('/gyms/' + _currentUser.gym.id);
+	var goToGym = function (id) {
+	  hashHistory.push('/gyms/' + id);
 	};
 	
 	UserStore.__onDispatch = function (payload) {
@@ -25172,13 +25172,17 @@
 	        UserStore.login(payload.user);
 	        UserStore.__emitChange();
 	        if (_currentUser && _currentUser.gym) {
-	          goToGym();
+	          goToGym(_currentUser.gym.id);
 	        }
 	      }
 	      break;
 	    case UserConstants.LOGOUT:
+	      var gym = _currentUser.gym;
 	      UserStore.logout();
 	      UserStore.__emitChange();
+	      if (gym) {
+	        goToGym(gym.id);
+	      }
 	      break;
 	    case UserConstants.ERROR:
 	      UserStore.setErrors(payload.errors);
@@ -32178,6 +32182,7 @@
 	    e.preventDefault();
 	    UserActions.logout();
 	    this.closeModal();
+	    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
 	  },
 	  goToHomePage: function (e) {
 	    e.preventDefault();
@@ -32567,6 +32572,7 @@
 	    };
 	    UserActions.login(user);
 	    this.state = this.blankAttrs;
+	    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
 	  },
 	  demoLogin: function (e) {
 	    e.preventDefault();
@@ -35061,14 +35067,18 @@
 	        },
 	        React.createElement('img', { src: gym.logo_url, className: 'gym-logo' }),
 	        React.createElement(
-	          'span',
+	          'div',
 	          null,
-	          gym.name
-	        ),
-	        React.createElement(
-	          'p',
-	          null,
-	          gym.address
+	          React.createElement(
+	            'span',
+	            null,
+	            gym.name
+	          ),
+	          React.createElement(
+	            'p',
+	            null,
+	            gym.address
+	          )
 	        )
 	      ));
 	    }.bind(this));
@@ -35097,6 +35107,7 @@
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(271);
 	var GymStore = __webpack_require__(278);
+	var UserStore = __webpack_require__(219);
 	var hashHistory = __webpack_require__(159).hashHistory;
 	var WorkoutIndex = __webpack_require__(279);
 	
@@ -35106,7 +35117,8 @@
 	  getInitialState: function () {
 	    return {
 	      workouts: [],
-	      name: ""
+	      name: "",
+	      id: ""
 	    };
 	  },
 	  componentDidMount: function () {
@@ -35136,13 +35148,45 @@
 	    });
 	    this.setState({
 	      workouts: workouts,
-	      name: GymStore.currentGym().name
+	      name: GymStore.currentGym().name,
+	      id: GymStore.currentGym().id
 	    });
+	  },
+	  handleClick: function () {
+	    var hcId = GymStore.currentGym().home_city.id;
+	    hashHistory.push('/home_cities/' + hcId);
+	  },
+	  returnButton: function () {
+	    if (GymStore.currentGym()) {
+	      return React.createElement(
+	        'button',
+	        {
+	          className: 'return-button',
+	          onClick: this.handleClick
+	        },
+	        'Return to ',
+	        GymStore.currentGym().home_city.name
+	      );
+	    }
+	  },
+	  chooseButton: function () {
+	    var cUser = UserStore.currentUser();
+	    if (cUser && (!cUser.gym || cUser.gym.id !== this.state.id)) {
+	      return React.createElement(
+	        'button',
+	        null,
+	        'Choose ',
+	        this.state.name,
+	        ' as your gym!'
+	      );
+	    }
 	  },
 	  render: function () {
 	    return React.createElement(
 	      'div',
 	      null,
+	      this.returnButton(),
+	      this.chooseButton(),
 	      React.createElement(WorkoutIndex, { workouts: this.state.workouts, gymName: this.state.name })
 	    );
 	  }

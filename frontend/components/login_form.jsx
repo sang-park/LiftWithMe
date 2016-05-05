@@ -48,6 +48,7 @@ var LoginForm = React.createClass({
     e.preventDefault();
     UserActions.logout();
     this.closeModal();
+    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
   },
   goToHomePage: function(e){
     e.preventDefault();

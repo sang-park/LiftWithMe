@@ -1,6 +1,7 @@
 var React = require('react');
 var ClientActions = require('../actions/client_actions');
 var GymStore = require('../stores/gym_store');
+var UserStore = require('../stores/user_store');
 var hashHistory = require('react-router').hashHistory;
 var WorkoutIndex = require('./workout_index');
 
@@ -8,7 +9,8 @@ var GymShow = React.createClass({
   getInitialState: function() {
     return {
       workouts: [],
-      name: ""
+      name: "",
+      id: ""
     };
   },
   componentDidMount: function() {
@@ -38,12 +40,41 @@ var GymShow = React.createClass({
     });
     this.setState({
       workouts: workouts,
-      name: GymStore.currentGym().name
+      name: GymStore.currentGym().name,
+      id: GymStore.currentGym().id
     });
+  },
+  handleClick: function(){
+    var hcId = GymStore.currentGym().home_city.id;
+    hashHistory.push('/home_cities/' + hcId);
+  },
+  returnButton: function(){
+    if (GymStore.currentGym()) {
+      return (
+        <button
+          className="return-button"
+          onClick={this.handleClick}
+        >
+          Return to {GymStore.currentGym().home_city.name}
+        </button>
+      );
+    }
+  },
+  chooseButton: function(){
+    var cUser = UserStore.currentUser();
+    if (cUser && (!cUser.gym || cUser.gym.id !== this.state.id)) {
+      return (
+        <button>
+          Choose {this.state.name} as your gym!
+        </button>
+      );
+    }
   },
   render: function() {
     return (
       <div>
+        {this.returnButton()}
+        {this.chooseButton()}
         <WorkoutIndex workouts={this.state.workouts} gymName={this.state.name}/>
       </div>
     );

@@ -21,8 +21,10 @@ var GymIndex = React.createClass({
         className="gym-each"
       >
       <img src={gym.logo_url} className="gym-logo" />
-      <span>{gym.name}</span>
-      <p>{gym.address}</p>
+      <div>
+        <span>{gym.name}</span>
+        <p>{gym.address}</p>
+      </div>
       </li>);
     }.bind(this));
     return (
