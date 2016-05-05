@@ -29,6 +29,34 @@ var LoginModal = React.createClass({
   },
   demoLogin: function(e){
     e.preventDefault();
+    e.target.className += " disabled"
+    e.target.disabled = true;
+    var self = this;
+    var username = "Arnold.S".split("");
+    var password = "123123".split("");
+    var time = 500;
+    username.forEach(function(letter){
+      setTimeout(function(){
+        var newUsername = self.state.username + letter;
+        self.setState({username: newUsername});
+      }, time);
+      time += 50;
+    });
+    time += 500;
+    password.forEach(function(letter){
+      setTimeout(function(){
+        var newPassword = self.state.password + letter;
+        self.setState({password: newPassword});
+      }, time);
+      time += 50;
+    });
+
+    setTimeout(function(){
+      self.demoLoginTime();
+    },time+500);
+
+  },
+  demoLoginTime: function(){
     UserActions.demoLogin();
     this.setState(this.blankAttrs);
     hashHistory.push(location.hash.split("#")[1].split("?")[0]);

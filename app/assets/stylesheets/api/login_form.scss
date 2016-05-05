@@ -108,6 +108,13 @@ h2 {
       background: $gold2;
     }
   }
+
+  .auth-btn.disabled {
+    cursor: not-allowed;
+    &:hover {
+      background: $gold1;
+    }
+  }
 }
 
 .user-info {

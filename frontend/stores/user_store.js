@@ -6,6 +6,7 @@ var UserConstants = require('../constants/user_constants');
 var UserStore = new Store(AppDispatcher);
 
 var _currentUser, _user = {}, _errors, _loaded = false;
+var _demo = false;
 
 var goToGym = function(id){
   hashHistory.push('/gyms/' + id);
@@ -15,15 +16,26 @@ var goBack = function(location){
   hashHistory.push(location);
 };
 
+UserStore.demo = function(){
+  return _demo;
+};
+
+UserStore.toggleDemo = function(){
+  _demo = false;
+};
+
 UserStore.__onDispatch = function (payload) {
   switch(payload.actionType) {
     case UserConstants.LOGIN:
       if (payload.user.errors !== null){
     	  UserStore.login(payload.user);
-        UserStore.__emitChange();
-        if (payload.demo){
+        if (payload.demo === "true"){
+          _demo = true;
           goToGym(_currentUser.gym.id);
+        } else {
+          goBack(location.hash.slice(1).split("?")[0]);
         }
+        UserStore.__emitChange();
       }
       break;
     case UserConstants.LOGOUT:

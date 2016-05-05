@@ -118,7 +118,7 @@ var WorkoutIndex = React.createClass({
             <td>Username</td>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="table-body">
           {workouts}
         </tbody>
       </table>
@@ -144,7 +144,9 @@ var WorkoutIndex = React.createClass({
     var button = [];
     if (UserStore.currentUser() && !this.props.view){
       button = (
-        <button onClick={this.openCreateForm}>Create New Workout</button>
+        <button
+          className="new-workout-button"
+          onClick={this.openCreateForm}>Create New Workout</button>
       );
     }
     return (

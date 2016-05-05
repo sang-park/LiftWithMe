@@ -1,6 +1,7 @@
 //React
 var React = require('react');
 var ReactDOM = require('react-dom');
+var Joyride = require('react-joyride');
 //Router
 var ReactRouter = require('react-router');
 var Router = ReactRouter.Router;
@@ -21,15 +22,58 @@ var UserShow = require('./components/user_show');
 var HomePage = require('./components/home_page');
 
 var App = React.createClass({
+  getInitialState: function() {
+    return {
+      joyrideOverlay: true,
+      joyrideType: 'continuous',
+      ready: false,
+      steps: []
+    };
+  },
+  addSteps: function (steps) {
+    var joyride = this.refs.joyride;
+
+    if (!Array.isArray(steps)) {
+        steps = [steps];
+    }
+
+    if (!steps.length) {
+        return false;
+    }
+
+    this.setState(function(currentState) {
+      currentState.steps = currentState.steps.concat(joyride.parseSteps(steps));
+      return currentState;
+    });
+  },
+
+  addTooltip: function (data) {
+      this.refs.joyride.addTooltip(data);
+  },
+  componentDidMount: function(){
+    setTimeout(this.refs.joyride.start  , 1000);
+  },
   render: function(){
     return (
       <div>
-        <LoginForm />
-        {this.props.children}
+        <Joyride
+          ref="joyride"
+          debug={false}
+          steps={this.state.steps}
+          type={this.state.joyrideType}
+          scrollToSteps={true}
+          showSkipButton={true} />
+        <LoginForm addSteps={this.addSteps}/>
+        <div>
+          {React.cloneElement(this.props.children, {
+            addSteps: this.addSteps
+          })}
+        </div>
       </div>
     );
   }
 });
+// {this.props.children}
 
 var router =  (
   <Router history={hashHistory}>

@@ -47,6 +47,7 @@
 	//React
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
+	var Joyride = __webpack_require__(292);
 	//Router
 	var ReactRouter = __webpack_require__(159);
 	var Router = ReactRouter.Router;
@@ -69,15 +70,60 @@
 	var App = React.createClass({
 	  displayName: 'App',
 	
+	  getInitialState: function () {
+	    return {
+	      joyrideOverlay: true,
+	      joyrideType: 'continuous',
+	      ready: false,
+	      steps: []
+	    };
+	  },
+	  addSteps: function (steps) {
+	    var joyride = this.refs.joyride;
+	
+	    if (!Array.isArray(steps)) {
+	      steps = [steps];
+	    }
+	
+	    if (!steps.length) {
+	      return false;
+	    }
+	
+	    this.setState(function (currentState) {
+	      currentState.steps = currentState.steps.concat(joyride.parseSteps(steps));
+	      return currentState;
+	    });
+	  },
+	
+	  addTooltip: function (data) {
+	    this.refs.joyride.addTooltip(data);
+	  },
+	  componentDidMount: function () {
+	    setTimeout(this.refs.joyride.start, 1000);
+	  },
 	  render: function () {
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(LoginForm, null),
-	      this.props.children
+	      React.createElement(Joyride, {
+	        ref: 'joyride',
+	        debug: false,
+	        steps: this.state.steps,
+	        type: this.state.joyrideType,
+	        scrollToSteps: true,
+	        showSkipButton: true }),
+	      React.createElement(LoginForm, { addSteps: this.addSteps }),
+	      React.createElement(
+	        'div',
+	        null,
+	        React.cloneElement(this.props.children, {
+	          addSteps: this.addSteps
+	        })
+	      )
 	    );
 	  }
 	});
+	// {this.props.children}
 	
 	var router = React.createElement(
 	  Router,
@@ -25160,6 +25206,7 @@
 	    _user = {},
 	    _errors,
 	    _loaded = false;
+	var _demo = false;
 	
 	var goToGym = function (id) {
 	  hashHistory.push('/gyms/' + id);
@@ -25169,15 +25216,26 @@
 	  hashHistory.push(location);
 	};
 	
+	UserStore.demo = function () {
+	  return _demo;
+	};
+	
+	UserStore.toggleDemo = function () {
+	  _demo = false;
+	};
+	
 	UserStore.__onDispatch = function (payload) {
 	  switch (payload.actionType) {
 	    case UserConstants.LOGIN:
 	      if (payload.user.errors !== null) {
 	        UserStore.login(payload.user);
-	        UserStore.__emitChange();
-	        if (payload.demo) {
+	        if (payload.demo === "true") {
+	          _demo = true;
 	          goToGym(_currentUser.gym.id);
+	        } else {
+	          goBack(location.hash.slice(1).split("?")[0]);
 	        }
+	        UserStore.__emitChange();
 	      }
 	      break;
 	    case UserConstants.LOGOUT:
@@ -32291,7 +32349,9 @@
 	  homeCities: function () {
 	    return React.createElement(
 	      "li",
-	      { onClick: this.redirectToHome },
+	      {
+	        className: "view-cities",
+	        onClick: this.redirectToHome },
 	      "Cities"
 	    );
 	  },
@@ -32596,6 +32656,33 @@
 	  },
 	  demoLogin: function (e) {
 	    e.preventDefault();
+	    e.target.className += " disabled";
+	    e.target.disabled = true;
+	    var self = this;
+	    var username = "Arnold.S".split("");
+	    var password = "123123".split("");
+	    var time = 500;
+	    username.forEach(function (letter) {
+	      setTimeout(function () {
+	        var newUsername = self.state.username + letter;
+	        self.setState({ username: newUsername });
+	      }, time);
+	      time += 50;
+	    });
+	    time += 500;
+	    password.forEach(function (letter) {
+	      setTimeout(function () {
+	        var newPassword = self.state.password + letter;
+	        self.setState({ password: newPassword });
+	      }, time);
+	      time += 50;
+	    });
+	
+	    setTimeout(function () {
+	      self.demoLoginTime();
+	    }, time + 500);
+	  },
+	  demoLoginTime: function () {
 	    UserActions.demoLogin();
 	    this.setState(this.blankAttrs);
 	    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
@@ -35164,7 +35251,67 @@
 	      url: '/api/exercises',
 	      type: "ALL_EXERCISES"
 	    });
+	    this.listener2 = UserStore.addListener(this.showTutorial);
 	  },
+	  showTutorial: function () {
+	    var self = this;
+	    if (UserStore.demo()) {
+	      UserStore.toggleDemo();
+	      setTimeout(function () {
+	        self.props.addSteps([{
+	          title: 'All the Work Outs!',
+	          text: 'You can see the lists of all the work outs posted in this gym. Click on them to see more! Your workouts are colored in THISCOLOR',
+	          selector: '.table-body',
+	          position: 'top-right',
+	          type: 'hover',
+	          style: {
+	            mainColor: '#f07b50',
+	            beacon: {
+	              inner: '#f07b50',
+	              outer: '#f07b50'
+	            }
+	          }
+	        }, {
+	          title: 'Create a New Workout!',
+	          text: 'Create your own workout by clicking here! Select the time and date of your workout, and choose the exercises you plan on doing.',
+	          selector: '.new-workout-button',
+	          position: 'top-left',
+	          style: {
+	            mainColor: '#f07b50',
+	            beacon: {
+	              inner: '#f07b50',
+	              outer: '#f07b50'
+	            }
+	          }
+	        }, {
+	          title: 'Change your gym!',
+	          text: 'Click here to view all the cities where LiftWithMe is Available. From there, you can choose your gym, and find your workout buddy!',
+	          selector: '.view-cities',
+	          position: 'bottom-right',
+	          style: {
+	            mainColor: '#f07b50',
+	            beacon: {
+	              inner: '#f07b50',
+	              outer: '#f07b50'
+	            }
+	          }
+	        }, {
+	          title: 'View your profile!',
+	          text: 'Hover here to see go to your profile, or to log out.',
+	          selector: '.dropdown',
+	          position: 'bottom-right',
+	          style: {
+	            mainColor: '#f07b50',
+	            beacon: {
+	              inner: '#f07b50',
+	              outer: '#f07b50'
+	            }
+	          }
+	        }]);
+	      }, 500);
+	    }
+	  },
+	
 	  componentWillUnmount: function () {
 	    this.listener.remove();
 	  },
@@ -35235,7 +35382,7 @@
 	      ),
 	      React.createElement(
 	        'div',
-	        null,
+	        { className: 'selector' },
 	        this.returnButton(),
 	        this.chooseButton()
 	      ),
@@ -35244,7 +35391,6 @@
 	        gymName: this.state.name })
 	    );
 	  }
-	
 	});
 	
 	module.exports = GymShow;
@@ -35452,7 +35598,7 @@
 	      ),
 	      React.createElement(
 	        'tbody',
-	        null,
+	        { className: 'table-body' },
 	        workouts
 	      )
 	    );
@@ -35476,7 +35622,9 @@
 	    if (UserStore.currentUser() && !this.props.view) {
 	      button = React.createElement(
 	        'button',
-	        { onClick: this.openCreateForm },
+	        {
+	          className: 'new-workout-button',
+	          onClick: this.openCreateForm },
 	        'Create New Workout'
 	      );
 	    }
@@ -36718,6 +36866,1506 @@
 	});
 	
 	module.exports = NotMap;
+
+/***/ },
+/* 292 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(293);
+
+
+/***/ },
+/* 293 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React   = __webpack_require__(1),
+	    Beacon  = __webpack_require__(294),
+	    Tooltip = __webpack_require__(296);
+	
+	var defaultState = {
+	      index: 0,
+	      play: false,
+	      showTooltip: false,
+	      xPos: -1000,
+	      yPos: -1000,
+	      skipped: false
+	    },
+	    isTouch      = false;
+	
+	if (typeof window !== 'undefined') {
+	  isTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+	}
+	
+	var Component = React.createClass({
+	  displayName: 'Joyride',
+	
+	  propTypes: {
+	    completeCallback: React.PropTypes.func,
+	    debug: React.PropTypes.bool,
+	    keyboardNavigation: React.PropTypes.bool,
+	    locale: React.PropTypes.object,
+	    resizeDebounce: React.PropTypes.bool,
+	    resizeDebounceDelay: React.PropTypes.number,
+	    scrollOffset: React.PropTypes.number,
+	    scrollToFirstStep: React.PropTypes.bool,
+	    scrollToSteps: React.PropTypes.bool,
+	    showBackButton: React.PropTypes.bool,
+	    showOverlay: React.PropTypes.bool,
+	    showSkipButton: React.PropTypes.bool,
+	    showStepsProgress: React.PropTypes.bool,
+	    stepCallback: React.PropTypes.func,
+	    steps: React.PropTypes.array,
+	    tooltipOffset: React.PropTypes.number,
+	    type: React.PropTypes.string
+	  },
+	
+	  getDefaultProps: function() {
+	    return {
+	      debug: false,
+	      keyboardNavigation: true,
+	      locale: {
+	        back: 'Back',
+	        close: 'Close',
+	        last: 'Last',
+	        next: 'Next',
+	        skip: 'Skip'
+	      },
+	      resizeDebounce: false,
+	      resizeDebounceDelay: 200,
+	      scrollToSteps: true,
+	      scrollOffset: 20,
+	      scrollToFirstStep: false,
+	      showBackButton: true,
+	      showOverlay: true,
+	      showSkipButton: false,
+	      showStepsProgress: false,
+	      steps: [],
+	      tooltipOffset: 15,
+	      type: 'single',
+	      completeCallback: undefined,
+	      stepCallback: undefined
+	    };
+	  },
+	
+	  getInitialState: function() {
+	    return defaultState;
+	  },
+	
+	  componentWillMount: function() {
+	    this.listeners = {
+	      tooltips: {}
+	    };
+	  },
+	
+	  componentDidMount: function() {
+	    var props = this.props;
+	
+	    this._log(['joyride:initialized', props]);
+	
+	    if (props.resizeDebounce) {
+	      var self = this,
+	          timeoutId;
+	
+	      this.listeners.resize = (function() {
+	        return function() {
+	          clearTimeout(timeoutId);
+	          timeoutId = setTimeout(function() {
+	            timeoutId = null;
+	            self._calcPlacement();
+	          }, props.resizeDebounceDelay);
+	        };
+	      }());
+	    }
+	    else {
+	      this.listeners.resize = this._calcPlacement;
+	    }
+	    window.addEventListener('resize', this.listeners.resize);
+	
+	    if (props.keyboardNavigation) {
+	      this.listeners.keyboard = this._keyboardNavigation;
+	      document.body.addEventListener('keydown', this.listeners.keyboard);
+	    }
+	  },
+	
+	  componentWillUnmount: function() {
+	    window.removeEventListener('resize', this.listeners.resize);
+	
+	    if (this.props.keyboardNavigation) {
+	      document.body.removeEventListener('keydown', this.listeners.keyboard);
+	    }
+	
+	    if (Object.keys(this.listeners.tooltips).length) {
+	      Object.keys(this.listeners.tooltips).forEach(function(key) {
+	        document.querySelector(key)
+	          .removeEventListener(this.listeners.tooltips[key].event, this.listeners.tooltips[key].cb);
+	        delete this.listeners.tooltips[key];
+	      });
+	    }
+	  },
+	
+	  componentDidUpdate: function(prevProps, prevState) {
+	    var props = this.props,
+	        state = this.state;
+	
+	    if ((state.tooltip || (state.play && props.steps[state.index])) && state.xPos < 0) {
+	      this._calcPlacement();
+	    }
+	
+	    if (prevProps.steps.length !== props.steps.length) {
+	      this._log(['joyride:changedSteps', this.props.steps]);
+	
+	      if (!props.steps.length) {
+	        this.reset();
+	      }
+	    }
+	
+	    if (state.play && props.scrollToSteps && (props.scrollToFirstStep || (state.index > 0 || prevState.index > state.index))) {
+	      var scroll = __webpack_require__(298);
+	      scroll.top(this._getBrowser() === 'firefox' ? document.documentElement : document.body, this._getScrollTop());
+	    }
+	  },
+	
+	  /**
+	   * Starts the tour
+	   * @param {boolean} [autorun]- Starts with the first tooltip opened
+	   */
+	  start: function(autorun) {
+	    autorun = autorun === true;
+	
+	    this._log(['joyride:start', 'autorun:', autorun]);
+	
+	    this.setState({
+	      play: true
+	    }, function() {
+	      if (autorun) {
+	        this._toggleTooltip(true);
+	      }
+	    });
+	  },
+	
+	  /**
+	   * Stop the tour
+	   */
+	  stop: function() {
+	    this._log(['joyride:stop']);
+	
+	    this.setState({
+	      showTooltip: false,
+	      play: false
+	    });
+	  },
+	
+	  /**
+	   * Reset Tour
+	   * @param {boolean} [restart] - Starts the new tour right away
+	   */
+	  reset: function(restart) {
+	    restart = restart === true;
+	
+	    var newState = JSON.parse(JSON.stringify(defaultState));
+	    newState.play = restart;
+	
+	    this._log(['joyride:reset', 'restart:', restart]);
+	
+	    // Force a re-render if necessary
+	    if (restart && this.state.play === restart && this.state.index === 0) {
+	      this.forceUpdate();
+	    }
+	
+	    this.setState(newState);
+	  },
+	
+	  /**
+	   * Retrieve the current progress of your tour
+	   * @returns {{index: (number|*), percentageComplete: number, step: (object|null)}}
+	   */
+	  getProgress: function() {
+	    var state = this.state,
+	        props = this.props;
+	
+	    this._log(['joyride:getProgress', 'steps:', props.steps]);
+	
+	    return {
+	      index: state.index,
+	      percentageComplete: parseFloat(((state.index / props.steps.length) * 100).toFixed(2).replace('.00', '')),
+	      step: props.steps[state.index]
+	    };
+	  },
+	
+	  /**
+	   * Parse the incoming steps
+	   * @param {Array|Object} steps
+	   * @returns {Array}
+	   */
+	  parseSteps: function(steps) {
+	    var tmpSteps = [],
+	        newSteps = [],
+	        el;
+	
+	    if (Array.isArray(steps)) {
+	      steps.forEach(function(s) {
+	        if (s instanceof Object) {
+	          tmpSteps.push(s);
+	        }
+	      });
+	    }
+	    else {
+	      tmpSteps = [steps];
+	    }
+	
+	    tmpSteps.forEach(function(s) {
+	      if (s.selector.dataset && s.selector.dataset.reactid) {
+	        s.selector = '[data-reactid="' + s.selector.dataset.reactid + '"]';
+	        console.warn('Deprecation warning: React 15.0 removed reactid. Update your code.'); //eslint-disable-line no-console
+	      }
+	      else if (s.selector.dataset) {
+	        console.error('Unsupported error: React 15.0+ don\'t write reactid to the DOM anymore, please use a plain class in your step.', s); //eslint-disable-line no-console
+	        if (s.selector.className) {
+	          s.selector = '.' + s.selector.className.replace(' ', '.');
+	        }
+	      }
+	
+	      el = document.querySelector(s.selector);
+	      s.position = s.position || 'top';
+	
+	      if (el && el.offsetParent) {
+	        newSteps.push(s);
+	      }
+	      else {
+	        this._log(['joyride:parseSteps', 'Element not rendered in the DOM. Skipped..', s], true);
+	      }
+	    }.bind(this));
+	
+	    return newSteps;
+	  },
+	
+	  addTooltip: function(data) {
+	    var parseData = this.parseSteps(data),
+	        el,
+	        eventType,
+	        key;
+	
+	    this._log(['joyride:addTooltip', 'data:', data]);
+	
+	    if (parseData.length) {
+	      data = parseData[0];
+	      key = data.trigger || data.selector;
+	      el = document.querySelector(key);
+	      eventType = data.event || 'click';
+	    }
+	
+	    el.dataset.tooltip = JSON.stringify(data);
+	
+	    if (eventType === 'hover' && !isTouch) {
+	      this.listeners.tooltips[key] = { event: 'mouseenter', cb: this._onTooltipTrigger };
+	      this.listeners.tooltips[key + 'mouseleave'] = { event: 'mouseleave', cb: this._onTooltipTrigger };
+	      this.listeners.tooltips[key + 'click'] = {
+	        event: 'click', cb: function(e) {
+	          e.preventDefault();
+	        }
+	      };
+	
+	      el.addEventListener('mouseenter', this.listeners.tooltips[key].cb);
+	      el.addEventListener('mouseleave', this.listeners.tooltips[key + 'mouseleave'].cb);
+	      el.addEventListener('click', this.listeners.tooltips[key + 'click'].cb);
+	    }
+	    else {
+	      this.listeners.tooltips[key] = { event: 'click', cb: this._onTooltipTrigger };
+	      el.addEventListener('click', this.listeners.tooltips[key].cb);
+	    }
+	  },
+	
+	  _log: function(msg, warn) {
+	    var logger = warn ? console.warn || console.error : console.log; //eslint-disable-line no-console
+	
+	    if (this.props.debug) {
+	      logger.apply(console, msg); //eslint-disable-line no-console
+	    }
+	  },
+	
+	  /**
+	   * Returns the current browser
+	   * @private
+	   * @returns {String}
+	   */
+	  _getBrowser: function() {
+	    // Return cached result if avalible, else get result then cache it.
+	    if (this._browser) {
+	      return this._browser;
+	    }
+	
+	    var isOpera = Boolean(window.opera) || navigator.userAgent.indexOf(' OPR/') >= 0;
+	    // Opera 8.0+ (UA detection to detect Blink/v8-powered Opera)
+	    var isFirefox = typeof InstallTrigger !== 'undefined';// Firefox 1.0+
+	    var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+	    // At least Safari 3+: "[object HTMLElementConstructor]"
+	    var isChrome = Boolean(window.chrome) && !isOpera;// Chrome 1+
+	    var isIE = /*@cc_on!@*/ Boolean(document.documentMode); // At least IE6
+	
+	    return (this._browser =
+	      isOpera ? 'opera' :
+	      isFirefox ? 'firefox' :
+	      isSafari ? 'safari' :
+	      isChrome ? 'chrome' :
+	      isIE ? 'ie' :
+	      '');
+	  },
+	
+	  /**
+	   * Get an element actual dimensions with margin
+	   * @param {String|Element} el - Element node or selector
+	   * @returns {{height: number, width: number}}
+	   */
+	  _getElementDimensions: function(el) {
+	    // Get the DOM Node if you pass in a string
+	    el = (typeof el === 'string') ? document.querySelector(el) : el;
+	
+	    var styles = window.getComputedStyle(el),
+	        height = el.clientHeight + parseInt(styles.marginTop, 10) + parseInt(styles.marginBottom, 10),
+	        width  = el.clientWidth + parseInt(styles.marginLeft, 10) + parseInt(styles.marginRight, 10);
+	
+	    return {
+	      height: height,
+	      width: width
+	    };
+	  },
+	
+	  /**
+	   * Get the scrollTop position
+	   * @returns {number}
+	   */
+	  _getScrollTop: function() {
+	    var state     = this.state,
+	        props     = this.props,
+	        step      = props.steps[state.index],
+	        position  = step.position,
+	        target    = document.querySelector(step.selector),
+	        targetTop = target.getBoundingClientRect().top + document.body.scrollTop,
+	        scrollTop = 0;
+	
+	    if (/^top/.test(position) || state.position === 'top') {
+	      scrollTop = Math.floor(state.yPos - props.scrollOffset);
+	    }
+	    else if (/^bottom|^left|^right/.test(position)) {
+	      scrollTop = Math.floor(targetTop - props.scrollOffset);
+	    }
+	
+	    return scrollTop;
+	  },
+	
+	  /**
+	   * Keydown event listener
+	   * @param {Event} e - Keyboard event
+	   */
+	  _keyboardNavigation: function(e) {
+	    var state  = this.state,
+	        props  = this.props,
+	        intKey = (window.Event) ? e.which : e.keyCode,
+	        hasSteps;
+	
+	    if (state.showTooltip) {
+	      if ([32, 38, 40].indexOf(intKey) > -1) {
+	        e.preventDefault();
+	      }
+	
+	      if (intKey === 27) {
+	        this._toggleTooltip(false, state.index + 1);
+	      }
+	      else if ([13, 32].indexOf(intKey) > -1) {
+	        hasSteps = Boolean(props.steps[state.index + 1]);
+	        this._toggleTooltip(hasSteps, state.index + 1, 'next');
+	      }
+	    }
+	  },
+	
+	  /**
+	   * Tooltip event listener
+	   * @param {Event} e - Click event
+	   */
+	  _onTooltipTrigger: function(e) {
+	    e.preventDefault();
+	    var tooltip = e.currentTarget.dataset.tooltip;
+	
+	    if (tooltip) {
+	      tooltip = JSON.parse(tooltip);
+	
+	      if (!this.state.tooltip || (this.state.tooltip.selector !== tooltip.selector)) {
+	
+	        this.setState({
+	          previousPlay: this.state.previousPlay !== undefined ? this.state.previousPlay : this.state.play,
+	          play: false,
+	          showTooltip: false,
+	          tooltip: tooltip,
+	          xPos: -1000,
+	          yPos: -1000
+	        });
+	      }
+	      else {
+	        document.querySelector('.joyride-tooltip__close').click();
+	      }
+	    }
+	  },
+	
+	  /**
+	   * Beacon click event listener
+	   * @param {Event} e - Click event
+	   */
+	  _onBeaconTrigger: function(e) {
+	    e.preventDefault();
+	    this._toggleTooltip(true, this.state.index);
+	  },
+	
+	  /**
+	   * Tooltip click event listener
+	   * @param {Event} e - Click event
+	   */
+	  _onClickTooltip: function(e) {
+	    e.preventDefault();
+	    e.stopPropagation();
+	
+	    var state    = this.state,
+	        props    = this.props,
+	        tooltip  = document.querySelector('.joyride-tooltip'),
+	        el       = e.target,
+	        type     = el.dataset.type,
+	        newIndex = state.index + (type === 'back' ? -1 : 1);
+	
+	    if (type === 'skip') {
+	      this.setState({
+	        skipped: true
+	      });
+	      newIndex = props.steps.length + 1;
+	    }
+	
+	    if (tooltip.classList.contains('joyride-tooltip--standalone')) {
+	      this.setState({
+	        play: this.state.previousPlay,
+	        previousPlay: undefined,
+	        tooltip: undefined,
+	        xPos: -1000,
+	        yPos: -1000
+	      });
+	    }
+	    else if (type) {
+	      this._toggleTooltip(
+	        (props.type === 'continuous' || props.type === 'guided')
+	        && ['close', 'skip'].indexOf(type) === -1
+	        && Boolean(props.steps[newIndex])
+	        , newIndex
+	        , type);
+	    }
+	  },
+	
+	  /**
+	   * Toggle Tooltip's visibility
+	   * @param {Boolean} show - Render the tooltip directly or the beacon
+	   * @param {Number} [index] - The tour's new index
+	   * @param {string} [action]
+	   */
+	  _toggleTooltip: function(show, index, action) {
+	    index = (index !== undefined ? index : this.state.index);
+	    var props = this.props;
+	
+	    this.setState({
+	      play: props.steps[index] ? this.state.play : false,
+	      showTooltip: show,
+	      index: index,
+	      xPos: -1000,
+	      yPos: -1000
+	    }, function() {
+	      var lastIndex = action === 'back' ? index + 1 : index - 1;
+	
+	      if (action && typeof props.stepCallback === 'function' && props.steps[lastIndex]) {
+	        props.stepCallback(props.steps[lastIndex]);
+	      }
+	
+	      if (props.steps.length && !props.steps[index]) {
+	        if (typeof props.completeCallback === 'function') {
+	          props.completeCallback(props.steps, this.state.skipped);
+	        }
+	      }
+	    });
+	  },
+	
+	  /**
+	   * Position absolute elements next to its target
+	   */
+	  _calcPlacement: function() {
+	    var state       = this.state,
+	        props       = this.props,
+	        step        = state.tooltip ? state.tooltip : props.steps[state.index],
+	        showTooltip = state.tooltip ? true : state.showTooltip,
+	        component,
+	        position,
+	        body,
+	        target,
+	        placement   = {
+	          x: -1000,
+	          y: -1000
+	        };
+	
+	    if (step) {
+	      position = step.position;
+	      body = document.body.getBoundingClientRect();
+	      target = document.querySelector(step.selector).getBoundingClientRect();
+	      component = this._getElementDimensions((showTooltip ? '.joyride-tooltip' : '.joyride-beacon'));
+	
+	      // Change the step position in the tooltip won't fit in the window
+	      if (/^left/.test(position) && target.left - (component.width + props.tooltipOffset) < 0) {
+	        position = 'top';
+	      }
+	      else if (/^right/.test(position) && target.left + target.width + (component.width + props.tooltipOffset) > body.width) {
+	        position = 'bottom';
+	      }
+	
+	      // Calculate x position
+	      if (/^left/.test(position)) {
+	        placement.x = target.left - (showTooltip ? component.width + props.tooltipOffset : component.width / 2);
+	      }
+	      else if (/^right/.test(position)) {
+	        placement.x = target.left + target.width - (showTooltip ? -props.tooltipOffset : component.width / 2);
+	      }
+	      else {
+	        placement.x = target.left + target.width / 2 - component.width / 2;
+	      }
+	
+	      // Calculate y position
+	      if (/^top/.test(position)) {
+	        placement.y = (target.top - body.top) - (showTooltip ? component.height + props.tooltipOffset : component.height / 2);
+	      }
+	      else if (/^bottom/.test(position)) {
+	        placement.y = (target.top - body.top) + target.height - (showTooltip ? -props.tooltipOffset : component.height / 2);
+	      }
+	      else {
+	        placement.y = (target.top - body.top) + target.height / 2 - component.height / 2 + (showTooltip ? props.tooltipOffset : 0);
+	      }
+	
+	      if (/^bottom|^top/.test(position)) {
+	        if (/left/.test(position)) {
+	          placement.x = target.left - (showTooltip ? props.tooltipOffset : component.width / 2);
+	        }
+	        else if (/right/.test(position)) {
+	          placement.x = target.left + target.width - (showTooltip ? component.width - props.tooltipOffset : component.width / 2);
+	        }
+	      }
+	
+	      this.setState({
+	        xPos: this._preventWindowOverflow(Math.ceil(placement.x), 'x', component.width, component.height),
+	        yPos: this._preventWindowOverflow(Math.ceil(placement.y), 'y', component.width, component.height),
+	        position: position
+	      });
+	    }
+	  },
+	
+	  /**
+	   * Prevent tooltip to render outside the window
+	   * @param {Number} value - The axis position
+	   * @param {String} axis - The Axis X or Y
+	   * @param {Number} elWidth - The target element width
+	   * @param {Number} elHeight - The target element height
+	   * @returns {Number}
+	   */
+	  _preventWindowOverflow: function(value, axis, elWidth, elHeight) {
+	    var winWidth  = window.innerWidth,
+	        body      = document.body,
+	        html      = document.documentElement,
+	        docHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight),
+	        newValue  = value;
+	
+	    if (axis === 'x') {
+	      if (value + elWidth >= winWidth) {
+	        newValue = winWidth - elWidth - 15;
+	      }
+	      else if (value < 15) {
+	        newValue = 15;
+	      }
+	    }
+	    else if (axis === 'y') {
+	      if (value + elHeight >= docHeight) {
+	        newValue = docHeight - elHeight - 15;
+	      }
+	      else if (value < 15) {
+	        newValue = 15;
+	      }
+	    }
+	
+	    return newValue;
+	  },
+	
+	  /**
+	   *
+	   * @param {Boolean} [update]
+	   * @returns {*}
+	   * @private
+	   */
+	  _createComponent: function(update) {
+	    var state       = this.state,
+	        props       = this.props,
+	        currentStep = Object.assign({}, state.tooltip || props.steps[state.index]),
+	        buttons     = {
+	          primary: props.locale.close
+	        },
+	        target      = currentStep && currentStep.selector ? document.querySelector(currentStep.selector) : null,
+	        cssPosition = target ? target.style.position : null,
+	        showOverlay = state.tooltip ? false : props.showOverlay,
+	        component;
+	
+	    this._log([
+	      'joyride:' + (update ? 'updateComponent' : 'createComponent'),
+	      'component:', state.showTooltip || state.tooltip ? 'Tooltip' : 'Beacon',
+	      'target:', target
+	    ]);
+	
+	    if (target) {
+	      if (state.showTooltip || state.tooltip) {
+	        currentStep.position = state.position;
+	
+	        if (!state.tooltip) {
+	          if (props.type === 'continuous' || props.type === 'guided') {
+	            buttons.primary = props.locale.last;
+	
+	            if (props.steps[state.index + 1]) {
+	              buttons.primary = props.locale.next;
+	
+	              if (props.showStepsProgress) {
+	                buttons.primary += ' ' + (state.index + 1) + '/' + props.steps.length;
+	              }
+	            }
+	
+	            if (props.showBackButton && state.index > 0) {
+	              buttons.secondary = props.locale.back;
+	            }
+	          }
+	
+	          if (props.showSkipButton) {
+	            buttons.skip = props.locale.skip;
+	          }
+	        }
+	
+	        component = React.createElement(Tooltip, {
+	          animate: state.xPos > -1,
+	          browser: this._getBrowser(),
+	          buttons: buttons,
+	          cssPosition: cssPosition,
+	          showOverlay: showOverlay,
+	          step: currentStep,
+	          standalone: Boolean(state.tooltip),
+	          type: props.type,
+	          xPos: state.xPos,
+	          yPos: state.yPos,
+	          onClick: this._onClickTooltip
+	        });
+	      }
+	      else {
+	        component = React.createElement(Beacon, {
+	          cssPosition: cssPosition,
+	          step: currentStep,
+	          xPos: state.xPos,
+	          yPos: state.yPos,
+	          onTrigger: this._onBeaconTrigger,
+	          eventType: currentStep.type || 'click'
+	        });
+	      }
+	    }
+	
+	    return component;
+	  },
+	
+	  render: function() {
+	    var state   = this.state,
+	        props   = this.props,
+	        hasStep = Boolean(props.steps[state.index]),
+	        component,
+	        standaloneTooltip;
+	
+	    if (state.play && state.xPos < 0 && hasStep) {
+	      this._log(['joyride:render', 'step:', props.steps[state.index]]);
+	    }
+	    else if (!state.play && state.tooltip) {
+	      this._log(['joyride:render', 'tooltip:', state.tooltip]);
+	    }
+	
+	    if (state.tooltip) {
+	      standaloneTooltip = this._createComponent();
+	    }
+	    else if (state.play && hasStep) {
+	      component = this._createComponent(state.xPos < 0);
+	    }
+	
+	    return React.createElement('div', {
+	        className: 'joyride'
+	      },
+	      component,
+	      standaloneTooltip
+	    );
+	  }
+	});
+	
+	module.exports = Component;
+
+
+/***/ },
+/* 294 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React    = __webpack_require__(1),
+	    hexToRGB = __webpack_require__(295).hexToRgb;
+	
+	var isTouch = false;
+	
+	if (typeof window !== 'undefined') {
+	  isTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+	}
+	
+	var Beacon = React.createClass({
+	  displayName: 'JoyrideBeacon',
+	  propTypes: {
+	    cssPosition: React.PropTypes.string.isRequired,
+	    eventType: React.PropTypes.string.isRequired,
+	    onTrigger: React.PropTypes.func.isRequired,
+	    xPos: React.PropTypes.oneOfType([
+	      React.PropTypes.number,
+	      React.PropTypes.string
+	    ]).isRequired,
+	    yPos: React.PropTypes.oneOfType([
+	      React.PropTypes.number,
+	      React.PropTypes.string
+	    ]).isRequired
+	  },
+	
+	  getDefaultProps: function() {
+	    return {
+	      cssPosition: 'absolute',
+	      xPos: -1000,
+	      yPos: -1000
+	    };
+	  },
+	
+	  render: function() {
+	    var props      = this.props,
+	        stepStyles = props.step.style || {},
+	        rgb,
+	        styles     = {
+	          beacon: {
+	            left: props.xPos,
+	            position: props.cssPosition === 'fixed' ? 'fixed' : 'absolute',
+	            top: props.yPos
+	          },
+	          inner: {},
+	          outer: {}
+	        };
+	
+	    if (stepStyles.beacon) {
+	      if (typeof stepStyles.beacon === 'string') {
+	        rgb = hexToRGB(stepStyles.beacon);
+	
+	        styles.inner.backgroundColor = stepStyles.beacon;
+	        styles.outer = {
+	          backgroundColor: 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', 0.2)',
+	          borderColor: stepStyles.beacon
+	        };
+	      }
+	      else {
+	        if (stepStyles.beacon.inner) {
+	          styles.inner.backgroundColor = stepStyles.beacon.inner;
+	        }
+	
+	        if (stepStyles.beacon.outer) {
+	          rgb = hexToRGB(stepStyles.beacon.outer);
+	
+	          styles.outer = {
+	            backgroundColor: 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', 0.4)',
+	            borderColor: stepStyles.beacon.outer
+	          };
+	        }
+	      }
+	    }
+	
+	    return (
+	      React.createElement('a', {
+	          href: '#',
+	          className: 'joyride-beacon',
+	          style: styles.beacon,
+	          onClick: props.eventType === 'click' || isTouch ? props.onTrigger : null,
+	          onMouseEnter: props.eventType === 'hover' && !isTouch ? props.onTrigger : null
+	        },
+	        React.createElement('span', {
+	          className: 'joyride-beacon__inner',
+	          style: styles.inner
+	        }),
+	        React.createElement('span', {
+	          className: 'joyride-beacon__outer',
+	          style: styles.outer
+	        })
+	      )
+	    );
+	  }
+	
+	});
+	
+	module.exports = Beacon;
+
+
+/***/ },
+/* 295 */
+/***/ function(module, exports) {
+
+	module.exports = {
+	  hexToRgb: function(hex) {
+	    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+	    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+	    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+	      return r + r + g + g + b + b;
+	    });
+	
+	    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	    return result ? {
+	      r: parseInt(result[1], 16),
+	      g: parseInt(result[2], 16),
+	      b: parseInt(result[3], 16)
+	    } : null;
+	  }
+	};
+
+
+/***/ },
+/* 296 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React  = __webpack_require__(1),
+	    assign = __webpack_require__(297);
+	
+	var Tooltip = React.createClass({
+	  displayName: 'JoyrideTooltip',
+	
+	  propTypes: {
+	    animate: React.PropTypes.bool.isRequired,
+	    browser: React.PropTypes.string.isRequired,
+	    buttons: React.PropTypes.object.isRequired,
+	    cssPosition: React.PropTypes.string.isRequired,
+	    onClick: React.PropTypes.func.isRequired,
+	    showOverlay: React.PropTypes.bool.isRequired,
+	    standalone: React.PropTypes.bool,
+	    step: React.PropTypes.object.isRequired,
+	    type: React.PropTypes.string.isRequired,
+	    xPos: React.PropTypes.oneOfType([
+	      React.PropTypes.number,
+	      React.PropTypes.string
+	    ]).isRequired,
+	    yPos: React.PropTypes.oneOfType([
+	      React.PropTypes.number,
+	      React.PropTypes.string
+	    ]).isRequired
+	  },
+	
+	  getDefaultProps: function() {
+	    return {
+	      browser: 'chrome',
+	      buttons: {
+	        primary: 'Close'
+	      },
+	      cssPosition: 'absolute',
+	      step: {},
+	      xPos: -1000,
+	      yPos: -1000
+	    };
+	  },
+	
+	  _getArrowPosition: function(position) {
+	    var arrowPosition;
+	
+	    if (window.innerWidth < 480) {
+	      arrowPosition = (position < 8 ? 8 : (position > 92 ? 92 : position));
+	    }
+	    else if (window.innerWidth < 1024) {
+	      arrowPosition = (position < 6 ? 6 : (position > 94 ? 94 : position));
+	    }
+	    else {
+	      arrowPosition = (position < 5 ? 5 : (position > 95 ? 95 : position));
+	    }
+	
+	    return arrowPosition;
+	  },
+	
+	  _generateArrow: function(opts) {
+	    var width,
+	        height,
+	        rotate;
+	
+	    opts = opts || {};
+	    opts.location = opts.location || 'top';
+	    opts.color = opts.color || '#f04';
+	    opts.color = opts.color.replace('#', '%23');
+	
+	    opts.width = opts.width || 36;
+	    opts.height = opts.width / 2;
+	    opts.scale = opts.width / 16;
+	    opts.rotate = '0';
+	
+	    height = opts.height;
+	    rotate = opts.rotate;
+	    width = opts.width;
+	
+	    if (opts.location === 'bottom') {
+	      rotate = '180 8 4';
+	    }
+	    else if (opts.location === 'left') {
+	      height = opts.width;
+	      width = opts.height;
+	      rotate = '270 8 8';
+	    }
+	    else if (opts.location === 'right') {
+	      height = opts.width;
+	      width = opts.height;
+	      rotate = '90 4 4';
+	    }
+	
+	    return 'data:image/svg+xml,%3Csvg%20width%3D%22' + width + '%22%20height%3D%22' + height + '%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpolygon%20points%3D%220%2C%200%208%2C%208%2016%2C0%22%20fill%3D%22' + opts.color + '%22%20transform%3D%22scale%28' + opts.scale + '%29%20rotate%28' + rotate + '%29%22%3E%3C%2Fpolygon%3E%3C%2Fsvg%3E';
+	  },
+	
+	  _setStyles: function(opts, styles, stepStyles) {
+	    styles.hole = {
+	      top: Math.round((opts.target.top - document.body.getBoundingClientRect().top) - 5),
+	      left: Math.round(opts.target.left - 5),
+	      width: Math.round(opts.target.width + 10),
+	      height: Math.round(opts.target.height + 10)
+	    };
+	
+	    styles.buttons = {
+	      back: {},
+	      close: {},
+	      primary: {},
+	      skip: {}
+	    };
+	
+	    /* Styling */
+	    if (stepStyles) {
+	      if (stepStyles.backgroundColor) {
+	        styles.arrow.backgroundImage = 'url("' + this._generateArrow({
+	            location: opts.positonBaseClass,
+	            color: stepStyles.backgroundColor
+	          }) + '")';
+	        styles.tooltip.backgroundColor = stepStyles.backgroundColor;
+	      }
+	
+	      if (stepStyles.borderRadius) {
+	        styles.tooltip.borderRadius = stepStyles.borderRadius;
+	      }
+	
+	      if (stepStyles.color) {
+	        styles.buttons.primary.color = stepStyles.color;
+	        styles.buttons.close.color = stepStyles.color;
+	        styles.buttons.skip.color = stepStyles.color;
+	        styles.header.color = stepStyles.color;
+	        styles.tooltip.color = stepStyles.color;
+	
+	        if (stepStyles.mainColor && stepStyles.mainColor === stepStyles.color) {
+	          styles.buttons.primary.color = stepStyles.backgroundColor;
+	        }
+	      }
+	
+	      if (stepStyles.mainColor) {
+	        styles.buttons.primary.backgroundColor = stepStyles.mainColor;
+	        styles.buttons.back.color = stepStyles.mainColor;
+	        styles.header.borderColor = stepStyles.mainColor;
+	      }
+	
+	      if (stepStyles.textAlign) {
+	        styles.tooltip.textAlign = stepStyles.textAlign;
+	      }
+	
+	      if (stepStyles.width) {
+	        styles.tooltip.width = stepStyles.width;
+	      }
+	
+	      if (stepStyles.back) {
+	        styles.buttons.back = assign(styles.buttons.back, stepStyles.back);
+	      }
+	
+	      if (stepStyles.button) {
+	        styles.buttons.primary = assign(styles.buttons.primary, stepStyles.button);
+	      }
+	
+	      if (stepStyles.close) {
+	        styles.buttons.close = assign(styles.buttons.close, stepStyles.close);
+	      }
+	
+	      if (stepStyles.skip) {
+	        styles.buttons.skip = assign(styles.buttons.skip, stepStyles.skip);
+	      }
+	    }
+	
+	    return styles;
+	  },
+	
+	  render: function() {
+	    var props  = this.props,
+	        step   = props.step,
+	        opts   = {
+	          classes: ['joyride-tooltip'],
+	          target: document.querySelector(step.selector).getBoundingClientRect(),
+	          positionClass: step.position
+	        },
+	        styles = {
+	          arrow: {},
+	          buttons: {},
+	          header: {},
+	          hole: {},
+	          tooltip: {
+	            position: this.props.cssPosition === 'fixed' ? 'fixed' : 'absolute',
+	            top: Math.round(this.props.yPos),
+	            left: Math.round(this.props.xPos)
+	          }
+	        };
+	
+	    opts.positonBaseClass = opts.positionClass.match(/-/) ? opts.positionClass.split('-')[0] : opts.positionClass;
+	
+	    if ((/^bottom$/.test(opts.positionClass) || /^top$/.test(opts.positionClass)) && props.xPos > -1) {
+	      opts.tooltip = document.querySelector('.joyride-tooltip').getBoundingClientRect();
+	      opts.targetMiddle = (opts.target.left + opts.target.width / 2);
+	      opts.arrowPosition = (((opts.targetMiddle - props.xPos) / opts.tooltip.width) * 100).toFixed(2);
+	      opts.arrowPosition = this._getArrowPosition(opts.arrowPosition) + '%';
+	
+	      styles.arrow.left = opts.arrowPosition;
+	    }
+	
+	    styles = this._setStyles(opts, styles, step.style);
+	
+	    if (props.standalone) {
+	      opts.classes.push('joyride-tooltip--standalone');
+	    }
+	    if (opts.positonBaseClass) {
+	      opts.classes.push(opts.positonBaseClass);
+	    }
+	    opts.classes.push(opts.positionClass);
+	    if (props.animate) {
+	      opts.classes.push('joyride-tooltip--animate');
+	    }
+	
+	    if (step.title) {
+	      opts.header = (
+	        React.createElement('div', {
+	          className: 'joyride-tooltip__header',
+	          style: styles.header
+	        }, step.title)
+	      );
+	    }
+	
+	    opts.tooltipElement = React.createElement('div', {
+	        className: opts.classes.join(' '),
+	        style: styles.tooltip,
+	        'data-target': step.selector
+	      },
+	      React.createElement('div', {
+	        className: 'joyride-tooltip__triangle joyride-tooltip__triangle-' + opts.positionClass,
+	        style: styles.arrow
+	      }),
+	      React.createElement('a', {
+	        href: '#',
+	        className: 'joyride-tooltip__close' + (opts.header ? ' joyride-tooltip__close--header' : ''),
+	        style: styles.buttons.close,
+	        'data-type': 'close',
+	        onClick: props.onClick
+	      }, '×'),
+	      opts.header,
+	      React.createElement('div', {
+	        className: 'joyride-tooltip__main',
+	        dangerouslySetInnerHTML: { __html: step.text || '' }
+	      }),
+	      React.createElement('div', {
+	          className: 'joyride-tooltip__footer'
+	        },
+	        (props.buttons.skip ?
+	         React.createElement('a', {
+	           href: '#',
+	           className: 'joyride-tooltip__button joyride-tooltip__button--skip',
+	           style: styles.buttons.skip,
+	           'data-type': 'skip',
+	           onClick: props.onClick
+	         }, props.buttons.skip)
+	          : false),
+	        (props.buttons.secondary ?
+	         React.createElement('a', {
+	           href: '#',
+	           className: 'joyride-tooltip__button joyride-tooltip__button--secondary',
+	           style: styles.buttons.back,
+	           'data-type': 'back',
+	           onClick: props.onClick
+	         }, props.buttons.secondary)
+	          : false),
+	        React.createElement('a', {
+	          href: '#',
+	          className: 'joyride-tooltip__button joyride-tooltip__button--primary',
+	          style: styles.buttons.primary,
+	          'data-type': props.type === 'single' ? 'close' : 'next',
+	          onClick: props.onClick
+	        }, props.buttons.primary)
+	      )
+	    );
+	
+	    if (props.showOverlay) {
+	      opts.hole = React.createElement('div', {
+	        className: 'joyride-hole ' + props.browser,
+	        style: styles.hole
+	      });
+	    }
+	
+	    if (!props.showOverlay) {
+	      return opts.tooltipElement;
+	    }
+	
+	    return React.createElement('div', {
+	        className: 'joyride-overlay',
+	        style: {
+	          height: document.body.clientHeight
+	        },
+	        'data-type': 'close',
+	        onClick: props.onClick
+	      },
+	      opts.hole,
+	      opts.tooltipElement
+	    );
+	  }
+	});
+	
+	module.exports = Tooltip;
+
+
+/***/ },
+/* 297 */
+/***/ function(module, exports) {
+
+	/* eslint-disable no-unused-vars */
+	'use strict';
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+	
+	function toObject(val) {
+		if (val === null || val === undefined) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
+	
+		return Object(val);
+	}
+	
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var to = toObject(target);
+		var symbols;
+	
+		for (var s = 1; s < arguments.length; s++) {
+			from = Object(arguments[s]);
+	
+			for (var key in from) {
+				if (hasOwnProperty.call(from, key)) {
+					to[key] = from[key];
+				}
+			}
+	
+			if (Object.getOwnPropertySymbols) {
+				symbols = Object.getOwnPropertySymbols(from);
+				for (var i = 0; i < symbols.length; i++) {
+					if (propIsEnumerable.call(from, symbols[i])) {
+						to[symbols[i]] = from[symbols[i]];
+					}
+				}
+			}
+		}
+	
+		return to;
+	};
+
+
+/***/ },
+/* 298 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var raf = __webpack_require__(299)
+	var ease = __webpack_require__(300)
+	
+	function scroll (prop, element, to, options, callback) {
+	  var start = +new Date
+	  var from = element[prop]
+	  var cancelled = false
+	  var type = 'inOutSine'
+	  var duration = 350
+	
+	  if (typeof options === 'function') {
+	    callback = options
+	  }
+	  else {
+	    options = options || {}
+	    type = options.ease || type
+	    duration = options.duration || duration
+	    callback = callback || function () {}
+	  }
+	
+	  var easing = ease[type]
+	
+	  if (from === to) {
+	    return callback(
+	      new Error('Element already at target scroll position'),
+	      element[prop]
+	    )
+	  }
+	
+	  function cancel () {
+	    cancelled = true
+	  }
+	
+	  function animate (timestamp) {
+	    if (cancelled) {
+	      return callback(
+	        new Error('Scroll cancelled'),
+	        element[prop]
+	      )
+	    }
+	
+	    var now = +new Date
+	    var time = Math.min(1, ((now - start) / duration))
+	    var eased = easing(time)
+	
+	    element[prop] = (eased * (to - from)) + from
+	
+	    time < 1 ?
+	      raf(animate) :
+	      callback(null, element[prop])
+	  }
+	
+	  raf(animate)
+	
+	  return cancel
+	}
+	
+	module.exports = {
+	  top: function (element, to, options, callback) {
+	    return scroll('scrollTop', element, to, options, callback)
+	  },
+	  left: function (element, to, options, callback) {
+	    return scroll('scrollLeft', element, to, options, callback)
+	  }
+	}
+
+
+/***/ },
+/* 299 */
+/***/ function(module, exports) {
+
+	/**
+	 * Expose `requestAnimationFrame()`.
+	 */
+	
+	exports = module.exports = window.requestAnimationFrame
+	  || window.webkitRequestAnimationFrame
+	  || window.mozRequestAnimationFrame
+	  || window.oRequestAnimationFrame
+	  || window.msRequestAnimationFrame
+	  || fallback;
+	
+	/**
+	 * Fallback implementation.
+	 */
+	
+	var prev = new Date().getTime();
+	function fallback(fn) {
+	  var curr = new Date().getTime();
+	  var ms = Math.max(0, 16 - (curr - prev));
+	  var req = setTimeout(fn, ms);
+	  prev = curr;
+	  return req;
+	}
+	
+	/**
+	 * Cancel.
+	 */
+	
+	var cancel = window.cancelAnimationFrame
+	  || window.webkitCancelAnimationFrame
+	  || window.mozCancelAnimationFrame
+	  || window.oCancelAnimationFrame
+	  || window.msCancelAnimationFrame
+	  || window.clearTimeout;
+	
+	exports.cancel = function(id){
+	  cancel.call(window, id);
+	};
+
+
+/***/ },
+/* 300 */
+/***/ function(module, exports) {
+
+	
+	// easing functions from "Tween.js"
+	
+	exports.linear = function(n){
+	  return n;
+	};
+	
+	exports.inQuad = function(n){
+	  return n * n;
+	};
+	
+	exports.outQuad = function(n){
+	  return n * (2 - n);
+	};
+	
+	exports.inOutQuad = function(n){
+	  n *= 2;
+	  if (n < 1) return 0.5 * n * n;
+	  return - 0.5 * (--n * (n - 2) - 1);
+	};
+	
+	exports.inCube = function(n){
+	  return n * n * n;
+	};
+	
+	exports.outCube = function(n){
+	  return --n * n * n + 1;
+	};
+	
+	exports.inOutCube = function(n){
+	  n *= 2;
+	  if (n < 1) return 0.5 * n * n * n;
+	  return 0.5 * ((n -= 2 ) * n * n + 2);
+	};
+	
+	exports.inQuart = function(n){
+	  return n * n * n * n;
+	};
+	
+	exports.outQuart = function(n){
+	  return 1 - (--n * n * n * n);
+	};
+	
+	exports.inOutQuart = function(n){
+	  n *= 2;
+	  if (n < 1) return 0.5 * n * n * n * n;
+	  return -0.5 * ((n -= 2) * n * n * n - 2);
+	};
+	
+	exports.inQuint = function(n){
+	  return n * n * n * n * n;
+	}
+	
+	exports.outQuint = function(n){
+	  return --n * n * n * n * n + 1;
+	}
+	
+	exports.inOutQuint = function(n){
+	  n *= 2;
+	  if (n < 1) return 0.5 * n * n * n * n * n;
+	  return 0.5 * ((n -= 2) * n * n * n * n + 2);
+	};
+	
+	exports.inSine = function(n){
+	  return 1 - Math.cos(n * Math.PI / 2 );
+	};
+	
+	exports.outSine = function(n){
+	  return Math.sin(n * Math.PI / 2);
+	};
+	
+	exports.inOutSine = function(n){
+	  return .5 * (1 - Math.cos(Math.PI * n));
+	};
+	
+	exports.inExpo = function(n){
+	  return 0 == n ? 0 : Math.pow(1024, n - 1);
+	};
+	
+	exports.outExpo = function(n){
+	  return 1 == n ? n : 1 - Math.pow(2, -10 * n);
+	};
+	
+	exports.inOutExpo = function(n){
+	  if (0 == n) return 0;
+	  if (1 == n) return 1;
+	  if ((n *= 2) < 1) return .5 * Math.pow(1024, n - 1);
+	  return .5 * (-Math.pow(2, -10 * (n - 1)) + 2);
+	};
+	
+	exports.inCirc = function(n){
+	  return 1 - Math.sqrt(1 - n * n);
+	};
+	
+	exports.outCirc = function(n){
+	  return Math.sqrt(1 - (--n * n));
+	};
+	
+	exports.inOutCirc = function(n){
+	  n *= 2
+	  if (n < 1) return -0.5 * (Math.sqrt(1 - n * n) - 1);
+	  return 0.5 * (Math.sqrt(1 - (n -= 2) * n) + 1);
+	};
+	
+	exports.inBack = function(n){
+	  var s = 1.70158;
+	  return n * n * (( s + 1 ) * n - s);
+	};
+	
+	exports.outBack = function(n){
+	  var s = 1.70158;
+	  return --n * n * ((s + 1) * n + s) + 1;
+	};
+	
+	exports.inOutBack = function(n){
+	  var s = 1.70158 * 1.525;
+	  if ( ( n *= 2 ) < 1 ) return 0.5 * ( n * n * ( ( s + 1 ) * n - s ) );
+	  return 0.5 * ( ( n -= 2 ) * n * ( ( s + 1 ) * n + s ) + 2 );
+	};
+	
+	exports.inBounce = function(n){
+	  return 1 - exports.outBounce(1 - n);
+	};
+	
+	exports.outBounce = function(n){
+	  if ( n < ( 1 / 2.75 ) ) {
+	    return 7.5625 * n * n;
+	  } else if ( n < ( 2 / 2.75 ) ) {
+	    return 7.5625 * ( n -= ( 1.5 / 2.75 ) ) * n + 0.75;
+	  } else if ( n < ( 2.5 / 2.75 ) ) {
+	    return 7.5625 * ( n -= ( 2.25 / 2.75 ) ) * n + 0.9375;
+	  } else {
+	    return 7.5625 * ( n -= ( 2.625 / 2.75 ) ) * n + 0.984375;
+	  }
+	};
+	
+	exports.inOutBounce = function(n){
+	  if (n < .5) return exports.inBounce(n * 2) * .5;
+	  return exports.outBounce(n * 2 - 1) * .5 + .5;
+	};
+	
+	// aliases
+	
+	exports['in-quad'] = exports.inQuad;
+	exports['out-quad'] = exports.outQuad;
+	exports['in-out-quad'] = exports.inOutQuad;
+	exports['in-cube'] = exports.inCube;
+	exports['out-cube'] = exports.outCube;
+	exports['in-out-cube'] = exports.inOutCube;
+	exports['in-quart'] = exports.inQuart;
+	exports['out-quart'] = exports.outQuart;
+	exports['in-out-quart'] = exports.inOutQuart;
+	exports['in-quint'] = exports.inQuint;
+	exports['out-quint'] = exports.outQuint;
+	exports['in-out-quint'] = exports.inOutQuint;
+	exports['in-sine'] = exports.inSine;
+	exports['out-sine'] = exports.outSine;
+	exports['in-out-sine'] = exports.inOutSine;
+	exports['in-expo'] = exports.inExpo;
+	exports['out-expo'] = exports.outExpo;
+	exports['in-out-expo'] = exports.inOutExpo;
+	exports['in-circ'] = exports.inCirc;
+	exports['out-circ'] = exports.outCirc;
+	exports['in-out-circ'] = exports.inOutCirc;
+	exports['in-back'] = exports.inBack;
+	exports['out-back'] = exports.outBack;
+	exports['in-out-back'] = exports.inOutBack;
+	exports['in-bounce'] = exports.inBounce;
+	exports['out-bounce'] = exports.outBounce;
+	exports['in-out-bounce'] = exports.inOutBounce;
+
 
 /***/ }
 /******/ ]);

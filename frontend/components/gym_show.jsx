@@ -5,6 +5,7 @@ var UserStore = require('../stores/user_store');
 var hashHistory = require('react-router').hashHistory;
 var WorkoutIndex = require('./workout_index');
 
+
 var GymShow = React.createClass({
   getInitialState: function() {
     return {
@@ -24,7 +25,72 @@ var GymShow = React.createClass({
       url: '/api/exercises',
       type: "ALL_EXERCISES"
     });
+    this.listener2 = UserStore.addListener(this.showTutorial);
   },
+  showTutorial: function(){
+    var self = this;
+    if (UserStore.demo()){
+      UserStore.toggleDemo();
+      setTimeout(function(){
+        self.props.addSteps([
+          {
+            title: 'All the Work Outs!',
+            text: 'You can see the lists of all the work outs posted in this gym. Click on them to see more! Your workouts are colored in THISCOLOR',
+            selector: '.table-body',
+            position: 'top-right',
+            type: 'hover',
+            style: {
+              mainColor: '#f07b50',
+              beacon: {
+                inner: '#f07b50',
+                outer: '#f07b50'
+              }
+            }
+          },
+          {
+            title: 'Create a New Workout!',
+            text: 'Create your own workout by clicking here! Select the time and date of your workout, and choose the exercises you plan on doing.',
+            selector: '.new-workout-button',
+            position: 'top-left',
+            style: {
+              mainColor: '#f07b50',
+              beacon: {
+                inner: '#f07b50',
+                outer: '#f07b50'
+              }
+            }
+          },
+          {
+            title: 'Change your gym!',
+            text: 'Click here to view all the cities where LiftWithMe is Available. From there, you can choose your gym, and find your workout buddy!',
+            selector: '.view-cities',
+            position: 'bottom-right',
+            style: {
+              mainColor: '#f07b50',
+              beacon: {
+                inner: '#f07b50',
+                outer: '#f07b50'
+              }
+            }
+          },
+          {
+            title: 'View your profile!',
+            text: 'Hover here to see go to your profile, or to log out.',
+            selector: '.dropdown',
+            position: 'bottom-right',
+            style: {
+              mainColor: '#f07b50',
+              beacon: {
+                inner: '#f07b50',
+                outer: '#f07b50'
+              }
+            }
+          }
+        ]);
+      }, 500);
+    }
+  },
+
   componentWillUnmount: function() {
     this.listener.remove();
   },
@@ -85,7 +151,7 @@ var GymShow = React.createClass({
     return (
       <div>
         <h2>{this.state.name}</h2>
-        <div>
+        <div className="selector">
           {this.returnButton()}
           {this.chooseButton()}
         </div>
@@ -94,8 +160,7 @@ var GymShow = React.createClass({
           gymName={this.state.name}/>
       </div>
     );
-  }
-
+  },
 });
 
 module.exports = GymShow;

@@ -125,7 +125,9 @@ var LoginForm = React.createClass({
   },
   homeCities: function(){
     return (
-      <li onClick={this.redirectToHome}>
+      <li
+        className="view-cities"
+        onClick={this.redirectToHome}>
         Cities
       </li>
     );
