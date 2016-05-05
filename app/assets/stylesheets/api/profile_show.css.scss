@@ -1,14 +1,61 @@
+$magenta: #C70062;
+$magenta1: #DD4992;
+$magenta2: #D8207A;
+$magenta3: #9F004E;
+$magenta4: #79003B;
+
+$gold: #F09A00;
+$gold1: #FFC255;
+$gold2: #FFB226;
+$gold3: #C07B00;
+$gold4: #925E00;
+
+$blue: #151FA6;
+$blue1: #525BC2;
+$blue2: #313BB9;
+$blue3: #0F1885;
+$blue4: #091065;
+
 .profile-show {
   display: flex;
   flex-direction: row;
-  width: 50%;
+  width: 70%;
   margin-left: auto;
   margin-right: auto;
   margin-top: 20px;
-  border: 1px solid black;
+  justify-content: center;
 
   img {
     width: 100%;
     height: auto;
+  }
+
+  .profile-user-info {
+    margin-left: 20px;
+    font-size: 18px;
+
+    tbody {
+      tr {
+        background: white;
+        border: 0;
+
+        th {
+          text-align: left;
+        }
+
+        td {
+          padding: 5px;
+        }
+      }
+    }
+  }
+}
+
+.profile-workout-index {
+  h4 {
+    text-align: center;
+    color: black;
+    margin-bottom: 5px;
+
   }
 }

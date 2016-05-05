@@ -25,7 +25,6 @@ $blue4: #091065;
   .workout-splash {
     height: 100%;
     background-image: url("http://upl.stack.com/wp-content/uploads/2015/11/21003026/Awkward-Spotter-STACK1.jpg");
-    // background-image: url("http://static1.squarespace.com/static/54dbf34ce4b05cd95c721a07/t/54dbf4c9e4b066babee77003/1423701200225/Untitled_Panorama1-2.jpg?format=2500w");
     overflow: hidden;
     background-size: cover;
     background-position: center center;
@@ -65,7 +64,7 @@ $blue4: #091065;
   display: flex;
   justify-content: center;
   text-align: center;
-
+  position: absolute;
   button {
     border: 0;
     background: $gold2;
@@ -75,13 +74,12 @@ $blue4: #091065;
     height: auto;
     border-radius: 10px;
     transition: all 0.2s ;
-
+    z-index: 0;
   }
 
   button:hover {
-    margin-top: -2px;
-    margin-left: 0px;
-    transform: scale3d(1.05, 1.05, 1.05);
+    margin-top: 5px;
+    transform: scale3d(1.02, 1.02, 1.02);
     box-shadow: 0px 5px 5px -2px rgba(0, 0, 0, 0.25);
   }
 }

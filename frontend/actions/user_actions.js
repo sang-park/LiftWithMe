@@ -39,7 +39,24 @@ var UserActions = {
       UserActions.handleError
     );
 	},
+	demoLogin: function(){
+		UserApiUtil.login(
+			{
+				username: "Arnold.S",
+				password: "123123"
+	    },
+			UserActions.receiveDemoUser,
+			UserActions.handleError
+		);
+	},
   //serveractions
+	receiveDemoUser: function(user){
+		AppDispatcher.dispatch({
+			actionType: UserConstants.LOGIN,
+			user: user,
+			demo: "true"
+		});
+	},
 	receiveCurrentUser: function(user){
 		AppDispatcher.dispatch({
 			actionType: UserConstants.LOGIN,

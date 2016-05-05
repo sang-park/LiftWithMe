@@ -39,14 +39,25 @@ var UserShow = React.createClass({
     }
     return (
       <div className="profile-show">
-        <div>
+        <div className="profile-picture">
           <img src={profileUrl} />
         </div>
-        <div>
-          <div>Name:{this.state.user.username}</div>
-          <div>Age:{this.state.user.age}</div>
-          <div>Weight:{this.state.user.weight}</div>
-        </div>
+        <table className="profile-user-info">
+          <tbody>
+            <tr>
+              <th>Name:</th>
+              <td>{this.state.user.username}</td>
+            </tr>
+            <tr>
+              <th>Age:</th>
+              <td>{this.state.user.age}</td>
+            </tr>
+            <tr>
+              <th>Weight:</th>
+              <td>{this.state.user.weight}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     );
   },
@@ -62,11 +73,14 @@ var UserShow = React.createClass({
         }
       });
       return (
-        <WorkoutIndex
-          workouts={workouts}
-          view="true"
-          gymName={this.state.user.username + "\'s Workouts"}
-        />
+        <div className="profile-workout-index">
+          <h4>{this.state.user.username + "'s Work Outs"}</h4>
+          <WorkoutIndex
+            workouts={workouts}
+            view="true"
+            gymName={this.state.user.username + "\'s Workouts"}
+            />
+        </div>
       );
     }
   },
@@ -82,11 +96,14 @@ var UserShow = React.createClass({
         }
       });
       return (
-        <WorkoutIndex
-          workouts={workouts}
-          view="true"
-          gymName="Paired Workouts"
-        />
+        <div className="profile-workout-index">
+          <h4>{this.state.user.username + "'s Paired Work Outs"}</h4>
+          <WorkoutIndex
+            workouts={workouts}
+            view="true"
+            gymName="Paired Workouts"
+          />
+        </div>
       );
     }
   },

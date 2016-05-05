@@ -21,9 +21,8 @@ UserStore.__onDispatch = function (payload) {
       if (payload.user.errors !== null){
     	  UserStore.login(payload.user);
         UserStore.__emitChange();
-        if (_currentUser && _currentUser.gym){
+        if (payload.demo){
           goToGym(_currentUser.gym.id);
-
         }
       }
       break;

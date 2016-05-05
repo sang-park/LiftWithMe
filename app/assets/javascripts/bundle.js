@@ -25175,7 +25175,7 @@
 	      if (payload.user.errors !== null) {
 	        UserStore.login(payload.user);
 	        UserStore.__emitChange();
-	        if (_currentUser && _currentUser.gym) {
+	        if (payload.demo) {
 	          goToGym(_currentUser.gym.id);
 	        }
 	      }
@@ -32045,7 +32045,20 @@
 		logout: function () {
 			UserApiUtil.logout(UserActions.removeCurrentUser, UserActions.handleError);
 		},
+		demoLogin: function () {
+			UserApiUtil.login({
+				username: "Arnold.S",
+				password: "123123"
+			}, UserActions.receiveDemoUser, UserActions.handleError);
+		},
 		//serveractions
+		receiveDemoUser: function (user) {
+			AppDispatcher.dispatch({
+				actionType: UserConstants.LOGIN,
+				user: user,
+				demo: "true"
+			});
+		},
 		receiveCurrentUser: function (user) {
 			AppDispatcher.dispatch({
 				actionType: UserConstants.LOGIN,
@@ -32583,11 +32596,7 @@
 	  },
 	  demoLogin: function (e) {
 	    e.preventDefault();
-	    var user = {
-	      username: "Arnold.S",
-	      password: "123123"
-	    };
-	    UserActions.login(user);
+	    UserActions.demoLogin();
 	    this.setState(this.blankAttrs);
 	    hashHistory.push(location.hash.split("#")[1].split("?")[0]);
 	  },
@@ -36224,29 +36233,57 @@
 	      { className: 'profile-show' },
 	      React.createElement(
 	        'div',
-	        null,
+	        { className: 'profile-picture' },
 	        React.createElement('img', { src: profileUrl })
 	      ),
 	      React.createElement(
-	        'div',
-	        null,
+	        'table',
+	        { className: 'profile-user-info' },
 	        React.createElement(
-	          'div',
+	          'tbody',
 	          null,
-	          'Name:',
-	          this.state.user.username
-	        ),
-	        React.createElement(
-	          'div',
-	          null,
-	          'Age:',
-	          this.state.user.age
-	        ),
-	        React.createElement(
-	          'div',
-	          null,
-	          'Weight:',
-	          this.state.user.weight
+	          React.createElement(
+	            'tr',
+	            null,
+	            React.createElement(
+	              'th',
+	              null,
+	              'Name:'
+	            ),
+	            React.createElement(
+	              'td',
+	              null,
+	              this.state.user.username
+	            )
+	          ),
+	          React.createElement(
+	            'tr',
+	            null,
+	            React.createElement(
+	              'th',
+	              null,
+	              'Age:'
+	            ),
+	            React.createElement(
+	              'td',
+	              null,
+	              this.state.user.age
+	            )
+	          ),
+	          React.createElement(
+	            'tr',
+	            null,
+	            React.createElement(
+	              'th',
+	              null,
+	              'Weight:'
+	            ),
+	            React.createElement(
+	              'td',
+	              null,
+	              this.state.user.weight
+	            )
+	          )
 	        )
 	      )
 	    );
@@ -36262,11 +36299,20 @@
 	          return 0;
 	        }
 	      });
-	      return React.createElement(WorkoutIndex, {
-	        workouts: workouts,
-	        view: 'true',
-	        gymName: this.state.user.username + "\'s Workouts"
-	      });
+	      return React.createElement(
+	        'div',
+	        { className: 'profile-workout-index' },
+	        React.createElement(
+	          'h4',
+	          null,
+	          this.state.user.username + "'s Work Outs"
+	        ),
+	        React.createElement(WorkoutIndex, {
+	          workouts: workouts,
+	          view: 'true',
+	          gymName: this.state.user.username + "\'s Workouts"
+	        })
+	      );
 	    }
 	  },
 	  pairedWorkouts: function () {
@@ -36280,11 +36326,20 @@
 	          return 0;
 	        }
 	      });
-	      return React.createElement(WorkoutIndex, {
-	        workouts: workouts,
-	        view: 'true',
-	        gymName: 'Paired Workouts'
-	      });
+	      return React.createElement(
+	        'div',
+	        { className: 'profile-workout-index' },
+	        React.createElement(
+	          'h4',
+	          null,
+	          this.state.user.username + "'s Paired Work Outs"
+	        ),
+	        React.createElement(WorkoutIndex, {
+	          workouts: workouts,
+	          view: 'true',
+	          gymName: 'Paired Workouts'
+	        })
+	      );
 	    }
 	  },
 	  render: function () {

@@ -29,11 +29,7 @@ var LoginModal = React.createClass({
   },
   demoLogin: function(e){
     e.preventDefault();
-    var user = {
-      username: "Arnold.S",
-      password: "123123"
-    };
-    UserActions.login(user);
+    UserActions.demoLogin();
     this.setState(this.blankAttrs);
     hashHistory.push(location.hash.split("#")[1].split("?")[0]);
   },
