@@ -32359,7 +32359,9 @@
 	    if (UserStore.currentUser()) {
 	      return React.createElement(
 	        "li",
-	        { onClick: this.redirectToGym },
+	        {
+	          className: "my-gym",
+	          onClick: this.redirectToGym },
 	        "My Gym"
 	      );
 	    }
@@ -35007,8 +35009,8 @@
 	      url: 'api/user/',
 	      type: "PATCH",
 	      data: params,
-	      success: function (user) {
-	        UserActions.receiveCurrentUser(user);
+	      success: function (gym) {
+	        ServerActions.receiveOne(gym, "CURRENT_GYM");
 	      },
 	      error: function (error) {
 	        ServerActions.handleError(error);
@@ -35296,6 +35298,18 @@
 	            }
 	          }
 	        }, {
+	          title: 'View your gym!',
+	          text: 'Click here on any page to return to this page!',
+	          selector: '.my-gym',
+	          position: 'bottom-right',
+	          style: {
+	            mainColor: '#f07b50',
+	            beacon: {
+	              inner: '#f07b50',
+	              outer: '#f07b50'
+	            }
+	          }
+	        }, {
 	          title: 'View your profile!',
 	          text: 'Hover here to see go to your profile, or to log out.',
 	          selector: '.dropdown',
@@ -35402,15 +35416,21 @@
 	var AppDispatcher = __webpack_require__(220);
 	var Store = __webpack_require__(224).Store;
 	var UserStore = __webpack_require__(219);
+	var hashHistory = __webpack_require__(159).hashHistory;
 	
 	var GymStore = new Store(AppDispatcher);
 	
 	var _gym;
 	
+	var goBack = function (location) {
+	  hashHistory.push(location);
+	};
+	
 	GymStore.__onDispatch = function (payload) {
 	  switch (payload.actionType) {
 	    case "CURRENT_GYM":
 	      GymStore.updateGym(payload.item);
+	      goBack(location.hash.slice(1).split("?")[0]);
 	      UserStore.__emitChange();
 	  }
 	};

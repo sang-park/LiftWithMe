@@ -74,6 +74,19 @@ var GymShow = React.createClass({
             }
           },
           {
+            title: 'View your gym!',
+            text: 'Click here on any page to return to this page!',
+            selector: '.my-gym',
+            position: 'bottom-right',
+            style: {
+              mainColor: '#f07b50',
+              beacon: {
+                inner: '#f07b50',
+                outer: '#f07b50'
+              }
+            }
+          },
+          {
             title: 'View your profile!',
             text: 'Hover here to see go to your profile, or to log out.',
             selector: '.dropdown',

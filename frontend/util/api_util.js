@@ -92,8 +92,8 @@ var ApiUtil = {
       url: 'api/user/',
       type: "PATCH",
       data: params,
-      success: function(user){
-        UserActions.receiveCurrentUser(user);
+      success: function(gym){
+        ServerActions.receiveOne(gym, "CURRENT_GYM");
       },
       error: function(error){
         ServerActions.handleError(error);

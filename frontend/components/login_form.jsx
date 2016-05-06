@@ -135,7 +135,9 @@ var LoginForm = React.createClass({
   myGym: function(){
     if (UserStore.currentUser()){
       return (
-        <li onClick={this.redirectToGym}>
+        <li
+          className="my-gym"
+          onClick={this.redirectToGym}>
           My Gym
         </li>
       );

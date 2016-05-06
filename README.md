@@ -1,120 +1,53 @@
 # LiftWithMe
 
-[Heroku link][heroku]
+Do you ever feel like a plastic bag? Drifting through the gym, wanting to max out again? Well look no further!
 
-[heroku]: http://liftwithme.herokuapp.com
+LiftWithMe is a web application for finding people to work out with! LWM uses Rails backend, PostgreSQL database, and React.js with a Flux architectural framework frontend.
 
-## Minimum Viable Product
+[LiftWithMe][link]
+[link]: http://liftwithme.herokuapp.com
 
-LiftWithMe's overall design was inspired by Tea With Strangers, an app that allows you to meet, drink tea, and have meaningful conversations with strangers. LiftWithMe is a web application that will be built using Ruby on Rails and React.js. The finished product will meet the following minimum critera:
+## Welcome View
 
-- [x] Sign-up, sign-in, and a demo sign-in feature
-- [ ] Smooth, bug-free navigation
-- [x] Populating the website with seeding data
-- [x] 'Hosting' a gym session, signing up for a session, profile look-up
-- [x] Hosting on Heroku
-- [ ] CSS styling that is satisfactorily visually appealing
-- [ ] A production README, replacing this README
+![Welcome Page][front page]
 
-## Product Goals and Priorities
+[front page]: docs/screenshots/front_page.png
 
-LiftWithMe will allow users to do the following:
+## Overview
 
-- [x] Create an account (MVP)
-- [x] Log in / Log out, including as a Guest/Demo User (MVP)
-- [x] Create, edit, and delete a gym session (MVP)
-- [x] Able to look at all possible sessions (MVP)
-- [x] Sign up for a gym session (MVP)
-- [ ] Profile look ups (MVP)
+With LiftWithMe, the users have the ability to search for their local gym, and post their work outs. Other users are able to look at these work outs and pair up with the work out you want to be a part of.
 
-## Design Docs
-* [View Wireframes][views]
-* [React Components][components]
-* [Flux Cycles][flux-cycles]
-* [API endpoints][api-endpoints]
-* [DB schema][schema]
+### Users
+- Users can either sign up and make their own account, or try out the website with a demo account. The demo account has pre-loaded data for the user to interact with. 
 
-[views]: ./docs/views.md
-[components]: ./docs/components.md
-[flux-cycles]: ./docs/flux-cycles.md
-[api-endpoints]: ./docs/api-endpoints.md
-[schema]: ./docs/schema.md
+### Cities
+- In the city index page, the user is able to see the cities and choose the city they reside in.  
+- In the city view page, users can see the list of gyms in the city on the left. They are accompanied by their logos, which also directs the users to the location of the gym in the map.
 
-## Implementation Timeline
+![City Index Page][city index]
 
-### Phase 1: Backend setup and User Authentication (0.5 days)
+[city index]: docs/screenshots/city_index.png
 
-**Objective:** Functioning rails project with Authentication
+### Gyms
+- The gym show page allows the users to browse through all the work outs that are posted to that gym. The user can also create new workouts, or go back to the city to choose a different gym.
 
-- [x] create new project
-- [x] create `User` model
-- [x] authentication
-- [x] user signup/signin pages
-- [x] blank landing page after signin
+![Gym Map][gym map]
 
-### Phase 2: Workouts Model, API, and basic APIUtil (1.5 days)
+[gym map]: docs/screenshots/gym_map.png
 
-**Objective:** Workouts can be created, read, edited and destroyed through
-the API.
+### Work Outs
+- The work out pops out to the user in a modal.
+- The modal will allow the users to pair up with other users for a work out or get redirected to view other user's profile.
+- If the users click on their own work out, it will be accompanied by edit and destroy buttons.
 
-- [x] create `Gym` model
-- [x] create `Workouts` model
-- [x] seed the database with a small amount of test data
-- [x] CRUD API for notes (`WorkoutsController`)
-- [x] jBuilder views for workouts
-- [x] setup Webpack & Flux scaffold
-- [x] setup `APIUtil` to interact with the API
-- [x] test out API interaction in the console.
+## Future Plans
+I plan on continuing to work on LiftWithMe to implement new features. The future of LiftWithMe is as follows:
 
-### Phase 3: Flux Architecture and Router (1.5 days)
+### Search
+Search can make navigation through any website easier. I plan to implement search so that the users can find other users by weight, or search work outs by the exercises involved.
 
-**Objective:** Workouts can be created, read, edited and destroyed with the
-user interface.
+### Friends
+After a work out, the user might want to work out with the same buddy again. The friend system will allow the user to keep in touch, and be updated on each other's work outs. It can also work as a source of motivation when your friend is making good progress.
 
-- [x] setup the flux loop with skeleton files
-- [x] setup React Router
-- [x] implement each component, building out the flux loop as needed.
-- [x] `WorkoutsIndex`
-- [x] `WorkoutForm`
-
-### Phase 4: Start Styling (0.5 days)
-
-**Objective:** Existing pages (including singup/signin) will look good.
-
-- [x] create a basic style guide
-- [x] position elements on the page
-- [x] add basic colors & styles
-
-### Phase 5: Muscle Tagging (1 day)
-
-**Objective:** Workouts can be categorized with muscles by tagging.
-
-- [ ] create `Muscle` model and join table (`MuscleTags`)
-- build out API, Flux loop, and components for:
-  - [ ] adding gym sessions requires a muscle group
-  - [ ] viewing gym sessions by muscle groups
-  - [ ] fetching muscles for a gym session
-  - [ ] adding muscles to gym session
-- Use CSS to style new views
-
-### Phase 6: Styling Cleanup and Seeding (1 day)
-
-**objective:** Make the site feel more cohesive and awesome.
-
-- [ ] Get feedback on my UI from others
-- [ ] Refactor HTML classes & CSS rules
-- [ ] Add modals, transitions, and other styling flourishes.
-- [ ] At login failure, display error, keep the login modal up
-
-### Bonus Features (TBD)
-- [ ] Search through workouts by time
-- [ ] Friend system with other users
-- [ ] Search users by how much they lift
-- [ ] Save Workouts like a playlist
-- [ ] Multiple sessions
-
-[phase-one]: ./docs/phases/phase1.md
-[phase-two]: ./docs/phases/phase2.md
-[phase-three]: ./docs/phases/phase3.md
-[phase-four]: ./docs/phases/phase4.md
-[phase-five]: ./docs/phases/phase5.md
+### Muscle Tagging
+When sorting through the work outs, it would be convenient to be able to sort them by the muscles being worked out. Most people who consistently go to gyms divide up their work outs by muscle groups. This feature will allow for a faster and easier pairing.

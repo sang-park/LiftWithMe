@@ -82,7 +82,8 @@ class Api::UsersController < ApplicationController
   def update
     @user = User.find(params['userId'])
     @user.update_attributes({gym_id: params['gymId']})
-    render 'api/user/show'
+    @gym = @user.gym
+    render 'api/gyms/show'
   end
 
   private
