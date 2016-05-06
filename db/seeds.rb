@@ -103,16 +103,16 @@ images = [
 ]
 
 24.times do |i|
-  User.create!({username: Faker::Name.name, password: "123123", gym_id: i,
+  User.create!({username: Faker::Name.name, password: "123123", gym_id: i+2,
     age: rand(30)+20, weight: rand(100)+150,
     profile_image_url: images[rand(11)]})
-  User.create!({username: Faker::Name.name, password: "123123", gym_id: i,
+  User.create!({username: Faker::Name.name, password: "123123", gym_id: i+2,
     age: rand(30)+20, weight: rand(100)+150,
     profile_image_url: images[rand(11)]})
-  User.create!({username: Faker::Name.name, password: "123123", gym_id: i,
+  User.create!({username: Faker::Name.name, password: "123123", gym_id: i+2,
     age: rand(30)+20, weight: rand(100)+150,
     profile_image_url: images[rand(11)]})
-  User.create!({username: Faker::Name.name, password: "123123", gym_id: i,
+  User.create!({username: Faker::Name.name, password: "123123", gym_id: i+2,
     age: rand(30)+20, weight: rand(100)+150,
     profile_image_url: images[rand(11)]})
 end
