@@ -36,7 +36,11 @@ var HomePage = React.createClass({
   },
   handleClick: function(e){
     e.preventDefault();
-    this.openModal();
+    if (UserStore.currentUser()){
+      UserStore.goToGym();
+    } else {
+      this.openModal();
+    }
   },
   getInitialState: function() {
     Modal.setAppElement(document.getElementById("root"));

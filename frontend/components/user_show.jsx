@@ -14,13 +14,16 @@ var UserShow = React.createClass({
     this.listener = UserStore.addListener(this.updateUser);
     UserActions.fetchUser(id);
   },
+
   componentWillReceiveProps: function(newProps){
     var id = newProps.params.user_id;
     UserActions.fetchUser(id);
   },
+
   componentWillUnmount: function() {
     this.listener.remove();
   },
+
   updateUser: function(){
     if (UserStore.user && !this.sent) {
       var id = this.props.params.user_id;
@@ -85,7 +88,8 @@ var UserShow = React.createClass({
     }
   },
   pairedWorkouts: function(){
-    if (this.state.user.paired_workouts){
+    if (this.state.user.paired_workouts &&
+        this.state.user.paired_workouts.length > 0){
       var workouts = this.state.user.paired_workouts.sort(function(a,b){
         if (a.date > b.date) {
           return 1;

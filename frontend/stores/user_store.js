@@ -8,8 +8,8 @@ var UserStore = new Store(AppDispatcher);
 var _currentUser, _user = {}, _errors, _loaded = false;
 var _demo = false;
 
-var goToGym = function(id){
-  hashHistory.push('/gyms/' + id);
+UserStore.goToGym = function(){
+  hashHistory.push('/gyms/' + _currentUser.gym.id);
 };
 
 var goBack = function(location){
@@ -31,7 +31,7 @@ UserStore.__onDispatch = function (payload) {
     	  UserStore.login(payload.user);
         if (payload.demo === "true"){
           _demo = true;
-          goToGym(_currentUser.gym.id);
+          UserStore.goToGym();
         } else {
           goBack(location.hash.slice(1).split("?")[0]);
         }

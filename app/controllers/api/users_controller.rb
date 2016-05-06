@@ -5,7 +5,7 @@ class Api::UsersController < ApplicationController
       login(@user)
       render 'api/user/show'
     else
-      flash.now[:errors] = @user.errors.full_messages
+      @errors = @user.errors.full_messages
       render 'api/shared/error', status: 404
     end
   end

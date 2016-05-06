@@ -1,6 +1,7 @@
 var React = require('react');
 var UserActions = require("../actions/user_actions");
 var hashHistory = require('react-router').hashHistory;
+var UserStore = require('../stores/user_store');
 
 var LoginModal = React.createClass({
   blankAttrs: {
@@ -29,7 +30,7 @@ var LoginModal = React.createClass({
   },
   demoLogin: function(e){
     e.preventDefault();
-    e.target.className += " disabled"
+    e.target.className += " disabled";
     e.target.disabled = true;
     var self = this;
     var username = "Arnold.S".split("");
@@ -199,10 +200,26 @@ var LoginModal = React.createClass({
       );
     }
   },
+  errors: function(){
+    if (UserStore.errors()) {
+      var errors  = [];
+      UserStore.errors().forEach(function(error){
+        errors.push(
+          <li>{error}</li>
+        );
+      });
+      return (
+        <ul className="errors">
+          {errors}
+        </ul>
+      );
+    }
+  },
   render: function() {
     return (
       <form className="login-form">
         {this.header()}
+        {this.errors()}
         {this.usernamePassword()}
         {this.buttons()}
       </form>

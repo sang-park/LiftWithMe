@@ -17,7 +17,9 @@ var HomeCityShow = React.createClass({
     });
   },
   componentWillUnmount: function() {
-    this.listener.remove();
+    if (this.listener) {
+      this.listener.remove();
+    }
   },
   updateCurrentCity: function(){
     this.setState({homeCity: HomeCityStore.currentHomeCity()});

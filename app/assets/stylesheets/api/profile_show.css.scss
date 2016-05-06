@@ -24,10 +24,12 @@ $blue4: #091065;
   margin-right: auto;
   margin-top: 20px;
   justify-content: center;
+  overflow: hidden;
+  height: 200px;
 
   img {
-    width: 100%;
-    height: auto;
+    width: 400px;
+    overflow: hidden;
   }
 
   .profile-user-info {

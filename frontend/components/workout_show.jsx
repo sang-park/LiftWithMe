@@ -59,21 +59,19 @@ var WorkoutShow = React.createClass({
     } else if  ( UserStore.currentUser() &&
       UserStore.currentUser().id === this.props.workout.user_id){
       return (
-        <tr>
-          <td>
-            <button
-              className="form-button"
-              onClick={this.openEditForm(this.props.workout)}
-              value={this.props.workout.id}>
-              Edit
-            </button>
-            <button
-              onClick={this.delete}
-              value={this.props.workout.id}>
-              Delete
-            </button>
-          </td>
-        </tr>
+        <caption className="workout-show-buttons">
+          <button
+            className="form-button"
+            onClick={this.openEditForm(this.props.workout)}
+            value={this.props.workout.id}>
+            Edit
+          </button>
+          <button
+            onClick={this.delete}
+            value={this.props.workout.id}>
+            Delete
+          </button>
+        </caption>
       );
     } else {
       return (

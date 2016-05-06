@@ -77,7 +77,7 @@ var UserActions = {
 	handleError: function(error) {
 		AppDispatcher.dispatch({
 			actionType: UserConstants.ERROR,
-			errors: error
+			errors: error.responseJSON.errors
 		});
 	}
 };

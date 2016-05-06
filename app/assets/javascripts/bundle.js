@@ -25208,8 +25208,8 @@
 	    _loaded = false;
 	var _demo = false;
 	
-	var goToGym = function (id) {
-	  hashHistory.push('/gyms/' + id);
+	UserStore.goToGym = function () {
+	  hashHistory.push('/gyms/' + _currentUser.gym.id);
 	};
 	
 	var goBack = function (location) {
@@ -25231,7 +25231,7 @@
 	        UserStore.login(payload.user);
 	        if (payload.demo === "true") {
 	          _demo = true;
-	          goToGym(_currentUser.gym.id);
+	          UserStore.goToGym();
 	        } else {
 	          goBack(location.hash.slice(1).split("?")[0]);
 	        }
@@ -32137,7 +32137,7 @@
 		handleError: function (error) {
 			AppDispatcher.dispatch({
 				actionType: UserConstants.ERROR,
-				errors: error
+				errors: error.responseJSON.errors
 			});
 		}
 	};
@@ -32628,6 +32628,7 @@
 	var React = __webpack_require__(1);
 	var UserActions = __webpack_require__(242);
 	var hashHistory = __webpack_require__(159).hashHistory;
+	var UserStore = __webpack_require__(219);
 	
 	var LoginModal = React.createClass({
 	  displayName: 'LoginModal',
@@ -32848,11 +32849,29 @@
 	      );
 	    }
 	  },
+	  errors: function () {
+	    if (UserStore.errors()) {
+	      var errors = [];
+	      UserStore.errors().forEach(function (error) {
+	        errors.push(React.createElement(
+	          'li',
+	          null,
+	          error
+	        ));
+	      });
+	      return React.createElement(
+	        'ul',
+	        { className: 'errors' },
+	        errors
+	      );
+	    }
+	  },
 	  render: function () {
 	    return React.createElement(
 	      'form',
 	      { className: 'login-form' },
 	      this.header(),
+	      this.errors(),
 	      this.usernamePassword(),
 	      this.buttons()
 	    );
@@ -35133,7 +35152,9 @@
 	    });
 	  },
 	  componentWillUnmount: function () {
-	    this.listener.remove();
+	    if (this.listener) {
+	      this.listener.remove();
+	    }
 	  },
 	  updateCurrentCity: function () {
 	    this.setState({ homeCity: HomeCityStore.currentHomeCity() });
@@ -35227,6 +35248,7 @@
 
 	var React = __webpack_require__(1);
 	var ClientActions = __webpack_require__(271);
+	var UserActions = __webpack_require__(242);
 	var GymStore = __webpack_require__(278);
 	var UserStore = __webpack_require__(219);
 	var hashHistory = __webpack_require__(159).hashHistory;
@@ -35262,15 +35284,15 @@
 	      setTimeout(function () {
 	        self.props.addSteps([{
 	          title: 'All the Work Outs!',
-	          text: 'You can see the lists of all the work outs posted in this gym. Click on them to see more! Your workouts are colored in THISCOLOR',
+	          text: 'You can see the lists of all the work outs posted in this gym. Click on them to see more! Your workouts are colored pink!',
 	          selector: '.table-body',
 	          position: 'top-right',
 	          type: 'hover',
 	          style: {
-	            mainColor: '#f07b50',
+	            mainColor: '#C70062',
 	            beacon: {
-	              inner: '#f07b50',
-	              outer: '#f07b50'
+	              inner: '#000000',
+	              outer: '#000000'
 	            }
 	          }
 	        }, {
@@ -35279,10 +35301,10 @@
 	          selector: '.new-workout-button',
 	          position: 'top-left',
 	          style: {
-	            mainColor: '#f07b50',
+	            mainColor: '#C70062',
 	            beacon: {
-	              inner: '#f07b50',
-	              outer: '#f07b50'
+	              inner: '#000000',
+	              outer: '#000000'
 	            }
 	          }
 	        }, {
@@ -35291,10 +35313,10 @@
 	          selector: '.view-cities',
 	          position: 'bottom-right',
 	          style: {
-	            mainColor: '#f07b50',
+	            mainColor: '#C70062',
 	            beacon: {
-	              inner: '#f07b50',
-	              outer: '#f07b50'
+	              inner: '#000000',
+	              outer: '#000000'
 	            }
 	          }
 	        }, {
@@ -35303,10 +35325,10 @@
 	          selector: '.my-gym',
 	          position: 'bottom-right',
 	          style: {
-	            mainColor: '#f07b50',
+	            mainColor: '#C70062',
 	            beacon: {
-	              inner: '#f07b50',
-	              outer: '#f07b50'
+	              inner: '#000000',
+	              outer: '#000000'
 	            }
 	          }
 	        }, {
@@ -35315,10 +35337,10 @@
 	          selector: '.dropdown',
 	          position: 'bottom-right',
 	          style: {
-	            mainColor: '#f07b50',
+	            mainColor: '#C70062',
 	            beacon: {
-	              inner: '#f07b50',
-	              outer: '#f07b50'
+	              inner: '#000000',
+	              outer: '#000000'
 	            }
 	          }
 	        }]);
@@ -35344,6 +35366,7 @@
 	      name: GymStore.currentGym().name,
 	      id: GymStore.currentGym().id
 	    });
+	    UserActions.fetchCurrentUser();
 	  },
 	  handleClick: function () {
 	    var hcId = GymStore.currentGym().home_city.id;
@@ -35765,26 +35788,22 @@
 	      return;
 	    } else if (UserStore.currentUser() && UserStore.currentUser().id === this.props.workout.user_id) {
 	      return React.createElement(
-	        'tr',
-	        null,
+	        'caption',
+	        { className: 'workout-show-buttons' },
 	        React.createElement(
-	          'td',
-	          null,
-	          React.createElement(
-	            'button',
-	            {
-	              className: 'form-button',
-	              onClick: this.openEditForm(this.props.workout),
-	              value: this.props.workout.id },
-	            'Edit'
-	          ),
-	          React.createElement(
-	            'button',
-	            {
-	              onClick: this.delete,
-	              value: this.props.workout.id },
-	            'Delete'
-	          )
+	          'button',
+	          {
+	            className: 'form-button',
+	            onClick: this.openEditForm(this.props.workout),
+	            value: this.props.workout.id },
+	          'Edit'
+	        ),
+	        React.createElement(
+	          'button',
+	          {
+	            onClick: this.delete,
+	            value: this.props.workout.id },
+	          'Delete'
 	        )
 	      );
 	    } else {
@@ -36037,14 +36056,32 @@
 	    if (str.length > 3) {
 	      return str.split("T")[1].slice(0, 8);
 	    } else {
-	      return str;
+	      return "12:00";
+	    }
+	  },
+	  parseDate: function (date) {
+	    if (date) {
+	      return date;
+	    } else {
+	      var d = new Date();
+	      var yr = d.getYear() + 1900;
+	      var month = d.getMonth() + 1;
+	      var day = d.getDate();
+	      if (month < 10) {
+	        month = "0" + month;
+	      }
+	      if (day < 10) {
+	        day = "0" + day;
+	      }
+	      return [yr, month, day].join("-");
 	    }
 	  },
 	  getInitialState: function () {
 	    var time = this.parseTime(this.props.info.time);
+	    var date = this.parseDate(this.props.info.date);
 	    return {
 	      name: this.props.info.name,
-	      date: this.props.info.date,
+	      date: date,
 	      time: time
 	    };
 	  },
@@ -36084,6 +36121,7 @@
 	        "Time: ",
 	        React.createElement("input", {
 	          type: "time",
+	          placeholder: "Time",
 	          value: this.state.time,
 	          onChange: this.handleChange("time") })
 	      )
@@ -36373,13 +36411,16 @@
 	    this.listener = UserStore.addListener(this.updateUser);
 	    UserActions.fetchUser(id);
 	  },
+	
 	  componentWillReceiveProps: function (newProps) {
 	    var id = newProps.params.user_id;
 	    UserActions.fetchUser(id);
 	  },
+	
 	  componentWillUnmount: function () {
 	    this.listener.remove();
 	  },
+	
 	  updateUser: function () {
 	    if (UserStore.user && !this.sent) {
 	      var id = this.props.params.user_id;
@@ -36484,7 +36525,7 @@
 	    }
 	  },
 	  pairedWorkouts: function () {
-	    if (this.state.user.paired_workouts) {
+	    if (this.state.user.paired_workouts && this.state.user.paired_workouts.length > 0) {
 	      var workouts = this.state.user.paired_workouts.sort(function (a, b) {
 	        if (a.date > b.date) {
 	          return 1;
@@ -36565,7 +36606,11 @@
 	  },
 	  handleClick: function (e) {
 	    e.preventDefault();
-	    this.openModal();
+	    if (UserStore.currentUser()) {
+	      UserStore.goToGym();
+	    } else {
+	      this.openModal();
+	    }
 	  },
 	  getInitialState: function () {
 	    Modal.setAppElement(document.getElementById("root"));

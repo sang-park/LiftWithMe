@@ -1,5 +1,6 @@
 var React = require('react');
 var ClientActions = require('../actions/client_actions');
+var UserActions = require('../actions/user_actions');
 var GymStore = require('../stores/gym_store');
 var UserStore = require('../stores/user_store');
 var hashHistory = require('react-router').hashHistory;
@@ -35,15 +36,15 @@ var GymShow = React.createClass({
         self.props.addSteps([
           {
             title: 'All the Work Outs!',
-            text: 'You can see the lists of all the work outs posted in this gym. Click on them to see more! Your workouts are colored in THISCOLOR',
+            text: 'You can see the lists of all the work outs posted in this gym. Click on them to see more! Your workouts are colored pink!',
             selector: '.table-body',
             position: 'top-right',
             type: 'hover',
             style: {
-              mainColor: '#f07b50',
+              mainColor: '#C70062',
               beacon: {
-                inner: '#f07b50',
-                outer: '#f07b50'
+                inner: '#000000',
+                outer: '#000000'
               }
             }
           },
@@ -53,10 +54,10 @@ var GymShow = React.createClass({
             selector: '.new-workout-button',
             position: 'top-left',
             style: {
-              mainColor: '#f07b50',
+              mainColor: '#C70062',
               beacon: {
-                inner: '#f07b50',
-                outer: '#f07b50'
+                inner: '#000000',
+                outer: '#000000'
               }
             }
           },
@@ -66,10 +67,10 @@ var GymShow = React.createClass({
             selector: '.view-cities',
             position: 'bottom-right',
             style: {
-              mainColor: '#f07b50',
+              mainColor: '#C70062',
               beacon: {
-                inner: '#f07b50',
-                outer: '#f07b50'
+                inner: '#000000',
+                outer: '#000000'
               }
             }
           },
@@ -79,10 +80,10 @@ var GymShow = React.createClass({
             selector: '.my-gym',
             position: 'bottom-right',
             style: {
-              mainColor: '#f07b50',
+              mainColor: '#C70062',
               beacon: {
-                inner: '#f07b50',
-                outer: '#f07b50'
+                inner: '#000000',
+                outer: '#000000'
               }
             }
           },
@@ -92,10 +93,10 @@ var GymShow = React.createClass({
             selector: '.dropdown',
             position: 'bottom-right',
             style: {
-              mainColor: '#f07b50',
+              mainColor: '#C70062',
               beacon: {
-                inner: '#f07b50',
-                outer: '#f07b50'
+                inner: '#000000',
+                outer: '#000000'
               }
             }
           }
@@ -122,6 +123,7 @@ var GymShow = React.createClass({
       name: GymStore.currentGym().name,
       id: GymStore.currentGym().id
     });
+    UserActions.fetchCurrentUser();
   },
   handleClick: function(){
     var hcId = GymStore.currentGym().home_city.id;
