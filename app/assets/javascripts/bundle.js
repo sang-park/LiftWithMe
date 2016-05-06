@@ -36024,7 +36024,9 @@
 	  render: function () {
 	    return React.createElement(
 	      'form',
-	      { onSubmit: this.handleSubmit },
+	      {
+	        className: 'workout-form',
+	        onSubmit: this.handleSubmit },
 	      React.createElement(WorkoutInfo, {
 	        info: this.state,
 	        updateWorkout: this.updateWorkout }),
@@ -36036,7 +36038,9 @@
 	        editing: this.props.editing,
 	        blankAttrs: this.blankExercise()
 	      }),
-	      React.createElement('input', { type: 'submit' })
+	      React.createElement('input', {
+	        className: 'workout-submit',
+	        type: 'submit' })
 	    );
 	  }
 	});
@@ -36095,35 +36099,63 @@
 	  },
 	  render: function () {
 	    return React.createElement(
-	      "div",
+	      "table",
 	      { className: "workout-info" },
 	      React.createElement(
-	        "label",
+	        "tbody",
 	        null,
-	        "Workout Name: ",
-	        React.createElement("input", {
-	          type: "text",
-	          value: this.state.name,
-	          onChange: this.handleChange("name") })
-	      ),
-	      React.createElement(
-	        "label",
-	        null,
-	        "Date: ",
-	        React.createElement("input", {
-	          type: "date",
-	          value: this.state.date,
-	          onChange: this.handleChange("date") })
-	      ),
-	      React.createElement(
-	        "label",
-	        null,
-	        "Time: ",
-	        React.createElement("input", {
-	          type: "time",
-	          placeholder: "Time",
-	          value: this.state.time,
-	          onChange: this.handleChange("time") })
+	        React.createElement(
+	          "tr",
+	          null,
+	          React.createElement(
+	            "td",
+	            null,
+	            "Workout Name:"
+	          ),
+	          React.createElement(
+	            "td",
+	            null,
+	            React.createElement("input", {
+	              type: "text",
+	              value: this.state.name,
+	              onChange: this.handleChange("name") })
+	          )
+	        ),
+	        React.createElement(
+	          "tr",
+	          null,
+	          React.createElement(
+	            "td",
+	            null,
+	            "Date:"
+	          ),
+	          React.createElement(
+	            "td",
+	            null,
+	            React.createElement("input", {
+	              type: "date",
+	              value: this.state.date,
+	              onChange: this.handleChange("date") })
+	          )
+	        ),
+	        React.createElement(
+	          "tr",
+	          null,
+	          React.createElement(
+	            "td",
+	            null,
+	            "Time:"
+	          ),
+	          React.createElement(
+	            "td",
+	            null,
+	            React.createElement("input", {
+	              type: "time",
+	              placeholder: "Time",
+	              value: this.state.time,
+	              onChange: this.handleChange("time") })
+	          )
+	        )
 	      )
 	    );
 	  }
@@ -36224,23 +36256,29 @@
 	  render: function () {
 	    return React.createElement(
 	      'div',
-	      null,
+	      { className: 'workout-table' },
 	      React.createElement(
 	        'table',
 	        null,
 	        this.tableHead(),
 	        this.tableBody()
 	      ),
-	      React.createElement('input', {
-	        type: 'button',
-	        value: '+',
-	        onClick: this.appendRow
-	      }),
-	      React.createElement('input', {
-	        type: 'button',
-	        value: '-',
-	        onClick: this.removeLastRow
-	      })
+	      React.createElement(
+	        'div',
+	        { className: 'table-buttons' },
+	        React.createElement('input', {
+	          className: 'table-button',
+	          type: 'button',
+	          value: '+',
+	          onClick: this.appendRow
+	        }),
+	        React.createElement('input', {
+	          className: 'table-button',
+	          type: 'button',
+	          value: '-',
+	          onClick: this.removeLastRow
+	        })
+	      )
 	    );
 	  }
 	});

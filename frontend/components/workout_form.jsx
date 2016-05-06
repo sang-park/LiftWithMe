@@ -66,7 +66,9 @@ var WorkoutForm = React.createClass({
   },
   render: function(){
     return (
-      <form onSubmit={this.handleSubmit}>
+      <form
+        className="workout-form"
+        onSubmit={this.handleSubmit}>
         <WorkoutInfo
           info={this.state}
           updateWorkout={this.updateWorkout} />
@@ -78,7 +80,9 @@ var WorkoutForm = React.createClass({
           editing={this.props.editing}
           blankAttrs={this.blankExercise()}
         />
-        <input type="submit" />
+        <input
+          className="workout-submit"
+          type="submit" />
       </form>
     );
   }

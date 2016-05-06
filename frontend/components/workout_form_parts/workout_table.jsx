@@ -77,21 +77,25 @@ var WorkoutTable = React.createClass({
   },
   render: function(){
     return (
-      <div>
+      <div className="workout-table">
         <table>
           {this.tableHead()}
           {this.tableBody()}
         </table>
-        <input
-          type="button"
-          value="+"
-          onClick={this.appendRow}
-        />
-        <input
-          type="button"
-          value="-"
-          onClick={this.removeLastRow}
-        />
+        <div className="table-buttons" >
+          <input
+            className="table-button"
+            type="button"
+            value="+"
+            onClick={this.appendRow}
+            />
+          <input
+            className="table-button"
+            type="button"
+            value="-"
+            onClick={this.removeLastRow}
+            />
+        </div>
       </div>
     );
   }

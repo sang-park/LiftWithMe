@@ -44,27 +44,44 @@ var WorkoutInfo = React.createClass({
   },
   render: function(){
     return (
-      <div className="workout-info">
-        <label>
-          Workout Name: <input
-            type='text'
-            value={this.state.name}
-            onChange={this.handleChange("name")}/>
-        </label>
-        <label>
-          Date: <input
-            type='date'
-            value={this.state.date}
-            onChange={this.handleChange("date")}/>
-        </label>
-        <label>
-          Time: <input
-            type='time'
-            placeholder="Time"
-            value={this.state.time}
-            onChange={this.handleChange("time")}/>
-        </label>
-      </div>
+      <table className="workout-info">
+        <tbody>
+          <tr>
+            <td>
+              Workout Name:
+            </td>
+            <td>
+              <input
+                type='text'
+                value={this.state.name}
+                onChange={this.handleChange("name")}/>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Date:
+            </td>
+            <td>
+              <input
+               type='date'
+               value={this.state.date}
+               onChange={this.handleChange("date")}/>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Time:
+            </td>
+            <td>
+              <input
+                type='time'
+                placeholder="Time"
+                value={this.state.time}
+                onChange={this.handleChange("time")}/>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     );
   }
 });

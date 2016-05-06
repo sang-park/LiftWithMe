@@ -1,0 +1,87 @@
+$magenta: #C70062;
+$magenta1: #DD4992;
+$magenta2: #D8207A;
+$magenta3: #9F004E;
+$magenta4: #79003B;
+
+$gold: #F09A00;
+$gold1: #FFC255;
+$gold2: #FFB226;
+$gold3: #C07B00;
+$gold4: #925E00;
+
+$blue: #151FA6;
+$blue1: #525BC2;
+$blue2: #313BB9;
+$blue3: #0F1885;
+$blue4: #091065;
+
+.workout-form {
+  padding: 20px;
+  .workout-info {
+    display: flex;
+    flex-direction: column;
+    tr {
+      border: 0;
+      background: white;
+    }
+
+  }
+
+  input {
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 5px;
+  }
+  .workout-table{
+    select {
+      -webkit-appearance: button;
+      -moz-appearance: button;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -webkit-padding-end: 20px;
+      -moz-padding-end: 20px;
+      -webkit-padding-start: 2px;
+      -moz-padding-start: 2px;
+      background-color: #F07575; /* fallback color if gradients are not supported */
+      background-image: url(../images/select-arrow.png), -webkit-linear-gradient(top, #E5E5E5, #F4F4F4); /* For Chrome and Safari */
+      background-image: url(../images/select-arrow.png), -moz-linear-gradient(top, #E5E5E5, #F4F4F4); /* For old Fx (3.6 to 15) */
+      background-image: url(../images/select-arrow.png), -ms-linear-gradient(top, #E5E5E5, #F4F4F4); /* For pre-releases of IE 10*/
+      background-image: url(../images/select-arrow.png), -o-linear-gradient(top, #E5E5E5, #F4F4F4); /* For old Opera (11.1 to 12.0) */
+      background-image: url(../images/select-arrow.png), linear-gradient(to bottom, #E5E5E5, #F4F4F4); /* Standard syntax; must be last */
+      background-position: center right;
+      background-repeat: no-repeat;
+      border: 1px solid #AAA;
+      border-radius: 2px;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+      color: #555;
+      font-size: inherit;
+      margin: 0;
+      overflow: hidden;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .table-button {
+      padding: 0 5px;
+      font-weight: 800;
+      font-size: 24px;
+      &:hover {
+        background-color: lightgray;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .workout-submit {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+
+    &:hover {
+      background-color: lightgreen;
+    }
+  }
+}
