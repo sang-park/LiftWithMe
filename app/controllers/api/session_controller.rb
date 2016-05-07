@@ -17,7 +17,7 @@ class Api::SessionController < ApplicationController
 			logout
 			render "api/users/show"
 		else
-			@errors = ['no one logged in']
+			@errors = ['You are not logged in']
 			render "api/shared/error", status: 404
 		end
 	end

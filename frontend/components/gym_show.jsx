@@ -38,7 +38,7 @@ var GymShow = React.createClass({
             title: 'All the Work Outs!',
             text: 'You can see the lists of all the work outs posted in this gym. Click on them to see more! Your workouts are colored pink!',
             selector: '.table-body',
-            position: 'top-right',
+            position: 'top',
             type: 'hover',
             style: {
               mainColor: '#C70062',

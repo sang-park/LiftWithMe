@@ -46,12 +46,10 @@ var App = React.createClass({
       return currentState;
     });
   },
-
-  addTooltip: function (data) {
-      this.refs.joyride.addTooltip(data);
-  },
   componentDidMount: function(){
-    setTimeout(this.refs.joyride.start  , 1000);
+    setTimeout(function(){
+      this.refs.joyride.start();
+    }.bind(this)  , 1000);
   },
   render: function(){
     return (
@@ -61,8 +59,10 @@ var App = React.createClass({
           debug={false}
           steps={this.state.steps}
           type={this.state.joyrideType}
+          autorun={true}
           scrollToSteps={true}
           showSkipButton={true} />
+
         <LoginForm addSteps={this.addSteps}/>
         <div>
           {React.cloneElement(this.props.children, {

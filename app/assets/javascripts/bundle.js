@@ -94,12 +94,10 @@
 	      return currentState;
 	    });
 	  },
-	
-	  addTooltip: function (data) {
-	    this.refs.joyride.addTooltip(data);
-	  },
 	  componentDidMount: function () {
-	    setTimeout(this.refs.joyride.start, 1000);
+	    setTimeout(function () {
+	      this.refs.joyride.start();
+	    }.bind(this), 1000);
 	  },
 	  render: function () {
 	    return React.createElement(
@@ -110,6 +108,7 @@
 	        debug: false,
 	        steps: this.state.steps,
 	        type: this.state.joyrideType,
+	        autorun: true,
 	        scrollToSteps: true,
 	        showSkipButton: true }),
 	      React.createElement(LoginForm, { addSteps: this.addSteps }),
@@ -35286,7 +35285,7 @@
 	          title: 'All the Work Outs!',
 	          text: 'You can see the lists of all the work outs posted in this gym. Click on them to see more! Your workouts are colored pink!',
 	          selector: '.table-body',
-	          position: 'top-right',
+	          position: 'top',
 	          type: 'hover',
 	          style: {
 	            mainColor: '#C70062',
