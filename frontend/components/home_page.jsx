@@ -71,8 +71,8 @@ var HomePage = React.createClass({
             <p>You get to pick which workout you want to join</p>
           </div>
           <div>
-            <span>Such gains</span>
-            <p>Much swole</p>
+            <span>Much gains</span>
+            <p>Such swole</p>
           </div>
         </div>
 
