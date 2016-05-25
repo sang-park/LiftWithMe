@@ -174,7 +174,10 @@ date = Date.current
 time = Time.new
 Workout.create!({name: workout_names[rand(17)], user_id: 1, buddy_id: 2, date: date + rand(20), time: time + rand(1000)})
 Workout.create!({name: workout_names[rand(17)], user_id: 1, buddy_id: 2, date: date + rand(20), time: time + rand(1000)})
-Workout.create!({name: workout_names[rand(17)], user_id: 1, buddy_id: 2, date: date + rand(20), time: time + rand(1000)})
+Workout.create!({name: workout_names[rand(17)], user_id: 2, buddy_id: 1, date: date + rand(20), time: time + rand(1000)})
+Workout.create!({name: workout_names[rand(17)], user_id: 1, date: date + rand(20), time: time + rand(1000)})
+Workout.create!({name: workout_names[rand(17)], user_id: 1, date: date + rand(20), time: time + rand(1000)})
+Workout.create!({name: workout_names[rand(17)], user_id: 1, date: date + rand(20), time: time + rand(1000)})
 
 101.times do |i|
   Workout.create!({name: workout_names[rand(17)], user_id: i+2, buddy_id: rand(41), date: date + rand(20), time: time + rand(1000)})
