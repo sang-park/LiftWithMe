@@ -121,7 +121,8 @@ var GymShow = React.createClass({
     this.setState({
       workouts: workouts,
       name: GymStore.currentGym().name,
-      id: GymStore.currentGym().id
+      id: GymStore.currentGym().id,
+      logo_url: GymStore.currentGym().logo_url
     });
     UserActions.fetchCurrentUser();
   },
@@ -162,10 +163,18 @@ var GymShow = React.createClass({
       return (<div key="choose-btn group"/>);
     }
   },
+  header: function(){
+    return (
+      <h2>
+        {this.state.name}
+        <img className="gym-logo" src={this.state.logo_url} />
+      </h2>
+    );
+  },
   render: function() {
     return (
-      <div>
-        <h2>{this.state.name}</h2>
+      <div className="gym-show">
+        {this.header()}
         <div className="selector">
           {this.returnButton()}
           {this.chooseButton()}

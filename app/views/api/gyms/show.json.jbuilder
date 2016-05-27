@@ -1,4 +1,5 @@
-json.extract! @gym, :name, :home_city, :id
+json.extract! @gym, :name, :home_city, :id, :logo_url
+
 
 json.workouts do
   json.array! @gym.workouts do |workout|

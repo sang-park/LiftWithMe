@@ -47,25 +47,25 @@
 	//React
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var Joyride = __webpack_require__(292);
+	var Joyride = __webpack_require__(159);
 	//Router
-	var ReactRouter = __webpack_require__(159);
+	var ReactRouter = __webpack_require__(168);
 	var Router = ReactRouter.Router;
 	var Route = ReactRouter.Route;
 	var IndexRoute = ReactRouter.IndexRoute;
 	var hashHistory = ReactRouter.hashHistory;
 	var browserHistory = ReactRouter.browserHistory;
 	//Mixins
-	var CurrentUserState = __webpack_require__(218);
-	var UserStore = __webpack_require__(219);
+	var CurrentUserState = __webpack_require__(227);
+	var UserStore = __webpack_require__(228);
 	//components
-	var LoginForm = __webpack_require__(244);
-	var HomeCityIndex = __webpack_require__(270);
-	var HomeCityShow = __webpack_require__(275);
-	var GymShow = __webpack_require__(277);
-	var WorkoutShow = __webpack_require__(280);
-	var UserShow = __webpack_require__(289);
-	var HomePage = __webpack_require__(290);
+	var LoginForm = __webpack_require__(253);
+	var HomeCityIndex = __webpack_require__(279);
+	var HomeCityShow = __webpack_require__(284);
+	var GymShow = __webpack_require__(287);
+	var WorkoutShow = __webpack_require__(290);
+	var UserShow = __webpack_require__(299);
+	var HomePage = __webpack_require__(300);
 	
 	var App = React.createClass({
 	  displayName: 'App',
@@ -19752,6 +19752,1506 @@
 /* 159 */
 /***/ function(module, exports, __webpack_require__) {
 
+	module.exports = __webpack_require__(160);
+
+
+/***/ },
+/* 160 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React   = __webpack_require__(1),
+	    Beacon  = __webpack_require__(161),
+	    Tooltip = __webpack_require__(163);
+	
+	var defaultState = {
+	      index: 0,
+	      play: false,
+	      showTooltip: false,
+	      xPos: -1000,
+	      yPos: -1000,
+	      skipped: false
+	    },
+	    isTouch      = false;
+	
+	if (typeof window !== 'undefined') {
+	  isTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+	}
+	
+	var Component = React.createClass({
+	  displayName: 'Joyride',
+	
+	  propTypes: {
+	    completeCallback: React.PropTypes.func,
+	    debug: React.PropTypes.bool,
+	    keyboardNavigation: React.PropTypes.bool,
+	    locale: React.PropTypes.object,
+	    resizeDebounce: React.PropTypes.bool,
+	    resizeDebounceDelay: React.PropTypes.number,
+	    scrollOffset: React.PropTypes.number,
+	    scrollToFirstStep: React.PropTypes.bool,
+	    scrollToSteps: React.PropTypes.bool,
+	    showBackButton: React.PropTypes.bool,
+	    showOverlay: React.PropTypes.bool,
+	    showSkipButton: React.PropTypes.bool,
+	    showStepsProgress: React.PropTypes.bool,
+	    stepCallback: React.PropTypes.func,
+	    steps: React.PropTypes.array,
+	    tooltipOffset: React.PropTypes.number,
+	    type: React.PropTypes.string
+	  },
+	
+	  getDefaultProps: function() {
+	    return {
+	      debug: false,
+	      keyboardNavigation: true,
+	      locale: {
+	        back: 'Back',
+	        close: 'Close',
+	        last: 'Last',
+	        next: 'Next',
+	        skip: 'Skip'
+	      },
+	      resizeDebounce: false,
+	      resizeDebounceDelay: 200,
+	      scrollToSteps: true,
+	      scrollOffset: 20,
+	      scrollToFirstStep: false,
+	      showBackButton: true,
+	      showOverlay: true,
+	      showSkipButton: false,
+	      showStepsProgress: false,
+	      steps: [],
+	      tooltipOffset: 15,
+	      type: 'single',
+	      completeCallback: undefined,
+	      stepCallback: undefined
+	    };
+	  },
+	
+	  getInitialState: function() {
+	    return defaultState;
+	  },
+	
+	  componentWillMount: function() {
+	    this.listeners = {
+	      tooltips: {}
+	    };
+	  },
+	
+	  componentDidMount: function() {
+	    var props = this.props;
+	
+	    this._log(['joyride:initialized', props]);
+	
+	    if (props.resizeDebounce) {
+	      var self = this,
+	          timeoutId;
+	
+	      this.listeners.resize = (function() {
+	        return function() {
+	          clearTimeout(timeoutId);
+	          timeoutId = setTimeout(function() {
+	            timeoutId = null;
+	            self._calcPlacement();
+	          }, props.resizeDebounceDelay);
+	        };
+	      }());
+	    }
+	    else {
+	      this.listeners.resize = this._calcPlacement;
+	    }
+	    window.addEventListener('resize', this.listeners.resize);
+	
+	    if (props.keyboardNavigation) {
+	      this.listeners.keyboard = this._keyboardNavigation;
+	      document.body.addEventListener('keydown', this.listeners.keyboard);
+	    }
+	  },
+	
+	  componentWillUnmount: function() {
+	    window.removeEventListener('resize', this.listeners.resize);
+	
+	    if (this.props.keyboardNavigation) {
+	      document.body.removeEventListener('keydown', this.listeners.keyboard);
+	    }
+	
+	    if (Object.keys(this.listeners.tooltips).length) {
+	      Object.keys(this.listeners.tooltips).forEach(function(key) {
+	        document.querySelector(key)
+	          .removeEventListener(this.listeners.tooltips[key].event, this.listeners.tooltips[key].cb);
+	        delete this.listeners.tooltips[key];
+	      });
+	    }
+	  },
+	
+	  componentDidUpdate: function(prevProps, prevState) {
+	    var props = this.props,
+	        state = this.state;
+	
+	    if ((state.tooltip || (state.play && props.steps[state.index])) && state.xPos < 0) {
+	      this._calcPlacement();
+	    }
+	
+	    if (prevProps.steps.length !== props.steps.length) {
+	      this._log(['joyride:changedSteps', this.props.steps]);
+	
+	      if (!props.steps.length) {
+	        this.reset();
+	      }
+	    }
+	
+	    if (state.play && props.scrollToSteps && (props.scrollToFirstStep || (state.index > 0 || prevState.index > state.index))) {
+	      var scroll = __webpack_require__(165);
+	      scroll.top(this._getBrowser() === 'firefox' ? document.documentElement : document.body, this._getScrollTop());
+	    }
+	  },
+	
+	  /**
+	   * Starts the tour
+	   * @param {boolean} [autorun]- Starts with the first tooltip opened
+	   */
+	  start: function(autorun) {
+	    autorun = autorun === true;
+	
+	    this._log(['joyride:start', 'autorun:', autorun]);
+	
+	    this.setState({
+	      play: true
+	    }, function() {
+	      if (autorun) {
+	        this._toggleTooltip(true);
+	      }
+	    });
+	  },
+	
+	  /**
+	   * Stop the tour
+	   */
+	  stop: function() {
+	    this._log(['joyride:stop']);
+	
+	    this.setState({
+	      showTooltip: false,
+	      play: false
+	    });
+	  },
+	
+	  /**
+	   * Reset Tour
+	   * @param {boolean} [restart] - Starts the new tour right away
+	   */
+	  reset: function(restart) {
+	    restart = restart === true;
+	
+	    var newState = JSON.parse(JSON.stringify(defaultState));
+	    newState.play = restart;
+	
+	    this._log(['joyride:reset', 'restart:', restart]);
+	
+	    // Force a re-render if necessary
+	    if (restart && this.state.play === restart && this.state.index === 0) {
+	      this.forceUpdate();
+	    }
+	
+	    this.setState(newState);
+	  },
+	
+	  /**
+	   * Retrieve the current progress of your tour
+	   * @returns {{index: (number|*), percentageComplete: number, step: (object|null)}}
+	   */
+	  getProgress: function() {
+	    var state = this.state,
+	        props = this.props;
+	
+	    this._log(['joyride:getProgress', 'steps:', props.steps]);
+	
+	    return {
+	      index: state.index,
+	      percentageComplete: parseFloat(((state.index / props.steps.length) * 100).toFixed(2).replace('.00', '')),
+	      step: props.steps[state.index]
+	    };
+	  },
+	
+	  /**
+	   * Parse the incoming steps
+	   * @param {Array|Object} steps
+	   * @returns {Array}
+	   */
+	  parseSteps: function(steps) {
+	    var tmpSteps = [],
+	        newSteps = [],
+	        el;
+	
+	    if (Array.isArray(steps)) {
+	      steps.forEach(function(s) {
+	        if (s instanceof Object) {
+	          tmpSteps.push(s);
+	        }
+	      });
+	    }
+	    else {
+	      tmpSteps = [steps];
+	    }
+	
+	    tmpSteps.forEach(function(s) {
+	      if (s.selector.dataset && s.selector.dataset.reactid) {
+	        s.selector = '[data-reactid="' + s.selector.dataset.reactid + '"]';
+	        console.warn('Deprecation warning: React 15.0 removed reactid. Update your code.'); //eslint-disable-line no-console
+	      }
+	      else if (s.selector.dataset) {
+	        console.error('Unsupported error: React 15.0+ don\'t write reactid to the DOM anymore, please use a plain class in your step.', s); //eslint-disable-line no-console
+	        if (s.selector.className) {
+	          s.selector = '.' + s.selector.className.replace(' ', '.');
+	        }
+	      }
+	
+	      el = document.querySelector(s.selector);
+	      s.position = s.position || 'top';
+	
+	      if (el && el.offsetParent) {
+	        newSteps.push(s);
+	      }
+	      else {
+	        this._log(['joyride:parseSteps', 'Element not rendered in the DOM. Skipped..', s], true);
+	      }
+	    }.bind(this));
+	
+	    return newSteps;
+	  },
+	
+	  addTooltip: function(data) {
+	    var parseData = this.parseSteps(data),
+	        el,
+	        eventType,
+	        key;
+	
+	    this._log(['joyride:addTooltip', 'data:', data]);
+	
+	    if (parseData.length) {
+	      data = parseData[0];
+	      key = data.trigger || data.selector;
+	      el = document.querySelector(key);
+	      eventType = data.event || 'click';
+	    }
+	
+	    el.dataset.tooltip = JSON.stringify(data);
+	
+	    if (eventType === 'hover' && !isTouch) {
+	      this.listeners.tooltips[key] = { event: 'mouseenter', cb: this._onTooltipTrigger };
+	      this.listeners.tooltips[key + 'mouseleave'] = { event: 'mouseleave', cb: this._onTooltipTrigger };
+	      this.listeners.tooltips[key + 'click'] = {
+	        event: 'click', cb: function(e) {
+	          e.preventDefault();
+	        }
+	      };
+	
+	      el.addEventListener('mouseenter', this.listeners.tooltips[key].cb);
+	      el.addEventListener('mouseleave', this.listeners.tooltips[key + 'mouseleave'].cb);
+	      el.addEventListener('click', this.listeners.tooltips[key + 'click'].cb);
+	    }
+	    else {
+	      this.listeners.tooltips[key] = { event: 'click', cb: this._onTooltipTrigger };
+	      el.addEventListener('click', this.listeners.tooltips[key].cb);
+	    }
+	  },
+	
+	  _log: function(msg, warn) {
+	    var logger = warn ? console.warn || console.error : console.log; //eslint-disable-line no-console
+	
+	    if (this.props.debug) {
+	      logger.apply(console, msg); //eslint-disable-line no-console
+	    }
+	  },
+	
+	  /**
+	   * Returns the current browser
+	   * @private
+	   * @returns {String}
+	   */
+	  _getBrowser: function() {
+	    // Return cached result if avalible, else get result then cache it.
+	    if (this._browser) {
+	      return this._browser;
+	    }
+	
+	    var isOpera = Boolean(window.opera) || navigator.userAgent.indexOf(' OPR/') >= 0;
+	    // Opera 8.0+ (UA detection to detect Blink/v8-powered Opera)
+	    var isFirefox = typeof InstallTrigger !== 'undefined';// Firefox 1.0+
+	    var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+	    // At least Safari 3+: "[object HTMLElementConstructor]"
+	    var isChrome = Boolean(window.chrome) && !isOpera;// Chrome 1+
+	    var isIE = /*@cc_on!@*/ Boolean(document.documentMode); // At least IE6
+	
+	    return (this._browser =
+	      isOpera ? 'opera' :
+	      isFirefox ? 'firefox' :
+	      isSafari ? 'safari' :
+	      isChrome ? 'chrome' :
+	      isIE ? 'ie' :
+	      '');
+	  },
+	
+	  /**
+	   * Get an element actual dimensions with margin
+	   * @param {String|Element} el - Element node or selector
+	   * @returns {{height: number, width: number}}
+	   */
+	  _getElementDimensions: function(el) {
+	    // Get the DOM Node if you pass in a string
+	    el = (typeof el === 'string') ? document.querySelector(el) : el;
+	
+	    var styles = window.getComputedStyle(el),
+	        height = el.clientHeight + parseInt(styles.marginTop, 10) + parseInt(styles.marginBottom, 10),
+	        width  = el.clientWidth + parseInt(styles.marginLeft, 10) + parseInt(styles.marginRight, 10);
+	
+	    return {
+	      height: height,
+	      width: width
+	    };
+	  },
+	
+	  /**
+	   * Get the scrollTop position
+	   * @returns {number}
+	   */
+	  _getScrollTop: function() {
+	    var state     = this.state,
+	        props     = this.props,
+	        step      = props.steps[state.index],
+	        position  = step.position,
+	        target    = document.querySelector(step.selector),
+	        targetTop = target.getBoundingClientRect().top + document.body.scrollTop,
+	        scrollTop = 0;
+	
+	    if (/^top/.test(position) || state.position === 'top') {
+	      scrollTop = Math.floor(state.yPos - props.scrollOffset);
+	    }
+	    else if (/^bottom|^left|^right/.test(position)) {
+	      scrollTop = Math.floor(targetTop - props.scrollOffset);
+	    }
+	
+	    return scrollTop;
+	  },
+	
+	  /**
+	   * Keydown event listener
+	   * @param {Event} e - Keyboard event
+	   */
+	  _keyboardNavigation: function(e) {
+	    var state  = this.state,
+	        props  = this.props,
+	        intKey = (window.Event) ? e.which : e.keyCode,
+	        hasSteps;
+	
+	    if (state.showTooltip) {
+	      if ([32, 38, 40].indexOf(intKey) > -1) {
+	        e.preventDefault();
+	      }
+	
+	      if (intKey === 27) {
+	        this._toggleTooltip(false, state.index + 1);
+	      }
+	      else if ([13, 32].indexOf(intKey) > -1) {
+	        hasSteps = Boolean(props.steps[state.index + 1]);
+	        this._toggleTooltip(hasSteps, state.index + 1, 'next');
+	      }
+	    }
+	  },
+	
+	  /**
+	   * Tooltip event listener
+	   * @param {Event} e - Click event
+	   */
+	  _onTooltipTrigger: function(e) {
+	    e.preventDefault();
+	    var tooltip = e.currentTarget.dataset.tooltip;
+	
+	    if (tooltip) {
+	      tooltip = JSON.parse(tooltip);
+	
+	      if (!this.state.tooltip || (this.state.tooltip.selector !== tooltip.selector)) {
+	
+	        this.setState({
+	          previousPlay: this.state.previousPlay !== undefined ? this.state.previousPlay : this.state.play,
+	          play: false,
+	          showTooltip: false,
+	          tooltip: tooltip,
+	          xPos: -1000,
+	          yPos: -1000
+	        });
+	      }
+	      else {
+	        document.querySelector('.joyride-tooltip__close').click();
+	      }
+	    }
+	  },
+	
+	  /**
+	   * Beacon click event listener
+	   * @param {Event} e - Click event
+	   */
+	  _onBeaconTrigger: function(e) {
+	    e.preventDefault();
+	    this._toggleTooltip(true, this.state.index);
+	  },
+	
+	  /**
+	   * Tooltip click event listener
+	   * @param {Event} e - Click event
+	   */
+	  _onClickTooltip: function(e) {
+	    e.preventDefault();
+	    e.stopPropagation();
+	
+	    var state    = this.state,
+	        props    = this.props,
+	        tooltip  = document.querySelector('.joyride-tooltip'),
+	        el       = e.target,
+	        type     = el.dataset.type,
+	        newIndex = state.index + (type === 'back' ? -1 : 1);
+	
+	    if (type === 'skip') {
+	      this.setState({
+	        skipped: true
+	      });
+	      newIndex = props.steps.length + 1;
+	    }
+	
+	    if (tooltip.classList.contains('joyride-tooltip--standalone')) {
+	      this.setState({
+	        play: this.state.previousPlay,
+	        previousPlay: undefined,
+	        tooltip: undefined,
+	        xPos: -1000,
+	        yPos: -1000
+	      });
+	    }
+	    else if (type) {
+	      this._toggleTooltip(
+	        (props.type === 'continuous' || props.type === 'guided')
+	        && ['close', 'skip'].indexOf(type) === -1
+	        && Boolean(props.steps[newIndex])
+	        , newIndex
+	        , type);
+	    }
+	  },
+	
+	  /**
+	   * Toggle Tooltip's visibility
+	   * @param {Boolean} show - Render the tooltip directly or the beacon
+	   * @param {Number} [index] - The tour's new index
+	   * @param {string} [action]
+	   */
+	  _toggleTooltip: function(show, index, action) {
+	    index = (index !== undefined ? index : this.state.index);
+	    var props = this.props;
+	
+	    this.setState({
+	      play: props.steps[index] ? this.state.play : false,
+	      showTooltip: show,
+	      index: index,
+	      xPos: -1000,
+	      yPos: -1000
+	    }, function() {
+	      var lastIndex = action === 'back' ? index + 1 : index - 1;
+	
+	      if (action && typeof props.stepCallback === 'function' && props.steps[lastIndex]) {
+	        props.stepCallback(props.steps[lastIndex]);
+	      }
+	
+	      if (props.steps.length && !props.steps[index]) {
+	        if (typeof props.completeCallback === 'function') {
+	          props.completeCallback(props.steps, this.state.skipped);
+	        }
+	      }
+	    });
+	  },
+	
+	  /**
+	   * Position absolute elements next to its target
+	   */
+	  _calcPlacement: function() {
+	    var state       = this.state,
+	        props       = this.props,
+	        step        = state.tooltip ? state.tooltip : props.steps[state.index],
+	        showTooltip = state.tooltip ? true : state.showTooltip,
+	        component,
+	        position,
+	        body,
+	        target,
+	        placement   = {
+	          x: -1000,
+	          y: -1000
+	        };
+	
+	    if (step) {
+	      position = step.position;
+	      body = document.body.getBoundingClientRect();
+	      target = document.querySelector(step.selector).getBoundingClientRect();
+	      component = this._getElementDimensions((showTooltip ? '.joyride-tooltip' : '.joyride-beacon'));
+	
+	      // Change the step position in the tooltip won't fit in the window
+	      if (/^left/.test(position) && target.left - (component.width + props.tooltipOffset) < 0) {
+	        position = 'top';
+	      }
+	      else if (/^right/.test(position) && target.left + target.width + (component.width + props.tooltipOffset) > body.width) {
+	        position = 'bottom';
+	      }
+	
+	      // Calculate x position
+	      if (/^left/.test(position)) {
+	        placement.x = target.left - (showTooltip ? component.width + props.tooltipOffset : component.width / 2);
+	      }
+	      else if (/^right/.test(position)) {
+	        placement.x = target.left + target.width - (showTooltip ? -props.tooltipOffset : component.width / 2);
+	      }
+	      else {
+	        placement.x = target.left + target.width / 2 - component.width / 2;
+	      }
+	
+	      // Calculate y position
+	      if (/^top/.test(position)) {
+	        placement.y = (target.top - body.top) - (showTooltip ? component.height + props.tooltipOffset : component.height / 2);
+	      }
+	      else if (/^bottom/.test(position)) {
+	        placement.y = (target.top - body.top) + target.height - (showTooltip ? -props.tooltipOffset : component.height / 2);
+	      }
+	      else {
+	        placement.y = (target.top - body.top) + target.height / 2 - component.height / 2 + (showTooltip ? props.tooltipOffset : 0);
+	      }
+	
+	      if (/^bottom|^top/.test(position)) {
+	        if (/left/.test(position)) {
+	          placement.x = target.left - (showTooltip ? props.tooltipOffset : component.width / 2);
+	        }
+	        else if (/right/.test(position)) {
+	          placement.x = target.left + target.width - (showTooltip ? component.width - props.tooltipOffset : component.width / 2);
+	        }
+	      }
+	
+	      this.setState({
+	        xPos: this._preventWindowOverflow(Math.ceil(placement.x), 'x', component.width, component.height),
+	        yPos: this._preventWindowOverflow(Math.ceil(placement.y), 'y', component.width, component.height),
+	        position: position
+	      });
+	    }
+	  },
+	
+	  /**
+	   * Prevent tooltip to render outside the window
+	   * @param {Number} value - The axis position
+	   * @param {String} axis - The Axis X or Y
+	   * @param {Number} elWidth - The target element width
+	   * @param {Number} elHeight - The target element height
+	   * @returns {Number}
+	   */
+	  _preventWindowOverflow: function(value, axis, elWidth, elHeight) {
+	    var winWidth  = window.innerWidth,
+	        body      = document.body,
+	        html      = document.documentElement,
+	        docHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight),
+	        newValue  = value;
+	
+	    if (axis === 'x') {
+	      if (value + elWidth >= winWidth) {
+	        newValue = winWidth - elWidth - 15;
+	      }
+	      else if (value < 15) {
+	        newValue = 15;
+	      }
+	    }
+	    else if (axis === 'y') {
+	      if (value + elHeight >= docHeight) {
+	        newValue = docHeight - elHeight - 15;
+	      }
+	      else if (value < 15) {
+	        newValue = 15;
+	      }
+	    }
+	
+	    return newValue;
+	  },
+	
+	  /**
+	   *
+	   * @param {Boolean} [update]
+	   * @returns {*}
+	   * @private
+	   */
+	  _createComponent: function(update) {
+	    var state       = this.state,
+	        props       = this.props,
+	        currentStep = Object.assign({}, state.tooltip || props.steps[state.index]),
+	        buttons     = {
+	          primary: props.locale.close
+	        },
+	        target      = currentStep && currentStep.selector ? document.querySelector(currentStep.selector) : null,
+	        cssPosition = target ? target.style.position : null,
+	        showOverlay = state.tooltip ? false : props.showOverlay,
+	        component;
+	
+	    this._log([
+	      'joyride:' + (update ? 'updateComponent' : 'createComponent'),
+	      'component:', state.showTooltip || state.tooltip ? 'Tooltip' : 'Beacon',
+	      'target:', target
+	    ]);
+	
+	    if (target) {
+	      if (state.showTooltip || state.tooltip) {
+	        currentStep.position = state.position;
+	
+	        if (!state.tooltip) {
+	          if (props.type === 'continuous' || props.type === 'guided') {
+	            buttons.primary = props.locale.last;
+	
+	            if (props.steps[state.index + 1]) {
+	              buttons.primary = props.locale.next;
+	
+	              if (props.showStepsProgress) {
+	                buttons.primary += ' ' + (state.index + 1) + '/' + props.steps.length;
+	              }
+	            }
+	
+	            if (props.showBackButton && state.index > 0) {
+	              buttons.secondary = props.locale.back;
+	            }
+	          }
+	
+	          if (props.showSkipButton) {
+	            buttons.skip = props.locale.skip;
+	          }
+	        }
+	
+	        component = React.createElement(Tooltip, {
+	          animate: state.xPos > -1,
+	          browser: this._getBrowser(),
+	          buttons: buttons,
+	          cssPosition: cssPosition,
+	          showOverlay: showOverlay,
+	          step: currentStep,
+	          standalone: Boolean(state.tooltip),
+	          type: props.type,
+	          xPos: state.xPos,
+	          yPos: state.yPos,
+	          onClick: this._onClickTooltip
+	        });
+	      }
+	      else {
+	        component = React.createElement(Beacon, {
+	          cssPosition: cssPosition,
+	          step: currentStep,
+	          xPos: state.xPos,
+	          yPos: state.yPos,
+	          onTrigger: this._onBeaconTrigger,
+	          eventType: currentStep.type || 'click'
+	        });
+	      }
+	    }
+	
+	    return component;
+	  },
+	
+	  render: function() {
+	    var state   = this.state,
+	        props   = this.props,
+	        hasStep = Boolean(props.steps[state.index]),
+	        component,
+	        standaloneTooltip;
+	
+	    if (state.play && state.xPos < 0 && hasStep) {
+	      this._log(['joyride:render', 'step:', props.steps[state.index]]);
+	    }
+	    else if (!state.play && state.tooltip) {
+	      this._log(['joyride:render', 'tooltip:', state.tooltip]);
+	    }
+	
+	    if (state.tooltip) {
+	      standaloneTooltip = this._createComponent();
+	    }
+	    else if (state.play && hasStep) {
+	      component = this._createComponent(state.xPos < 0);
+	    }
+	
+	    return React.createElement('div', {
+	        className: 'joyride'
+	      },
+	      component,
+	      standaloneTooltip
+	    );
+	  }
+	});
+	
+	module.exports = Component;
+
+
+/***/ },
+/* 161 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React    = __webpack_require__(1),
+	    hexToRGB = __webpack_require__(162).hexToRgb;
+	
+	var isTouch = false;
+	
+	if (typeof window !== 'undefined') {
+	  isTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+	}
+	
+	var Beacon = React.createClass({
+	  displayName: 'JoyrideBeacon',
+	  propTypes: {
+	    cssPosition: React.PropTypes.string.isRequired,
+	    eventType: React.PropTypes.string.isRequired,
+	    onTrigger: React.PropTypes.func.isRequired,
+	    xPos: React.PropTypes.oneOfType([
+	      React.PropTypes.number,
+	      React.PropTypes.string
+	    ]).isRequired,
+	    yPos: React.PropTypes.oneOfType([
+	      React.PropTypes.number,
+	      React.PropTypes.string
+	    ]).isRequired
+	  },
+	
+	  getDefaultProps: function() {
+	    return {
+	      cssPosition: 'absolute',
+	      xPos: -1000,
+	      yPos: -1000
+	    };
+	  },
+	
+	  render: function() {
+	    var props      = this.props,
+	        stepStyles = props.step.style || {},
+	        rgb,
+	        styles     = {
+	          beacon: {
+	            left: props.xPos,
+	            position: props.cssPosition === 'fixed' ? 'fixed' : 'absolute',
+	            top: props.yPos
+	          },
+	          inner: {},
+	          outer: {}
+	        };
+	
+	    if (stepStyles.beacon) {
+	      if (typeof stepStyles.beacon === 'string') {
+	        rgb = hexToRGB(stepStyles.beacon);
+	
+	        styles.inner.backgroundColor = stepStyles.beacon;
+	        styles.outer = {
+	          backgroundColor: 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', 0.2)',
+	          borderColor: stepStyles.beacon
+	        };
+	      }
+	      else {
+	        if (stepStyles.beacon.inner) {
+	          styles.inner.backgroundColor = stepStyles.beacon.inner;
+	        }
+	
+	        if (stepStyles.beacon.outer) {
+	          rgb = hexToRGB(stepStyles.beacon.outer);
+	
+	          styles.outer = {
+	            backgroundColor: 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', 0.4)',
+	            borderColor: stepStyles.beacon.outer
+	          };
+	        }
+	      }
+	    }
+	
+	    return (
+	      React.createElement('a', {
+	          href: '#',
+	          className: 'joyride-beacon',
+	          style: styles.beacon,
+	          onClick: props.eventType === 'click' || isTouch ? props.onTrigger : null,
+	          onMouseEnter: props.eventType === 'hover' && !isTouch ? props.onTrigger : null
+	        },
+	        React.createElement('span', {
+	          className: 'joyride-beacon__inner',
+	          style: styles.inner
+	        }),
+	        React.createElement('span', {
+	          className: 'joyride-beacon__outer',
+	          style: styles.outer
+	        })
+	      )
+	    );
+	  }
+	
+	});
+	
+	module.exports = Beacon;
+
+
+/***/ },
+/* 162 */
+/***/ function(module, exports) {
+
+	module.exports = {
+	  hexToRgb: function(hex) {
+	    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+	    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+	    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+	      return r + r + g + g + b + b;
+	    });
+	
+	    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	    return result ? {
+	      r: parseInt(result[1], 16),
+	      g: parseInt(result[2], 16),
+	      b: parseInt(result[3], 16)
+	    } : null;
+	  }
+	};
+
+
+/***/ },
+/* 163 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React  = __webpack_require__(1),
+	    assign = __webpack_require__(164);
+	
+	var Tooltip = React.createClass({
+	  displayName: 'JoyrideTooltip',
+	
+	  propTypes: {
+	    animate: React.PropTypes.bool.isRequired,
+	    browser: React.PropTypes.string.isRequired,
+	    buttons: React.PropTypes.object.isRequired,
+	    cssPosition: React.PropTypes.string.isRequired,
+	    onClick: React.PropTypes.func.isRequired,
+	    showOverlay: React.PropTypes.bool.isRequired,
+	    standalone: React.PropTypes.bool,
+	    step: React.PropTypes.object.isRequired,
+	    type: React.PropTypes.string.isRequired,
+	    xPos: React.PropTypes.oneOfType([
+	      React.PropTypes.number,
+	      React.PropTypes.string
+	    ]).isRequired,
+	    yPos: React.PropTypes.oneOfType([
+	      React.PropTypes.number,
+	      React.PropTypes.string
+	    ]).isRequired
+	  },
+	
+	  getDefaultProps: function() {
+	    return {
+	      browser: 'chrome',
+	      buttons: {
+	        primary: 'Close'
+	      },
+	      cssPosition: 'absolute',
+	      step: {},
+	      xPos: -1000,
+	      yPos: -1000
+	    };
+	  },
+	
+	  _getArrowPosition: function(position) {
+	    var arrowPosition;
+	
+	    if (window.innerWidth < 480) {
+	      arrowPosition = (position < 8 ? 8 : (position > 92 ? 92 : position));
+	    }
+	    else if (window.innerWidth < 1024) {
+	      arrowPosition = (position < 6 ? 6 : (position > 94 ? 94 : position));
+	    }
+	    else {
+	      arrowPosition = (position < 5 ? 5 : (position > 95 ? 95 : position));
+	    }
+	
+	    return arrowPosition;
+	  },
+	
+	  _generateArrow: function(opts) {
+	    var width,
+	        height,
+	        rotate;
+	
+	    opts = opts || {};
+	    opts.location = opts.location || 'top';
+	    opts.color = opts.color || '#f04';
+	    opts.color = opts.color.replace('#', '%23');
+	
+	    opts.width = opts.width || 36;
+	    opts.height = opts.width / 2;
+	    opts.scale = opts.width / 16;
+	    opts.rotate = '0';
+	
+	    height = opts.height;
+	    rotate = opts.rotate;
+	    width = opts.width;
+	
+	    if (opts.location === 'bottom') {
+	      rotate = '180 8 4';
+	    }
+	    else if (opts.location === 'left') {
+	      height = opts.width;
+	      width = opts.height;
+	      rotate = '270 8 8';
+	    }
+	    else if (opts.location === 'right') {
+	      height = opts.width;
+	      width = opts.height;
+	      rotate = '90 4 4';
+	    }
+	
+	    return 'data:image/svg+xml,%3Csvg%20width%3D%22' + width + '%22%20height%3D%22' + height + '%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpolygon%20points%3D%220%2C%200%208%2C%208%2016%2C0%22%20fill%3D%22' + opts.color + '%22%20transform%3D%22scale%28' + opts.scale + '%29%20rotate%28' + rotate + '%29%22%3E%3C%2Fpolygon%3E%3C%2Fsvg%3E';
+	  },
+	
+	  _setStyles: function(opts, styles, stepStyles) {
+	    styles.hole = {
+	      top: Math.round((opts.target.top - document.body.getBoundingClientRect().top) - 5),
+	      left: Math.round(opts.target.left - 5),
+	      width: Math.round(opts.target.width + 10),
+	      height: Math.round(opts.target.height + 10)
+	    };
+	
+	    styles.buttons = {
+	      back: {},
+	      close: {},
+	      primary: {},
+	      skip: {}
+	    };
+	
+	    /* Styling */
+	    if (stepStyles) {
+	      if (stepStyles.backgroundColor) {
+	        styles.arrow.backgroundImage = 'url("' + this._generateArrow({
+	            location: opts.positonBaseClass,
+	            color: stepStyles.backgroundColor
+	          }) + '")';
+	        styles.tooltip.backgroundColor = stepStyles.backgroundColor;
+	      }
+	
+	      if (stepStyles.borderRadius) {
+	        styles.tooltip.borderRadius = stepStyles.borderRadius;
+	      }
+	
+	      if (stepStyles.color) {
+	        styles.buttons.primary.color = stepStyles.color;
+	        styles.buttons.close.color = stepStyles.color;
+	        styles.buttons.skip.color = stepStyles.color;
+	        styles.header.color = stepStyles.color;
+	        styles.tooltip.color = stepStyles.color;
+	
+	        if (stepStyles.mainColor && stepStyles.mainColor === stepStyles.color) {
+	          styles.buttons.primary.color = stepStyles.backgroundColor;
+	        }
+	      }
+	
+	      if (stepStyles.mainColor) {
+	        styles.buttons.primary.backgroundColor = stepStyles.mainColor;
+	        styles.buttons.back.color = stepStyles.mainColor;
+	        styles.header.borderColor = stepStyles.mainColor;
+	      }
+	
+	      if (stepStyles.textAlign) {
+	        styles.tooltip.textAlign = stepStyles.textAlign;
+	      }
+	
+	      if (stepStyles.width) {
+	        styles.tooltip.width = stepStyles.width;
+	      }
+	
+	      if (stepStyles.back) {
+	        styles.buttons.back = assign(styles.buttons.back, stepStyles.back);
+	      }
+	
+	      if (stepStyles.button) {
+	        styles.buttons.primary = assign(styles.buttons.primary, stepStyles.button);
+	      }
+	
+	      if (stepStyles.close) {
+	        styles.buttons.close = assign(styles.buttons.close, stepStyles.close);
+	      }
+	
+	      if (stepStyles.skip) {
+	        styles.buttons.skip = assign(styles.buttons.skip, stepStyles.skip);
+	      }
+	    }
+	
+	    return styles;
+	  },
+	
+	  render: function() {
+	    var props  = this.props,
+	        step   = props.step,
+	        opts   = {
+	          classes: ['joyride-tooltip'],
+	          target: document.querySelector(step.selector).getBoundingClientRect(),
+	          positionClass: step.position
+	        },
+	        styles = {
+	          arrow: {},
+	          buttons: {},
+	          header: {},
+	          hole: {},
+	          tooltip: {
+	            position: this.props.cssPosition === 'fixed' ? 'fixed' : 'absolute',
+	            top: Math.round(this.props.yPos),
+	            left: Math.round(this.props.xPos)
+	          }
+	        };
+	
+	    opts.positonBaseClass = opts.positionClass.match(/-/) ? opts.positionClass.split('-')[0] : opts.positionClass;
+	
+	    if ((/^bottom$/.test(opts.positionClass) || /^top$/.test(opts.positionClass)) && props.xPos > -1) {
+	      opts.tooltip = document.querySelector('.joyride-tooltip').getBoundingClientRect();
+	      opts.targetMiddle = (opts.target.left + opts.target.width / 2);
+	      opts.arrowPosition = (((opts.targetMiddle - props.xPos) / opts.tooltip.width) * 100).toFixed(2);
+	      opts.arrowPosition = this._getArrowPosition(opts.arrowPosition) + '%';
+	
+	      styles.arrow.left = opts.arrowPosition;
+	    }
+	
+	    styles = this._setStyles(opts, styles, step.style);
+	
+	    if (props.standalone) {
+	      opts.classes.push('joyride-tooltip--standalone');
+	    }
+	    if (opts.positonBaseClass) {
+	      opts.classes.push(opts.positonBaseClass);
+	    }
+	    opts.classes.push(opts.positionClass);
+	    if (props.animate) {
+	      opts.classes.push('joyride-tooltip--animate');
+	    }
+	
+	    if (step.title) {
+	      opts.header = (
+	        React.createElement('div', {
+	          className: 'joyride-tooltip__header',
+	          style: styles.header
+	        }, step.title)
+	      );
+	    }
+	
+	    opts.tooltipElement = React.createElement('div', {
+	        className: opts.classes.join(' '),
+	        style: styles.tooltip,
+	        'data-target': step.selector
+	      },
+	      React.createElement('div', {
+	        className: 'joyride-tooltip__triangle joyride-tooltip__triangle-' + opts.positionClass,
+	        style: styles.arrow
+	      }),
+	      React.createElement('a', {
+	        href: '#',
+	        className: 'joyride-tooltip__close' + (opts.header ? ' joyride-tooltip__close--header' : ''),
+	        style: styles.buttons.close,
+	        'data-type': 'close',
+	        onClick: props.onClick
+	      }, '×'),
+	      opts.header,
+	      React.createElement('div', {
+	        className: 'joyride-tooltip__main',
+	        dangerouslySetInnerHTML: { __html: step.text || '' }
+	      }),
+	      React.createElement('div', {
+	          className: 'joyride-tooltip__footer'
+	        },
+	        (props.buttons.skip ?
+	         React.createElement('a', {
+	           href: '#',
+	           className: 'joyride-tooltip__button joyride-tooltip__button--skip',
+	           style: styles.buttons.skip,
+	           'data-type': 'skip',
+	           onClick: props.onClick
+	         }, props.buttons.skip)
+	          : false),
+	        (props.buttons.secondary ?
+	         React.createElement('a', {
+	           href: '#',
+	           className: 'joyride-tooltip__button joyride-tooltip__button--secondary',
+	           style: styles.buttons.back,
+	           'data-type': 'back',
+	           onClick: props.onClick
+	         }, props.buttons.secondary)
+	          : false),
+	        React.createElement('a', {
+	          href: '#',
+	          className: 'joyride-tooltip__button joyride-tooltip__button--primary',
+	          style: styles.buttons.primary,
+	          'data-type': props.type === 'single' ? 'close' : 'next',
+	          onClick: props.onClick
+	        }, props.buttons.primary)
+	      )
+	    );
+	
+	    if (props.showOverlay) {
+	      opts.hole = React.createElement('div', {
+	        className: 'joyride-hole ' + props.browser,
+	        style: styles.hole
+	      });
+	    }
+	
+	    if (!props.showOverlay) {
+	      return opts.tooltipElement;
+	    }
+	
+	    return React.createElement('div', {
+	        className: 'joyride-overlay',
+	        style: {
+	          height: document.body.clientHeight
+	        },
+	        'data-type': 'close',
+	        onClick: props.onClick
+	      },
+	      opts.hole,
+	      opts.tooltipElement
+	    );
+	  }
+	});
+	
+	module.exports = Tooltip;
+
+
+/***/ },
+/* 164 */
+/***/ function(module, exports) {
+
+	/* eslint-disable no-unused-vars */
+	'use strict';
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+	
+	function toObject(val) {
+		if (val === null || val === undefined) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
+	
+		return Object(val);
+	}
+	
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var to = toObject(target);
+		var symbols;
+	
+		for (var s = 1; s < arguments.length; s++) {
+			from = Object(arguments[s]);
+	
+			for (var key in from) {
+				if (hasOwnProperty.call(from, key)) {
+					to[key] = from[key];
+				}
+			}
+	
+			if (Object.getOwnPropertySymbols) {
+				symbols = Object.getOwnPropertySymbols(from);
+				for (var i = 0; i < symbols.length; i++) {
+					if (propIsEnumerable.call(from, symbols[i])) {
+						to[symbols[i]] = from[symbols[i]];
+					}
+				}
+			}
+		}
+	
+		return to;
+	};
+
+
+/***/ },
+/* 165 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var raf = __webpack_require__(166)
+	var ease = __webpack_require__(167)
+	
+	function scroll (prop, element, to, options, callback) {
+	  var start = +new Date
+	  var from = element[prop]
+	  var cancelled = false
+	  var type = 'inOutSine'
+	  var duration = 350
+	
+	  if (typeof options === 'function') {
+	    callback = options
+	  }
+	  else {
+	    options = options || {}
+	    type = options.ease || type
+	    duration = options.duration || duration
+	    callback = callback || function () {}
+	  }
+	
+	  var easing = ease[type]
+	
+	  if (from === to) {
+	    return callback(
+	      new Error('Element already at target scroll position'),
+	      element[prop]
+	    )
+	  }
+	
+	  function cancel () {
+	    cancelled = true
+	  }
+	
+	  function animate (timestamp) {
+	    if (cancelled) {
+	      return callback(
+	        new Error('Scroll cancelled'),
+	        element[prop]
+	      )
+	    }
+	
+	    var now = +new Date
+	    var time = Math.min(1, ((now - start) / duration))
+	    var eased = easing(time)
+	
+	    element[prop] = (eased * (to - from)) + from
+	
+	    time < 1 ?
+	      raf(animate) :
+	      callback(null, element[prop])
+	  }
+	
+	  raf(animate)
+	
+	  return cancel
+	}
+	
+	module.exports = {
+	  top: function (element, to, options, callback) {
+	    return scroll('scrollTop', element, to, options, callback)
+	  },
+	  left: function (element, to, options, callback) {
+	    return scroll('scrollLeft', element, to, options, callback)
+	  }
+	}
+
+
+/***/ },
+/* 166 */
+/***/ function(module, exports) {
+
+	/**
+	 * Expose `requestAnimationFrame()`.
+	 */
+	
+	exports = module.exports = window.requestAnimationFrame
+	  || window.webkitRequestAnimationFrame
+	  || window.mozRequestAnimationFrame
+	  || window.oRequestAnimationFrame
+	  || window.msRequestAnimationFrame
+	  || fallback;
+	
+	/**
+	 * Fallback implementation.
+	 */
+	
+	var prev = new Date().getTime();
+	function fallback(fn) {
+	  var curr = new Date().getTime();
+	  var ms = Math.max(0, 16 - (curr - prev));
+	  var req = setTimeout(fn, ms);
+	  prev = curr;
+	  return req;
+	}
+	
+	/**
+	 * Cancel.
+	 */
+	
+	var cancel = window.cancelAnimationFrame
+	  || window.webkitCancelAnimationFrame
+	  || window.mozCancelAnimationFrame
+	  || window.oCancelAnimationFrame
+	  || window.msCancelAnimationFrame
+	  || window.clearTimeout;
+	
+	exports.cancel = function(id){
+	  cancel.call(window, id);
+	};
+
+
+/***/ },
+/* 167 */
+/***/ function(module, exports) {
+
+	
+	// easing functions from "Tween.js"
+	
+	exports.linear = function(n){
+	  return n;
+	};
+	
+	exports.inQuad = function(n){
+	  return n * n;
+	};
+	
+	exports.outQuad = function(n){
+	  return n * (2 - n);
+	};
+	
+	exports.inOutQuad = function(n){
+	  n *= 2;
+	  if (n < 1) return 0.5 * n * n;
+	  return - 0.5 * (--n * (n - 2) - 1);
+	};
+	
+	exports.inCube = function(n){
+	  return n * n * n;
+	};
+	
+	exports.outCube = function(n){
+	  return --n * n * n + 1;
+	};
+	
+	exports.inOutCube = function(n){
+	  n *= 2;
+	  if (n < 1) return 0.5 * n * n * n;
+	  return 0.5 * ((n -= 2 ) * n * n + 2);
+	};
+	
+	exports.inQuart = function(n){
+	  return n * n * n * n;
+	};
+	
+	exports.outQuart = function(n){
+	  return 1 - (--n * n * n * n);
+	};
+	
+	exports.inOutQuart = function(n){
+	  n *= 2;
+	  if (n < 1) return 0.5 * n * n * n * n;
+	  return -0.5 * ((n -= 2) * n * n * n - 2);
+	};
+	
+	exports.inQuint = function(n){
+	  return n * n * n * n * n;
+	}
+	
+	exports.outQuint = function(n){
+	  return --n * n * n * n * n + 1;
+	}
+	
+	exports.inOutQuint = function(n){
+	  n *= 2;
+	  if (n < 1) return 0.5 * n * n * n * n * n;
+	  return 0.5 * ((n -= 2) * n * n * n * n + 2);
+	};
+	
+	exports.inSine = function(n){
+	  return 1 - Math.cos(n * Math.PI / 2 );
+	};
+	
+	exports.outSine = function(n){
+	  return Math.sin(n * Math.PI / 2);
+	};
+	
+	exports.inOutSine = function(n){
+	  return .5 * (1 - Math.cos(Math.PI * n));
+	};
+	
+	exports.inExpo = function(n){
+	  return 0 == n ? 0 : Math.pow(1024, n - 1);
+	};
+	
+	exports.outExpo = function(n){
+	  return 1 == n ? n : 1 - Math.pow(2, -10 * n);
+	};
+	
+	exports.inOutExpo = function(n){
+	  if (0 == n) return 0;
+	  if (1 == n) return 1;
+	  if ((n *= 2) < 1) return .5 * Math.pow(1024, n - 1);
+	  return .5 * (-Math.pow(2, -10 * (n - 1)) + 2);
+	};
+	
+	exports.inCirc = function(n){
+	  return 1 - Math.sqrt(1 - n * n);
+	};
+	
+	exports.outCirc = function(n){
+	  return Math.sqrt(1 - (--n * n));
+	};
+	
+	exports.inOutCirc = function(n){
+	  n *= 2
+	  if (n < 1) return -0.5 * (Math.sqrt(1 - n * n) - 1);
+	  return 0.5 * (Math.sqrt(1 - (n -= 2) * n) + 1);
+	};
+	
+	exports.inBack = function(n){
+	  var s = 1.70158;
+	  return n * n * (( s + 1 ) * n - s);
+	};
+	
+	exports.outBack = function(n){
+	  var s = 1.70158;
+	  return --n * n * ((s + 1) * n + s) + 1;
+	};
+	
+	exports.inOutBack = function(n){
+	  var s = 1.70158 * 1.525;
+	  if ( ( n *= 2 ) < 1 ) return 0.5 * ( n * n * ( ( s + 1 ) * n - s ) );
+	  return 0.5 * ( ( n -= 2 ) * n * ( ( s + 1 ) * n + s ) + 2 );
+	};
+	
+	exports.inBounce = function(n){
+	  return 1 - exports.outBounce(1 - n);
+	};
+	
+	exports.outBounce = function(n){
+	  if ( n < ( 1 / 2.75 ) ) {
+	    return 7.5625 * n * n;
+	  } else if ( n < ( 2 / 2.75 ) ) {
+	    return 7.5625 * ( n -= ( 1.5 / 2.75 ) ) * n + 0.75;
+	  } else if ( n < ( 2.5 / 2.75 ) ) {
+	    return 7.5625 * ( n -= ( 2.25 / 2.75 ) ) * n + 0.9375;
+	  } else {
+	    return 7.5625 * ( n -= ( 2.625 / 2.75 ) ) * n + 0.984375;
+	  }
+	};
+	
+	exports.inOutBounce = function(n){
+	  if (n < .5) return exports.inBounce(n * 2) * .5;
+	  return exports.outBounce(n * 2 - 1) * .5 + .5;
+	};
+	
+	// aliases
+	
+	exports['in-quad'] = exports.inQuad;
+	exports['out-quad'] = exports.outQuad;
+	exports['in-out-quad'] = exports.inOutQuad;
+	exports['in-cube'] = exports.inCube;
+	exports['out-cube'] = exports.outCube;
+	exports['in-out-cube'] = exports.inOutCube;
+	exports['in-quart'] = exports.inQuart;
+	exports['out-quart'] = exports.outQuart;
+	exports['in-out-quart'] = exports.inOutQuart;
+	exports['in-quint'] = exports.inQuint;
+	exports['out-quint'] = exports.outQuint;
+	exports['in-out-quint'] = exports.inOutQuint;
+	exports['in-sine'] = exports.inSine;
+	exports['out-sine'] = exports.outSine;
+	exports['in-out-sine'] = exports.inOutSine;
+	exports['in-expo'] = exports.inExpo;
+	exports['out-expo'] = exports.outExpo;
+	exports['in-out-expo'] = exports.inOutExpo;
+	exports['in-circ'] = exports.inCirc;
+	exports['out-circ'] = exports.outCirc;
+	exports['in-out-circ'] = exports.inOutCirc;
+	exports['in-back'] = exports.inBack;
+	exports['out-back'] = exports.outBack;
+	exports['in-out-back'] = exports.inOutBack;
+	exports['in-bounce'] = exports.inBounce;
+	exports['out-bounce'] = exports.outBounce;
+	exports['in-out-bounce'] = exports.inOutBounce;
+
+
+/***/ },
+/* 168 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/* components */
 	'use strict';
 	
@@ -19759,19 +21259,19 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _Router2 = __webpack_require__(160);
+	var _Router2 = __webpack_require__(169);
 	
 	var _Router3 = _interopRequireDefault(_Router2);
 	
 	exports.Router = _Router3['default'];
 	
-	var _Link2 = __webpack_require__(196);
+	var _Link2 = __webpack_require__(205);
 	
 	var _Link3 = _interopRequireDefault(_Link2);
 	
 	exports.Link = _Link3['default'];
 	
-	var _IndexLink2 = __webpack_require__(198);
+	var _IndexLink2 = __webpack_require__(207);
 	
 	var _IndexLink3 = _interopRequireDefault(_IndexLink2);
 	
@@ -19779,25 +21279,25 @@
 	
 	/* components (configuration) */
 	
-	var _IndexRedirect2 = __webpack_require__(199);
+	var _IndexRedirect2 = __webpack_require__(208);
 	
 	var _IndexRedirect3 = _interopRequireDefault(_IndexRedirect2);
 	
 	exports.IndexRedirect = _IndexRedirect3['default'];
 	
-	var _IndexRoute2 = __webpack_require__(201);
+	var _IndexRoute2 = __webpack_require__(210);
 	
 	var _IndexRoute3 = _interopRequireDefault(_IndexRoute2);
 	
 	exports.IndexRoute = _IndexRoute3['default'];
 	
-	var _Redirect2 = __webpack_require__(200);
+	var _Redirect2 = __webpack_require__(209);
 	
 	var _Redirect3 = _interopRequireDefault(_Redirect2);
 	
 	exports.Redirect = _Redirect3['default'];
 	
-	var _Route2 = __webpack_require__(202);
+	var _Route2 = __webpack_require__(211);
 	
 	var _Route3 = _interopRequireDefault(_Route2);
 	
@@ -19805,19 +21305,19 @@
 	
 	/* mixins */
 	
-	var _History2 = __webpack_require__(203);
+	var _History2 = __webpack_require__(212);
 	
 	var _History3 = _interopRequireDefault(_History2);
 	
 	exports.History = _History3['default'];
 	
-	var _Lifecycle2 = __webpack_require__(204);
+	var _Lifecycle2 = __webpack_require__(213);
 	
 	var _Lifecycle3 = _interopRequireDefault(_Lifecycle2);
 	
 	exports.Lifecycle = _Lifecycle3['default'];
 	
-	var _RouteContext2 = __webpack_require__(205);
+	var _RouteContext2 = __webpack_require__(214);
 	
 	var _RouteContext3 = _interopRequireDefault(_RouteContext2);
 	
@@ -19825,29 +21325,29 @@
 	
 	/* utils */
 	
-	var _useRoutes2 = __webpack_require__(206);
+	var _useRoutes2 = __webpack_require__(215);
 	
 	var _useRoutes3 = _interopRequireDefault(_useRoutes2);
 	
 	exports.useRoutes = _useRoutes3['default'];
 	
-	var _RouteUtils = __webpack_require__(191);
+	var _RouteUtils = __webpack_require__(200);
 	
 	exports.createRoutes = _RouteUtils.createRoutes;
 	
-	var _RouterContext2 = __webpack_require__(193);
+	var _RouterContext2 = __webpack_require__(202);
 	
 	var _RouterContext3 = _interopRequireDefault(_RouterContext2);
 	
 	exports.RouterContext = _RouterContext3['default'];
 	
-	var _RoutingContext2 = __webpack_require__(207);
+	var _RoutingContext2 = __webpack_require__(216);
 	
 	var _RoutingContext3 = _interopRequireDefault(_RoutingContext2);
 	
 	exports.RoutingContext = _RoutingContext3['default'];
 	
-	var _PropTypes2 = __webpack_require__(197);
+	var _PropTypes2 = __webpack_require__(206);
 	
 	var _PropTypes3 = _interopRequireDefault(_PropTypes2);
 	
@@ -19855,23 +21355,23 @@
 	exports.locationShape = _PropTypes2.locationShape;
 	exports.routerShape = _PropTypes2.routerShape;
 	
-	var _match2 = __webpack_require__(208);
+	var _match2 = __webpack_require__(217);
 	
 	var _match3 = _interopRequireDefault(_match2);
 	
 	exports.match = _match3['default'];
 	
-	var _useRouterHistory2 = __webpack_require__(212);
+	var _useRouterHistory2 = __webpack_require__(221);
 	
 	var _useRouterHistory3 = _interopRequireDefault(_useRouterHistory2);
 	
 	exports.useRouterHistory = _useRouterHistory3['default'];
 	
-	var _PatternUtils = __webpack_require__(184);
+	var _PatternUtils = __webpack_require__(193);
 	
 	exports.formatPattern = _PatternUtils.formatPattern;
 	
-	var _applyRouterMiddleware2 = __webpack_require__(213);
+	var _applyRouterMiddleware2 = __webpack_require__(222);
 	
 	var _applyRouterMiddleware3 = _interopRequireDefault(_applyRouterMiddleware2);
 	
@@ -19879,26 +21379,26 @@
 	
 	/* histories */
 	
-	var _browserHistory2 = __webpack_require__(214);
+	var _browserHistory2 = __webpack_require__(223);
 	
 	var _browserHistory3 = _interopRequireDefault(_browserHistory2);
 	
 	exports.browserHistory = _browserHistory3['default'];
 	
-	var _hashHistory2 = __webpack_require__(217);
+	var _hashHistory2 = __webpack_require__(226);
 	
 	var _hashHistory3 = _interopRequireDefault(_hashHistory2);
 	
 	exports.hashHistory = _hashHistory3['default'];
 	
-	var _createMemoryHistory2 = __webpack_require__(209);
+	var _createMemoryHistory2 = __webpack_require__(218);
 	
 	var _createMemoryHistory3 = _interopRequireDefault(_createMemoryHistory2);
 	
 	exports.createMemoryHistory = _createMemoryHistory3['default'];
 
 /***/ },
-/* 160 */
+/* 169 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -19911,11 +21411,11 @@
 	
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 	
-	var _historyLibCreateHashHistory = __webpack_require__(161);
+	var _historyLibCreateHashHistory = __webpack_require__(170);
 	
 	var _historyLibCreateHashHistory2 = _interopRequireDefault(_historyLibCreateHashHistory);
 	
-	var _historyLibUseQueries = __webpack_require__(178);
+	var _historyLibUseQueries = __webpack_require__(187);
 	
 	var _historyLibUseQueries2 = _interopRequireDefault(_historyLibUseQueries);
 	
@@ -19923,21 +21423,21 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _createTransitionManager = __webpack_require__(181);
+	var _createTransitionManager = __webpack_require__(190);
 	
 	var _createTransitionManager2 = _interopRequireDefault(_createTransitionManager);
 	
-	var _InternalPropTypes = __webpack_require__(192);
+	var _InternalPropTypes = __webpack_require__(201);
 	
-	var _RouterContext = __webpack_require__(193);
+	var _RouterContext = __webpack_require__(202);
 	
 	var _RouterContext2 = _interopRequireDefault(_RouterContext);
 	
-	var _RouteUtils = __webpack_require__(191);
+	var _RouteUtils = __webpack_require__(200);
 	
-	var _RouterUtils = __webpack_require__(195);
+	var _RouterUtils = __webpack_require__(204);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -20114,7 +21614,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 161 */
+/* 170 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -20125,25 +21625,25 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
-	var _Actions = __webpack_require__(164);
+	var _Actions = __webpack_require__(173);
 	
-	var _PathUtils = __webpack_require__(165);
+	var _PathUtils = __webpack_require__(174);
 	
-	var _ExecutionEnvironment = __webpack_require__(166);
+	var _ExecutionEnvironment = __webpack_require__(175);
 	
-	var _DOMUtils = __webpack_require__(167);
+	var _DOMUtils = __webpack_require__(176);
 	
-	var _DOMStateStorage = __webpack_require__(168);
+	var _DOMStateStorage = __webpack_require__(177);
 	
-	var _createDOMHistory = __webpack_require__(169);
+	var _createDOMHistory = __webpack_require__(178);
 	
 	var _createDOMHistory2 = _interopRequireDefault(_createDOMHistory);
 	
@@ -20366,7 +21866,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 162 */
+/* 171 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -20433,7 +21933,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 163 */
+/* 172 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -20491,7 +21991,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 164 */
+/* 173 */
 /***/ function(module, exports) {
 
 	/**
@@ -20527,7 +22027,7 @@
 	};
 
 /***/ },
-/* 165 */
+/* 174 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -20538,7 +22038,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -20580,7 +22080,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 166 */
+/* 175 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -20590,7 +22090,7 @@
 	exports.canUseDOM = canUseDOM;
 
 /***/ },
-/* 167 */
+/* 176 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -20670,7 +22170,7 @@
 	}
 
 /***/ },
-/* 168 */
+/* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/*eslint-disable no-empty */
@@ -20682,7 +22182,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -20749,7 +22249,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 169 */
+/* 178 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -20760,15 +22260,15 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
-	var _ExecutionEnvironment = __webpack_require__(166);
+	var _ExecutionEnvironment = __webpack_require__(175);
 	
-	var _DOMUtils = __webpack_require__(167);
+	var _DOMUtils = __webpack_require__(176);
 	
-	var _createHistory = __webpack_require__(170);
+	var _createHistory = __webpack_require__(179);
 	
 	var _createHistory2 = _interopRequireDefault(_createHistory);
 	
@@ -20795,7 +22295,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 170 */
+/* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -20806,29 +22306,29 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
-	var _deepEqual = __webpack_require__(171);
+	var _deepEqual = __webpack_require__(180);
 	
 	var _deepEqual2 = _interopRequireDefault(_deepEqual);
 	
-	var _PathUtils = __webpack_require__(165);
+	var _PathUtils = __webpack_require__(174);
 	
-	var _AsyncUtils = __webpack_require__(174);
+	var _AsyncUtils = __webpack_require__(183);
 	
-	var _Actions = __webpack_require__(164);
+	var _Actions = __webpack_require__(173);
 	
-	var _createLocation2 = __webpack_require__(175);
+	var _createLocation2 = __webpack_require__(184);
 	
 	var _createLocation3 = _interopRequireDefault(_createLocation2);
 	
-	var _runTransitionHook = __webpack_require__(176);
+	var _runTransitionHook = __webpack_require__(185);
 	
 	var _runTransitionHook2 = _interopRequireDefault(_runTransitionHook);
 	
-	var _deprecate = __webpack_require__(177);
+	var _deprecate = __webpack_require__(186);
 	
 	var _deprecate2 = _interopRequireDefault(_deprecate);
 	
@@ -21089,12 +22589,12 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 171 */
+/* 180 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var pSlice = Array.prototype.slice;
-	var objectKeys = __webpack_require__(172);
-	var isArguments = __webpack_require__(173);
+	var objectKeys = __webpack_require__(181);
+	var isArguments = __webpack_require__(182);
 	
 	var deepEqual = module.exports = function (actual, expected, opts) {
 	  if (!opts) opts = {};
@@ -21189,7 +22689,7 @@
 
 
 /***/ },
-/* 172 */
+/* 181 */
 /***/ function(module, exports) {
 
 	exports = module.exports = typeof Object.keys === 'function'
@@ -21204,7 +22704,7 @@
 
 
 /***/ },
-/* 173 */
+/* 182 */
 /***/ function(module, exports) {
 
 	var supportsArgumentsClass = (function(){
@@ -21230,7 +22730,7 @@
 
 
 /***/ },
-/* 174 */
+/* 183 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -21293,7 +22793,7 @@
 	}
 
 /***/ },
-/* 175 */
+/* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -21304,13 +22804,13 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
-	var _Actions = __webpack_require__(164);
+	var _Actions = __webpack_require__(173);
 	
-	var _PathUtils = __webpack_require__(165);
+	var _PathUtils = __webpack_require__(174);
 	
 	function createLocation() {
 	  var location = arguments.length <= 0 || arguments[0] === undefined ? '/' : arguments[0];
@@ -21350,7 +22850,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 176 */
+/* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -21359,7 +22859,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -21380,7 +22880,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 177 */
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -21389,7 +22889,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -21405,7 +22905,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 178 */
+/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -21416,19 +22916,19 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
-	var _queryString = __webpack_require__(179);
+	var _queryString = __webpack_require__(188);
 	
-	var _runTransitionHook = __webpack_require__(176);
+	var _runTransitionHook = __webpack_require__(185);
 	
 	var _runTransitionHook2 = _interopRequireDefault(_runTransitionHook);
 	
-	var _PathUtils = __webpack_require__(165);
+	var _PathUtils = __webpack_require__(174);
 	
-	var _deprecate = __webpack_require__(177);
+	var _deprecate = __webpack_require__(186);
 	
 	var _deprecate2 = _interopRequireDefault(_deprecate);
 	
@@ -21587,11 +23087,11 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 179 */
+/* 188 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var strictUriEncode = __webpack_require__(180);
+	var strictUriEncode = __webpack_require__(189);
 	
 	exports.extract = function (str) {
 		return str.split('?')[1] || '';
@@ -21659,7 +23159,7 @@
 
 
 /***/ },
-/* 180 */
+/* 189 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -21671,7 +23171,7 @@
 
 
 /***/ },
-/* 181 */
+/* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -21684,27 +23184,27 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
-	var _historyLibActions = __webpack_require__(164);
+	var _historyLibActions = __webpack_require__(173);
 	
-	var _computeChangedRoutes2 = __webpack_require__(183);
+	var _computeChangedRoutes2 = __webpack_require__(192);
 	
 	var _computeChangedRoutes3 = _interopRequireDefault(_computeChangedRoutes2);
 	
-	var _TransitionUtils = __webpack_require__(185);
+	var _TransitionUtils = __webpack_require__(194);
 	
-	var _isActive2 = __webpack_require__(187);
+	var _isActive2 = __webpack_require__(196);
 	
 	var _isActive3 = _interopRequireDefault(_isActive2);
 	
-	var _getComponents = __webpack_require__(188);
+	var _getComponents = __webpack_require__(197);
 	
 	var _getComponents2 = _interopRequireDefault(_getComponents);
 	
-	var _matchRoutes = __webpack_require__(190);
+	var _matchRoutes = __webpack_require__(199);
 	
 	var _matchRoutes2 = _interopRequireDefault(_matchRoutes);
 	
@@ -21983,7 +23483,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 182 */
+/* 191 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -21994,7 +23494,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
@@ -22025,14 +23525,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 183 */
+/* 192 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	exports.__esModule = true;
 	
-	var _PatternUtils = __webpack_require__(184);
+	var _PatternUtils = __webpack_require__(193);
 	
 	function routeParamsChanged(route, prevState, nextState) {
 	  if (!route.path) return false;
@@ -22107,7 +23607,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 184 */
+/* 193 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -22121,7 +23621,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
@@ -22332,7 +23832,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 185 */
+/* 194 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -22344,9 +23844,9 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _AsyncUtils = __webpack_require__(186);
+	var _AsyncUtils = __webpack_require__(195);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -22463,7 +23963,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 186 */
+/* 195 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -22558,7 +24058,7 @@
 	}
 
 /***/ },
-/* 187 */
+/* 196 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22566,7 +24066,7 @@
 	exports.__esModule = true;
 	exports['default'] = isActive;
 	
-	var _PatternUtils = __webpack_require__(184);
+	var _PatternUtils = __webpack_require__(193);
 	
 	function deepEqual(a, b) {
 	  if (a == b) return true;
@@ -22710,7 +24210,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 188 */
+/* 197 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -22721,11 +24221,11 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _AsyncUtils = __webpack_require__(186);
+	var _AsyncUtils = __webpack_require__(195);
 	
-	var _deprecateObjectProperties = __webpack_require__(189);
+	var _deprecateObjectProperties = __webpack_require__(198);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -22795,7 +24295,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 189 */
+/* 198 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -22804,7 +24304,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -22874,7 +24374,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 190 */
+/* 199 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -22887,15 +24387,15 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
-	var _AsyncUtils = __webpack_require__(186);
+	var _AsyncUtils = __webpack_require__(195);
 	
-	var _PatternUtils = __webpack_require__(184);
+	var _PatternUtils = __webpack_require__(193);
 	
-	var _RouteUtils = __webpack_require__(191);
+	var _RouteUtils = __webpack_require__(200);
 	
 	function getChildRoutes(route, location, callback) {
 	  if (route.childRoutes) {
@@ -23105,7 +24605,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 191 */
+/* 200 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -23125,7 +24625,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -23225,7 +24725,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 192 */
+/* 201 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -23267,7 +24767,7 @@
 	exports.routes = routes;
 
 /***/ },
-/* 193 */
+/* 202 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -23278,7 +24778,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
@@ -23286,17 +24786,17 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _deprecateObjectProperties = __webpack_require__(189);
+	var _deprecateObjectProperties = __webpack_require__(198);
 	
 	var _deprecateObjectProperties2 = _interopRequireDefault(_deprecateObjectProperties);
 	
-	var _getRouteParams = __webpack_require__(194);
+	var _getRouteParams = __webpack_require__(203);
 	
 	var _getRouteParams2 = _interopRequireDefault(_getRouteParams);
 	
-	var _RouteUtils = __webpack_require__(191);
+	var _RouteUtils = __webpack_require__(200);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -23427,14 +24927,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 194 */
+/* 203 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	exports.__esModule = true;
 	
-	var _PatternUtils = __webpack_require__(184);
+	var _PatternUtils = __webpack_require__(193);
 	
 	/**
 	 * Extracts an object of params the given route cares about from
@@ -23460,7 +24960,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 195 */
+/* 204 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -23474,7 +24974,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _deprecateObjectProperties = __webpack_require__(189);
+	var _deprecateObjectProperties = __webpack_require__(198);
 	
 	var _deprecateObjectProperties2 = _interopRequireDefault(_deprecateObjectProperties);
 	
@@ -23499,7 +24999,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 196 */
+/* 205 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -23516,11 +25016,11 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
-	var _PropTypes = __webpack_require__(197);
+	var _PropTypes = __webpack_require__(206);
 	
 	var _React$PropTypes = _react2['default'].PropTypes;
 	var bool = _React$PropTypes.bool;
@@ -23677,7 +25177,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 197 */
+/* 206 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -23690,15 +25190,15 @@
 	
 	var _react = __webpack_require__(1);
 	
-	var _deprecateObjectProperties = __webpack_require__(189);
+	var _deprecateObjectProperties = __webpack_require__(198);
 	
 	var _deprecateObjectProperties2 = _interopRequireDefault(_deprecateObjectProperties);
 	
-	var _InternalPropTypes = __webpack_require__(192);
+	var _InternalPropTypes = __webpack_require__(201);
 	
 	var InternalPropTypes = _interopRequireWildcard(_InternalPropTypes);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -23793,7 +25293,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 198 */
+/* 207 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -23808,7 +25308,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Link = __webpack_require__(196);
+	var _Link = __webpack_require__(205);
 	
 	var _Link2 = _interopRequireDefault(_Link);
 	
@@ -23828,7 +25328,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 199 */
+/* 208 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -23841,19 +25341,19 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
-	var _Redirect = __webpack_require__(200);
+	var _Redirect = __webpack_require__(209);
 	
 	var _Redirect2 = _interopRequireDefault(_Redirect);
 	
-	var _InternalPropTypes = __webpack_require__(192);
+	var _InternalPropTypes = __webpack_require__(201);
 	
 	var _React$PropTypes = _react2['default'].PropTypes;
 	var string = _React$PropTypes.string;
@@ -23898,7 +25398,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 200 */
+/* 209 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -23911,15 +25411,15 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
-	var _RouteUtils = __webpack_require__(191);
+	var _RouteUtils = __webpack_require__(200);
 	
-	var _PatternUtils = __webpack_require__(184);
+	var _PatternUtils = __webpack_require__(193);
 	
-	var _InternalPropTypes = __webpack_require__(192);
+	var _InternalPropTypes = __webpack_require__(201);
 	
 	var _React$PropTypes = _react2['default'].PropTypes;
 	var string = _React$PropTypes.string;
@@ -24007,7 +25507,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 201 */
+/* 210 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24020,17 +25520,17 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
-	var _RouteUtils = __webpack_require__(191);
+	var _RouteUtils = __webpack_require__(200);
 	
-	var _InternalPropTypes = __webpack_require__(192);
+	var _InternalPropTypes = __webpack_require__(201);
 	
 	var func = _react2['default'].PropTypes.func;
 	
@@ -24074,7 +25574,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 202 */
+/* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24087,13 +25587,13 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
-	var _RouteUtils = __webpack_require__(191);
+	var _RouteUtils = __webpack_require__(200);
 	
-	var _InternalPropTypes = __webpack_require__(192);
+	var _InternalPropTypes = __webpack_require__(201);
 	
 	var _React$PropTypes = _react2['default'].PropTypes;
 	var string = _React$PropTypes.string;
@@ -24136,7 +25636,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 203 */
+/* 212 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24145,11 +25645,11 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
-	var _InternalPropTypes = __webpack_require__(192);
+	var _InternalPropTypes = __webpack_require__(201);
 	
 	/**
 	 * A mixin that adds the "history" instance variable to components.
@@ -24172,7 +25672,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 204 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24181,7 +25681,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -24189,7 +25689,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
@@ -24247,7 +25747,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 205 */
+/* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24256,7 +25756,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -24299,7 +25799,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 206 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24312,15 +25812,15 @@
 	
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 	
-	var _historyLibUseQueries = __webpack_require__(178);
+	var _historyLibUseQueries = __webpack_require__(187);
 	
 	var _historyLibUseQueries2 = _interopRequireDefault(_historyLibUseQueries);
 	
-	var _createTransitionManager = __webpack_require__(181);
+	var _createTransitionManager = __webpack_require__(190);
 	
 	var _createTransitionManager2 = _interopRequireDefault(_createTransitionManager);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -24356,7 +25856,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 207 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24369,11 +25869,11 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _RouterContext = __webpack_require__(193);
+	var _RouterContext = __webpack_require__(202);
 	
 	var _RouterContext2 = _interopRequireDefault(_RouterContext);
 	
-	var _routerWarning = __webpack_require__(182);
+	var _routerWarning = __webpack_require__(191);
 	
 	var _routerWarning2 = _interopRequireDefault(_routerWarning);
 	
@@ -24394,7 +25894,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 208 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24407,21 +25907,21 @@
 	
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
-	var _createMemoryHistory = __webpack_require__(209);
+	var _createMemoryHistory = __webpack_require__(218);
 	
 	var _createMemoryHistory2 = _interopRequireDefault(_createMemoryHistory);
 	
-	var _createTransitionManager = __webpack_require__(181);
+	var _createTransitionManager = __webpack_require__(190);
 	
 	var _createTransitionManager2 = _interopRequireDefault(_createTransitionManager);
 	
-	var _RouteUtils = __webpack_require__(191);
+	var _RouteUtils = __webpack_require__(200);
 	
-	var _RouterUtils = __webpack_require__(195);
+	var _RouterUtils = __webpack_require__(204);
 	
 	/**
 	 * A high-level API to be used for server-side rendering.
@@ -24481,7 +25981,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 209 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24491,15 +25991,15 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _historyLibUseQueries = __webpack_require__(178);
+	var _historyLibUseQueries = __webpack_require__(187);
 	
 	var _historyLibUseQueries2 = _interopRequireDefault(_historyLibUseQueries);
 	
-	var _historyLibUseBasename = __webpack_require__(210);
+	var _historyLibUseBasename = __webpack_require__(219);
 	
 	var _historyLibUseBasename2 = _interopRequireDefault(_historyLibUseBasename);
 	
-	var _historyLibCreateMemoryHistory = __webpack_require__(211);
+	var _historyLibCreateMemoryHistory = __webpack_require__(220);
 	
 	var _historyLibCreateMemoryHistory2 = _interopRequireDefault(_historyLibCreateMemoryHistory);
 	
@@ -24519,7 +26019,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 210 */
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24530,19 +26030,19 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
-	var _ExecutionEnvironment = __webpack_require__(166);
+	var _ExecutionEnvironment = __webpack_require__(175);
 	
-	var _PathUtils = __webpack_require__(165);
+	var _PathUtils = __webpack_require__(174);
 	
-	var _runTransitionHook = __webpack_require__(176);
+	var _runTransitionHook = __webpack_require__(185);
 	
 	var _runTransitionHook2 = _interopRequireDefault(_runTransitionHook);
 	
-	var _deprecate = __webpack_require__(177);
+	var _deprecate = __webpack_require__(186);
 	
 	var _deprecate2 = _interopRequireDefault(_deprecate);
 	
@@ -24668,7 +26168,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 211 */
+/* 220 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24679,19 +26179,19 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _warning = __webpack_require__(162);
+	var _warning = __webpack_require__(171);
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
-	var _PathUtils = __webpack_require__(165);
+	var _PathUtils = __webpack_require__(174);
 	
-	var _Actions = __webpack_require__(164);
+	var _Actions = __webpack_require__(173);
 	
-	var _createHistory = __webpack_require__(170);
+	var _createHistory = __webpack_require__(179);
 	
 	var _createHistory2 = _interopRequireDefault(_createHistory);
 	
@@ -24828,7 +26328,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 212 */
+/* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24838,11 +26338,11 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _historyLibUseQueries = __webpack_require__(178);
+	var _historyLibUseQueries = __webpack_require__(187);
 	
 	var _historyLibUseQueries2 = _interopRequireDefault(_historyLibUseQueries);
 	
-	var _historyLibUseBasename = __webpack_require__(210);
+	var _historyLibUseBasename = __webpack_require__(219);
 	
 	var _historyLibUseBasename2 = _interopRequireDefault(_historyLibUseBasename);
 	
@@ -24857,7 +26357,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 213 */
+/* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24872,7 +26372,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _RouterContext = __webpack_require__(193);
+	var _RouterContext = __webpack_require__(202);
 	
 	var _RouterContext2 = _interopRequireDefault(_RouterContext);
 	
@@ -24912,7 +26412,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 214 */
+/* 223 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24921,11 +26421,11 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _historyLibCreateBrowserHistory = __webpack_require__(215);
+	var _historyLibCreateBrowserHistory = __webpack_require__(224);
 	
 	var _historyLibCreateBrowserHistory2 = _interopRequireDefault(_historyLibCreateBrowserHistory);
 	
-	var _createRouterHistory = __webpack_require__(216);
+	var _createRouterHistory = __webpack_require__(225);
 	
 	var _createRouterHistory2 = _interopRequireDefault(_createRouterHistory);
 	
@@ -24933,7 +26433,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 215 */
+/* 224 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -24944,21 +26444,21 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _invariant = __webpack_require__(163);
+	var _invariant = __webpack_require__(172);
 	
 	var _invariant2 = _interopRequireDefault(_invariant);
 	
-	var _Actions = __webpack_require__(164);
+	var _Actions = __webpack_require__(173);
 	
-	var _PathUtils = __webpack_require__(165);
+	var _PathUtils = __webpack_require__(174);
 	
-	var _ExecutionEnvironment = __webpack_require__(166);
+	var _ExecutionEnvironment = __webpack_require__(175);
 	
-	var _DOMUtils = __webpack_require__(167);
+	var _DOMUtils = __webpack_require__(176);
 	
-	var _DOMStateStorage = __webpack_require__(168);
+	var _DOMStateStorage = __webpack_require__(177);
 	
-	var _createDOMHistory = __webpack_require__(169);
+	var _createDOMHistory = __webpack_require__(178);
 	
 	var _createDOMHistory2 = _interopRequireDefault(_createDOMHistory);
 	
@@ -25115,7 +26615,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 216 */
+/* 225 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25124,7 +26624,7 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _useRouterHistory = __webpack_require__(212);
+	var _useRouterHistory = __webpack_require__(221);
 	
 	var _useRouterHistory2 = _interopRequireDefault(_useRouterHistory);
 	
@@ -25139,7 +26639,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 217 */
+/* 226 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25148,11 +26648,11 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _historyLibCreateHashHistory = __webpack_require__(161);
+	var _historyLibCreateHashHistory = __webpack_require__(170);
 	
 	var _historyLibCreateHashHistory2 = _interopRequireDefault(_historyLibCreateHashHistory);
 	
-	var _createRouterHistory = __webpack_require__(216);
+	var _createRouterHistory = __webpack_require__(225);
 	
 	var _createRouterHistory2 = _interopRequireDefault(_createRouterHistory);
 	
@@ -25160,11 +26660,11 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 218 */
+/* 227 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var UserStore = __webpack_require__(219);
-	var UserActions = __webpack_require__(242);
+	var UserStore = __webpack_require__(228);
+	var UserActions = __webpack_require__(251);
 	
 	var CurrentUserState = {
 		getInitialState: function () {
@@ -25191,13 +26691,13 @@
 	module.exports = CurrentUserState;
 
 /***/ },
-/* 219 */
+/* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var AppDispatcher = __webpack_require__(220);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var Store = __webpack_require__(224).Store;
-	var UserConstants = __webpack_require__(241);
+	var AppDispatcher = __webpack_require__(229);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	var Store = __webpack_require__(233).Store;
+	var UserConstants = __webpack_require__(250);
 	
 	var UserStore = new Store(AppDispatcher);
 	
@@ -25305,15 +26805,15 @@
 	module.exports = UserStore;
 
 /***/ },
-/* 220 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Dispatcher = __webpack_require__(221).Dispatcher;
+	var Dispatcher = __webpack_require__(230).Dispatcher;
 	
 	module.exports = new Dispatcher();
 
 /***/ },
-/* 221 */
+/* 230 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -25325,11 +26825,11 @@
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 */
 	
-	module.exports.Dispatcher = __webpack_require__(222);
+	module.exports.Dispatcher = __webpack_require__(231);
 
 
 /***/ },
-/* 222 */
+/* 231 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -25351,7 +26851,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var invariant = __webpack_require__(223);
+	var invariant = __webpack_require__(232);
 	
 	var _prefix = 'ID_';
 	
@@ -25566,7 +27066,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 223 */
+/* 232 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -25621,7 +27121,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 224 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -25633,15 +27133,15 @@
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 */
 	
-	module.exports.Container = __webpack_require__(225);
-	module.exports.MapStore = __webpack_require__(228);
-	module.exports.Mixin = __webpack_require__(240);
-	module.exports.ReduceStore = __webpack_require__(229);
-	module.exports.Store = __webpack_require__(230);
+	module.exports.Container = __webpack_require__(234);
+	module.exports.MapStore = __webpack_require__(237);
+	module.exports.Mixin = __webpack_require__(249);
+	module.exports.ReduceStore = __webpack_require__(238);
+	module.exports.Store = __webpack_require__(239);
 
 
 /***/ },
-/* 225 */
+/* 234 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -25663,10 +27163,10 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var FluxStoreGroup = __webpack_require__(226);
+	var FluxStoreGroup = __webpack_require__(235);
 	
-	var invariant = __webpack_require__(223);
-	var shallowEqual = __webpack_require__(227);
+	var invariant = __webpack_require__(232);
+	var shallowEqual = __webpack_require__(236);
 	
 	var DEFAULT_OPTIONS = {
 	  pure: true,
@@ -25824,7 +27324,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 226 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -25843,7 +27343,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var invariant = __webpack_require__(223);
+	var invariant = __webpack_require__(232);
 	
 	/**
 	 * FluxStoreGroup allows you to execute a callback on every dispatch after
@@ -25905,7 +27405,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 227 */
+/* 236 */
 /***/ function(module, exports) {
 
 	/**
@@ -25960,7 +27460,7 @@
 	module.exports = shallowEqual;
 
 /***/ },
-/* 228 */
+/* 237 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -25981,10 +27481,10 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var FluxReduceStore = __webpack_require__(229);
-	var Immutable = __webpack_require__(239);
+	var FluxReduceStore = __webpack_require__(238);
+	var Immutable = __webpack_require__(248);
 	
-	var invariant = __webpack_require__(223);
+	var invariant = __webpack_require__(232);
 	
 	/**
 	 * This is a simple store. It allows caching key value pairs. An implementation
@@ -26110,7 +27610,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 229 */
+/* 238 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -26131,10 +27631,10 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var FluxStore = __webpack_require__(230);
+	var FluxStore = __webpack_require__(239);
 	
-	var abstractMethod = __webpack_require__(238);
-	var invariant = __webpack_require__(223);
+	var abstractMethod = __webpack_require__(247);
+	var invariant = __webpack_require__(232);
 	
 	var FluxReduceStore = (function (_FluxStore) {
 	  _inherits(FluxReduceStore, _FluxStore);
@@ -26217,7 +27717,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 230 */
+/* 239 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -26236,11 +27736,11 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var _require = __webpack_require__(231);
+	var _require = __webpack_require__(240);
 	
 	var EventEmitter = _require.EventEmitter;
 	
-	var invariant = __webpack_require__(223);
+	var invariant = __webpack_require__(232);
 	
 	/**
 	 * This class should be extended by the stores in your application, like so:
@@ -26400,7 +27900,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 231 */
+/* 240 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -26413,14 +27913,14 @@
 	 */
 	
 	var fbemitter = {
-	  EventEmitter: __webpack_require__(232)
+	  EventEmitter: __webpack_require__(241)
 	};
 	
 	module.exports = fbemitter;
 
 
 /***/ },
-/* 232 */
+/* 241 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -26439,11 +27939,11 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var EmitterSubscription = __webpack_require__(233);
-	var EventSubscriptionVendor = __webpack_require__(235);
+	var EmitterSubscription = __webpack_require__(242);
+	var EventSubscriptionVendor = __webpack_require__(244);
 	
-	var emptyFunction = __webpack_require__(237);
-	var invariant = __webpack_require__(236);
+	var emptyFunction = __webpack_require__(246);
+	var invariant = __webpack_require__(245);
 	
 	/**
 	 * @class BaseEventEmitter
@@ -26617,7 +28117,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 233 */
+/* 242 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -26638,7 +28138,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var EventSubscription = __webpack_require__(234);
+	var EventSubscription = __webpack_require__(243);
 	
 	/**
 	 * EmitterSubscription represents a subscription with listener and context data.
@@ -26670,7 +28170,7 @@
 	module.exports = EmitterSubscription;
 
 /***/ },
-/* 234 */
+/* 243 */
 /***/ function(module, exports) {
 
 	/**
@@ -26724,7 +28224,7 @@
 	module.exports = EventSubscription;
 
 /***/ },
-/* 235 */
+/* 244 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -26743,7 +28243,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var invariant = __webpack_require__(236);
+	var invariant = __webpack_require__(245);
 	
 	/**
 	 * EventSubscriptionVendor stores a set of EventSubscriptions that are
@@ -26833,7 +28333,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 236 */
+/* 245 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -26888,7 +28388,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 237 */
+/* 246 */
 /***/ function(module, exports) {
 
 	/**
@@ -26930,7 +28430,7 @@
 	module.exports = emptyFunction;
 
 /***/ },
-/* 238 */
+/* 247 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -26947,7 +28447,7 @@
 	
 	'use strict';
 	
-	var invariant = __webpack_require__(223);
+	var invariant = __webpack_require__(232);
 	
 	function abstractMethod(className, methodName) {
 	   true ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Subclasses of %s must override %s() with their own implementation.', className, methodName) : invariant(false) : undefined;
@@ -26957,7 +28457,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 239 */
+/* 248 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -31941,7 +33441,7 @@
 	}));
 
 /***/ },
-/* 240 */
+/* 249 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -31958,9 +33458,9 @@
 	
 	'use strict';
 	
-	var FluxStoreGroup = __webpack_require__(226);
+	var FluxStoreGroup = __webpack_require__(235);
 	
-	var invariant = __webpack_require__(223);
+	var invariant = __webpack_require__(232);
 	
 	/**
 	 * `FluxContainer` should be preferred over this mixin, but it requires using
@@ -32064,7 +33564,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 241 */
+/* 250 */
 /***/ function(module, exports) {
 
 	var UserConstants = {
@@ -32076,14 +33576,14 @@
 	module.exports = UserConstants;
 
 /***/ },
-/* 242 */
+/* 251 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var UserConstants = __webpack_require__(241);
-	var UserApiUtil = __webpack_require__(243);
-	var UserStore = __webpack_require__(219);
-	var AppDispatcher = __webpack_require__(220);
-	var hashHistory = __webpack_require__(159).hashHistory;
+	var UserConstants = __webpack_require__(250);
+	var UserApiUtil = __webpack_require__(252);
+	var UserStore = __webpack_require__(228);
+	var AppDispatcher = __webpack_require__(229);
+	var hashHistory = __webpack_require__(168).hashHistory;
 	
 	var UserActions = {
 		//clientactions
@@ -32144,10 +33644,10 @@
 	module.exports = UserActions;
 
 /***/ },
-/* 243 */
+/* 252 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var AppDispatcher = __webpack_require__(220);
+	var AppDispatcher = __webpack_require__(229);
 	
 	var UserApiUtil = {
 		signup: function (user, success, error) {
@@ -32198,17 +33698,17 @@
 	module.exports = UserApiUtil;
 
 /***/ },
-/* 244 */
+/* 253 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var LinkedStateMixin = __webpack_require__(245);
-	var UserActions = __webpack_require__(242);
-	var LoginModal = __webpack_require__(249);
-	var CurrentUserState = __webpack_require__(218);
-	var Modal = __webpack_require__(250);
-	var UserStore = __webpack_require__(219);
-	var hashHistory = __webpack_require__(159).hashHistory;
+	var LinkedStateMixin = __webpack_require__(254);
+	var UserActions = __webpack_require__(251);
+	var LoginModal = __webpack_require__(258);
+	var CurrentUserState = __webpack_require__(227);
+	var Modal = __webpack_require__(259);
+	var UserStore = __webpack_require__(228);
+	var hashHistory = __webpack_require__(168).hashHistory;
 	
 	var _logoURL = "http://res.cloudinary.com/dque3vywj/image/upload/v1462342954/logo_dit3rz.png";
 	
@@ -32391,13 +33891,13 @@
 	module.exports = LoginForm;
 
 /***/ },
-/* 245 */
+/* 254 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(246);
+	module.exports = __webpack_require__(255);
 
 /***/ },
-/* 246 */
+/* 255 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -32414,8 +33914,8 @@
 	
 	'use strict';
 	
-	var ReactLink = __webpack_require__(247);
-	var ReactStateSetters = __webpack_require__(248);
+	var ReactLink = __webpack_require__(256);
+	var ReactStateSetters = __webpack_require__(257);
 	
 	/**
 	 * A simple mixin around ReactLink.forState().
@@ -32438,7 +33938,7 @@
 	module.exports = LinkedStateMixin;
 
 /***/ },
-/* 247 */
+/* 256 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -32512,7 +34012,7 @@
 	module.exports = ReactLink;
 
 /***/ },
-/* 248 */
+/* 257 */
 /***/ function(module, exports) {
 
 	/**
@@ -32621,13 +34121,13 @@
 	module.exports = ReactStateSetters;
 
 /***/ },
-/* 249 */
+/* 258 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var UserActions = __webpack_require__(242);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var UserStore = __webpack_require__(219);
+	var UserActions = __webpack_require__(251);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	var UserStore = __webpack_require__(228);
 	
 	var LoginModal = React.createClass({
 	  displayName: 'LoginModal',
@@ -32881,25 +34381,25 @@
 	module.exports = LoginModal;
 
 /***/ },
-/* 250 */
+/* 259 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(251);
+	module.exports = __webpack_require__(260);
 	
 
 
 /***/ },
-/* 251 */
+/* 260 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var ExecutionEnvironment = __webpack_require__(252);
-	var ModalPortal = React.createFactory(__webpack_require__(253));
-	var ariaAppHider = __webpack_require__(268);
-	var elementClass = __webpack_require__(269);
+	var ExecutionEnvironment = __webpack_require__(261);
+	var ModalPortal = React.createFactory(__webpack_require__(262));
+	var ariaAppHider = __webpack_require__(277);
+	var elementClass = __webpack_require__(278);
 	var renderSubtreeIntoContainer = __webpack_require__(158).unstable_renderSubtreeIntoContainer;
-	var Assign = __webpack_require__(257);
+	var Assign = __webpack_require__(266);
 	
 	var SafeHTMLElement = ExecutionEnvironment.canUseDOM ? window.HTMLElement : {};
 	var AppElement = ExecutionEnvironment.canUseDOM ? document.body : {appendChild: function() {}};
@@ -33007,7 +34507,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 252 */
+/* 261 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -33052,14 +34552,14 @@
 
 
 /***/ },
-/* 253 */
+/* 262 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
 	var div = React.DOM.div;
-	var focusManager = __webpack_require__(254);
-	var scopeTab = __webpack_require__(256);
-	var Assign = __webpack_require__(257);
+	var focusManager = __webpack_require__(263);
+	var scopeTab = __webpack_require__(265);
+	var Assign = __webpack_require__(266);
 	
 	// so that our CSS is statically analyzable
 	var CLASS_NAMES = {
@@ -33244,10 +34744,10 @@
 
 
 /***/ },
-/* 254 */
+/* 263 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var findTabbable = __webpack_require__(255);
+	var findTabbable = __webpack_require__(264);
 	var modalElement = null;
 	var focusLaterElement = null;
 	var needToFocus = false;
@@ -33318,7 +34818,7 @@
 
 
 /***/ },
-/* 255 */
+/* 264 */
 /***/ function(module, exports) {
 
 	/*!
@@ -33374,10 +34874,10 @@
 
 
 /***/ },
-/* 256 */
+/* 265 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var findTabbable = __webpack_require__(255);
+	var findTabbable = __webpack_require__(264);
 	
 	module.exports = function(node, event) {
 	  var tabbable = findTabbable(node);
@@ -33399,7 +34899,7 @@
 
 
 /***/ },
-/* 257 */
+/* 266 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -33410,9 +34910,9 @@
 	 * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <https://lodash.com/license>
 	 */
-	var baseAssign = __webpack_require__(258),
-	    createAssigner = __webpack_require__(264),
-	    keys = __webpack_require__(260);
+	var baseAssign = __webpack_require__(267),
+	    createAssigner = __webpack_require__(273),
+	    keys = __webpack_require__(269);
 	
 	/**
 	 * A specialized version of `_.assign` for customizing assigned values without
@@ -33485,7 +34985,7 @@
 
 
 /***/ },
-/* 258 */
+/* 267 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -33496,8 +34996,8 @@
 	 * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <https://lodash.com/license>
 	 */
-	var baseCopy = __webpack_require__(259),
-	    keys = __webpack_require__(260);
+	var baseCopy = __webpack_require__(268),
+	    keys = __webpack_require__(269);
 	
 	/**
 	 * The base implementation of `_.assign` without support for argument juggling,
@@ -33518,7 +35018,7 @@
 
 
 /***/ },
-/* 259 */
+/* 268 */
 /***/ function(module, exports) {
 
 	/**
@@ -33556,7 +35056,7 @@
 
 
 /***/ },
-/* 260 */
+/* 269 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -33567,9 +35067,9 @@
 	 * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <https://lodash.com/license>
 	 */
-	var getNative = __webpack_require__(261),
-	    isArguments = __webpack_require__(262),
-	    isArray = __webpack_require__(263);
+	var getNative = __webpack_require__(270),
+	    isArguments = __webpack_require__(271),
+	    isArray = __webpack_require__(272);
 	
 	/** Used to detect unsigned integer values. */
 	var reIsUint = /^\d+$/;
@@ -33798,7 +35298,7 @@
 
 
 /***/ },
-/* 261 */
+/* 270 */
 /***/ function(module, exports) {
 
 	/**
@@ -33941,7 +35441,7 @@
 
 
 /***/ },
-/* 262 */
+/* 271 */
 /***/ function(module, exports) {
 
 	/**
@@ -34190,7 +35690,7 @@
 
 
 /***/ },
-/* 263 */
+/* 272 */
 /***/ function(module, exports) {
 
 	/**
@@ -34376,7 +35876,7 @@
 
 
 /***/ },
-/* 264 */
+/* 273 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -34387,9 +35887,9 @@
 	 * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 	 * Available under MIT license <https://lodash.com/license>
 	 */
-	var bindCallback = __webpack_require__(265),
-	    isIterateeCall = __webpack_require__(266),
-	    restParam = __webpack_require__(267);
+	var bindCallback = __webpack_require__(274),
+	    isIterateeCall = __webpack_require__(275),
+	    restParam = __webpack_require__(276);
 	
 	/**
 	 * Creates a function that assigns properties of source object(s) to a given
@@ -34434,7 +35934,7 @@
 
 
 /***/ },
-/* 265 */
+/* 274 */
 /***/ function(module, exports) {
 
 	/**
@@ -34505,7 +36005,7 @@
 
 
 /***/ },
-/* 266 */
+/* 275 */
 /***/ function(module, exports) {
 
 	/**
@@ -34643,7 +36143,7 @@
 
 
 /***/ },
-/* 267 */
+/* 276 */
 /***/ function(module, exports) {
 
 	/**
@@ -34716,7 +36216,7 @@
 
 
 /***/ },
-/* 268 */
+/* 277 */
 /***/ function(module, exports) {
 
 	var _element = typeof document !== 'undefined' ? document.body : null;
@@ -34764,7 +36264,7 @@
 
 
 /***/ },
-/* 269 */
+/* 278 */
 /***/ function(module, exports) {
 
 	module.exports = function(opts) {
@@ -34829,13 +36329,13 @@
 
 
 /***/ },
-/* 270 */
+/* 279 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(271);
-	var HomeCityStore = __webpack_require__(274);
-	var hashHistory = __webpack_require__(159).hashHistory;
+	var ClientActions = __webpack_require__(280);
+	var HomeCityStore = __webpack_require__(283);
+	var hashHistory = __webpack_require__(168).hashHistory;
 	var img_URLs = {
 	  "San Francisco": "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/San_Francisco_c9izct.jpg",
 	  "New York": "http://res.cloudinary.com/dque3vywj/image/upload/v1462427553/New_York_znvcdo.jpg",
@@ -34912,10 +36412,10 @@
 	module.exports = HomeCityIndex;
 
 /***/ },
-/* 271 */
+/* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ApiUtil = __webpack_require__(272);
+	var ApiUtil = __webpack_require__(281);
 	
 	var ClientActions = {
 	  fetchAll: ApiUtil.fetchAll,
@@ -34930,12 +36430,12 @@
 	module.exports = ClientActions;
 
 /***/ },
-/* 272 */
+/* 281 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ServerActions = __webpack_require__(273);
-	var UserActions = __webpack_require__(242);
-	var hashHistory = __webpack_require__(159).hashHistory;
+	var ServerActions = __webpack_require__(282);
+	var UserActions = __webpack_require__(251);
+	var hashHistory = __webpack_require__(168).hashHistory;
 	
 	var ApiUtil = {
 	  fetchAll: function (options) {
@@ -35040,10 +36540,10 @@
 	module.exports = ApiUtil;
 
 /***/ },
-/* 273 */
+/* 282 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var AppDispatcher = __webpack_require__(220);
+	var AppDispatcher = __webpack_require__(229);
 	
 	var ServerActions = {
 	  receiveAll: function (index, type) {
@@ -35071,11 +36571,11 @@
 	module.exports = ServerActions;
 
 /***/ },
-/* 274 */
+/* 283 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var AppDispatcher = __webpack_require__(220);
-	var Store = __webpack_require__(224).Store;
+	var AppDispatcher = __webpack_require__(229);
+	var Store = __webpack_require__(233).Store;
 	
 	var HomeCityStore = new Store(AppDispatcher);
 	
@@ -35127,14 +36627,14 @@
 	module.exports = HomeCityStore;
 
 /***/ },
-/* 275 */
+/* 284 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(271);
-	var HomeCityStore = __webpack_require__(274);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var GymIndex = __webpack_require__(276);
+	var ClientActions = __webpack_require__(280);
+	var HomeCityStore = __webpack_require__(283);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	var GymIndex = __webpack_require__(285);
 	
 	var HomeCityShow = React.createClass({
 	  displayName: 'HomeCityShow',
@@ -35179,13 +36679,13 @@
 	module.exports = HomeCityShow;
 
 /***/ },
-/* 276 */
+/* 285 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var GymStore = __webpack_require__(274);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var Map = __webpack_require__(291);
+	var GymStore = __webpack_require__(283);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	var Map = __webpack_require__(286);
 	
 	var GymIndex = React.createClass({
 	  displayName: 'GymIndex',
@@ -35242,16 +36742,157 @@
 	module.exports = GymIndex;
 
 /***/ },
-/* 277 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(271);
-	var UserActions = __webpack_require__(242);
-	var GymStore = __webpack_require__(278);
-	var UserStore = __webpack_require__(219);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var WorkoutIndex = __webpack_require__(279);
+	var ReactDOM = __webpack_require__(158);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	var geocoder = new google.maps.Geocoder();
+	
+	function _getCoordsObj(latLng) {
+	  return {
+	    lat: latLng.lat(),
+	    lng: latLng.lng()
+	  };
+	}
+	
+	var mapOptions = {
+	  "San Francisco": {
+	    center: { lat: 37.783972, lng: -122.405297 }, //San Francisco
+	    zoom: 14
+	  },
+	  "New York": {
+	    center: { lat: 40.7478201, lng: -73.9894112 },
+	    zoom: 13
+	  },
+	  "Los Angeles": {
+	    center: { lat: 34.0165323, lng: -118.4581099 }, //San Francisco
+	    zoom: 12
+	  },
+	  "Boston": {
+	    center: { lat: 42.3539036, lng: -71.060599 }, //San Francisco
+	    zoom: 14
+	  }
+	
+	};
+	
+	var NotMap = React.createClass({
+	  displayName: 'NotMap',
+	
+	  componentDidMount: function () {
+	    var map = ReactDOM.findDOMNode(this.refs.map);
+	    this.map = new google.maps.Map(map, mapOptions[this.props.cityName]);
+	    this.registerListeners();
+	    this.markers = [];
+	    this.eachGym(this.createMarkerFromGym);
+	  },
+	  componentWillReceiveProps: function (nextProps) {
+	    var map = ReactDOM.findDOMNode(this.refs.map);
+	    this.map = new google.maps.Map(map, mapOptions[nextProps.cityName]);
+	    this.registerListeners();
+	    this.markers = [];
+	    this.eachGym(this.createMarkerFromGym);
+	  },
+	  eachGym: function (callback) {
+	    var gyms = this.props.gyms;
+	    var keys = Object.keys(gyms);
+	    keys.forEach(function (key) {
+	      callback(gyms[key]);
+	    });
+	  },
+	
+	  componentDidUpdate: function () {
+	    this._onChange();
+	  },
+	
+	  _onChange: function () {
+	    var gymsToAdd = [];
+	    var markersToRemove = [];
+	    //Collect markers to remove
+	    this.markers.forEach(function (marker) {
+	      if (!this.props.gyms.hasOwnProperty(marker.gymId)) {
+	        markersToRemove.push(marker);
+	      }
+	    }.bind(this));
+	    // Collect gyms to add
+	    var currentGymIds = this.markers.map(function (marker) {
+	      return marker.id;
+	    });
+	    this.eachGym(function (gym) {
+	      if (!currentGymIds.includes(gym.id)) {
+	        gymsToAdd.push(gym);
+	      }
+	    });
+	    //Do the adding / removing
+	    gymsToAdd.forEach(this.createMarkerFromGym);
+	    markersToRemove.forEach(this.removeMarker);
+	  },
+	  registerListeners: function () {
+	    var that = this;
+	    google.maps.event.addListener(this.map, 'idle', function () {
+	      var bounds = that.map.getBounds();
+	      var northEast = _getCoordsObj(bounds.getNorthEast());
+	      var southWest = _getCoordsObj(bounds.getSouthWest());
+	      //actually issue the request
+	      bounds = {
+	        northEast: northEast,
+	        southWest: southWest
+	      };
+	    });
+	    // google.maps.event.addListener(this.map, 'mouseover', function(event) {
+	    //   var coords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
+	    //   // that._handleClick(coords);
+	    //   debugger
+	    // });
+	  },
+	  createMarkerFromGym: function (gym) {
+	    var lat, lng;
+	    var self = this;
+	    geocoder.geocode({ 'address': gym.address }, function (results, status) {
+	      if (status === google.maps.GeocoderStatus.OK) {
+	        lat = results[0].geometry.location.lat();
+	        lng = results[0].geometry.location.lng();
+	        var pos = new google.maps.LatLng(lat, lng);
+	        var marker = new google.maps.Marker({
+	          position: pos,
+	          map: self.map,
+	          gymId: gym.id,
+	          icon: {
+	            url: gym.logo_url,
+	            scaledSize: new google.maps.Size(50, 50)
+	          }
+	        });
+	        marker.addListener('click', function () {
+	          hashHistory.push("gyms/" + gym.id);
+	        });
+	        marker.addListener('mouseover', function () {});
+	        self.markers.push(marker);
+	      }
+	    });
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      { className: 'half', ref: 'map' },
+	      'Map'
+	    );
+	  }
+	});
+	
+	module.exports = NotMap;
+
+/***/ },
+/* 287 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var ClientActions = __webpack_require__(280);
+	var UserActions = __webpack_require__(251);
+	var GymStore = __webpack_require__(288);
+	var UserStore = __webpack_require__(228);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	var WorkoutIndex = __webpack_require__(289);
 	
 	var GymShow = React.createClass({
 	  displayName: 'GymShow',
@@ -35363,7 +37004,8 @@
 	    this.setState({
 	      workouts: workouts,
 	      name: GymStore.currentGym().name,
-	      id: GymStore.currentGym().id
+	      id: GymStore.currentGym().id,
+	      logo_url: GymStore.currentGym().logo_url
 	    });
 	    UserActions.fetchCurrentUser();
 	  },
@@ -35407,15 +37049,19 @@
 	      return React.createElement('div', { key: 'choose-btn group' });
 	    }
 	  },
+	  header: function () {
+	    return React.createElement(
+	      'h2',
+	      null,
+	      this.state.name,
+	      React.createElement('img', { className: 'gym-logo', src: this.state.logo_url })
+	    );
+	  },
 	  render: function () {
 	    return React.createElement(
 	      'div',
-	      null,
-	      React.createElement(
-	        'h2',
-	        null,
-	        this.state.name
-	      ),
+	      { className: 'gym-show' },
+	      this.header(),
 	      React.createElement(
 	        'div',
 	        { className: 'selector' },
@@ -35432,13 +37078,13 @@
 	module.exports = GymShow;
 
 /***/ },
-/* 278 */
+/* 288 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var AppDispatcher = __webpack_require__(220);
-	var Store = __webpack_require__(224).Store;
-	var UserStore = __webpack_require__(219);
-	var hashHistory = __webpack_require__(159).hashHistory;
+	var AppDispatcher = __webpack_require__(229);
+	var Store = __webpack_require__(233).Store;
+	var UserStore = __webpack_require__(228);
+	var hashHistory = __webpack_require__(168).hashHistory;
 	
 	var GymStore = new Store(AppDispatcher);
 	
@@ -35473,16 +37119,16 @@
 	module.exports = GymStore;
 
 /***/ },
-/* 279 */
+/* 289 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var UserStore = __webpack_require__(219);
-	var WorkoutShow = __webpack_require__(280);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var Modal = __webpack_require__(250);
-	var WorkoutForm = __webpack_require__(283);
-	var ClientActions = __webpack_require__(271);
+	var UserStore = __webpack_require__(228);
+	var WorkoutShow = __webpack_require__(290);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	var Modal = __webpack_require__(259);
+	var WorkoutForm = __webpack_require__(293);
+	var ClientActions = __webpack_require__(280);
 	
 	var _style = {
 	  overlay: {
@@ -35694,15 +37340,15 @@
 	module.exports = WorkoutIndex;
 
 /***/ },
-/* 280 */
+/* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(271);
-	var WorkoutStore = __webpack_require__(281);
-	var WorkoutEditForm = __webpack_require__(282);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var UserStore = __webpack_require__(219);
+	var ClientActions = __webpack_require__(280);
+	var WorkoutStore = __webpack_require__(291);
+	var WorkoutEditForm = __webpack_require__(292);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	var UserStore = __webpack_require__(228);
 	
 	var WorkoutShow = React.createClass({
 	  displayName: 'WorkoutShow',
@@ -35888,11 +37534,11 @@
 	module.exports = WorkoutShow;
 
 /***/ },
-/* 281 */
+/* 291 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var AppDispatcher = __webpack_require__(220);
-	var Store = __webpack_require__(224).Store;
+	var AppDispatcher = __webpack_require__(229);
+	var Store = __webpack_require__(233).Store;
 	
 	var WorkoutStore = new Store(AppDispatcher);
 	
@@ -35921,14 +37567,14 @@
 	module.exports = WorkoutStore;
 
 /***/ },
-/* 282 */
+/* 292 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(271);
-	var WorkoutStore = __webpack_require__(281);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var WorkoutForm = __webpack_require__(283);
+	var ClientActions = __webpack_require__(280);
+	var WorkoutStore = __webpack_require__(291);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	var WorkoutForm = __webpack_require__(293);
 	
 	var WorkoutEditForm = React.createClass({
 	  displayName: 'WorkoutEditForm',
@@ -35950,13 +37596,13 @@
 	module.exports = WorkoutEditForm;
 
 /***/ },
-/* 283 */
+/* 293 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ClientActions = __webpack_require__(271);
-	var WorkoutInfo = __webpack_require__(284);
-	var WorkoutTable = __webpack_require__(285);
+	var ClientActions = __webpack_require__(280);
+	var WorkoutInfo = __webpack_require__(294);
+	var WorkoutTable = __webpack_require__(295);
 	
 	var WorkoutForm = React.createClass({
 	  displayName: 'WorkoutForm',
@@ -36047,7 +37693,7 @@
 	module.exports = WorkoutForm;
 
 /***/ },
-/* 284 */
+/* 294 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
@@ -36163,11 +37809,11 @@
 	module.exports = WorkoutInfo;
 
 /***/ },
-/* 285 */
+/* 295 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var WorkoutTableRow = __webpack_require__(286);
+	var WorkoutTableRow = __webpack_require__(296);
 	
 	var WorkoutTable = React.createClass({
 	  displayName: 'WorkoutTable',
@@ -36285,11 +37931,11 @@
 	module.exports = WorkoutTable;
 
 /***/ },
-/* 286 */
+/* 296 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ExerciseList = __webpack_require__(287);
+	var ExerciseList = __webpack_require__(297);
 	
 	var WorkoutTableRow = React.createClass({
 	  displayName: 'WorkoutTableRow',
@@ -36347,11 +37993,11 @@
 	module.exports = WorkoutTableRow;
 
 /***/ },
-/* 287 */
+/* 297 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var ExerciseStore = __webpack_require__(288);
+	var ExerciseStore = __webpack_require__(298);
 	
 	var ExerciseList = React.createClass({
 	  displayName: 'ExerciseList',
@@ -36397,11 +38043,11 @@
 	module.exports = ExerciseList;
 
 /***/ },
-/* 288 */
+/* 298 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var AppDispatcher = __webpack_require__(220);
-	var Store = __webpack_require__(224).Store;
+	var AppDispatcher = __webpack_require__(229);
+	var Store = __webpack_require__(233).Store;
 	
 	var ExerciseStore = new Store(AppDispatcher);
 	
@@ -36429,13 +38075,13 @@
 	module.exports = ExerciseStore;
 
 /***/ },
-/* 289 */
+/* 299 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var UserActions = __webpack_require__(242);
-	var UserStore = __webpack_require__(219);
-	var WorkoutIndex = __webpack_require__(279);
+	var UserActions = __webpack_require__(251);
+	var UserStore = __webpack_require__(228);
+	var WorkoutIndex = __webpack_require__(289);
 	
 	var UserShow = React.createClass({
 	  displayName: 'UserShow',
@@ -36603,14 +38249,14 @@
 	module.exports = UserShow;
 
 /***/ },
-/* 290 */
+/* 300 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var UserStore = __webpack_require__(219);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var Modal = __webpack_require__(250);
-	var LoginModal = __webpack_require__(249);
+	var UserStore = __webpack_require__(228);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	var Modal = __webpack_require__(259);
+	var LoginModal = __webpack_require__(258);
 	
 	var _style = {
 	  overlay: {
@@ -36723,12 +38369,12 @@
 	          React.createElement(
 	            'span',
 	            null,
-	            'Such gains'
+	            'Much gains'
 	          ),
 	          React.createElement(
 	            'p',
 	            null,
-	            'Much swole'
+	            'Such swole'
 	          )
 	        )
 	      ),
@@ -36827,1647 +38473,6 @@
 	});
 	
 	module.exports = HomePage;
-
-/***/ },
-/* 291 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var React = __webpack_require__(1);
-	var ReactDOM = __webpack_require__(158);
-	var hashHistory = __webpack_require__(159).hashHistory;
-	var geocoder = new google.maps.Geocoder();
-	
-	function _getCoordsObj(latLng) {
-	  return {
-	    lat: latLng.lat(),
-	    lng: latLng.lng()
-	  };
-	}
-	
-	var mapOptions = {
-	  "San Francisco": {
-	    center: { lat: 37.783972, lng: -122.405297 }, //San Francisco
-	    zoom: 14
-	  },
-	  "New York": {
-	    center: { lat: 40.7478201, lng: -73.9894112 },
-	    zoom: 13
-	  },
-	  "Los Angeles": {
-	    center: { lat: 34.0165323, lng: -118.4581099 }, //San Francisco
-	    zoom: 12
-	  },
-	  "Boston": {
-	    center: { lat: 42.3539036, lng: -71.060599 }, //San Francisco
-	    zoom: 14
-	  }
-	
-	};
-	
-	var NotMap = React.createClass({
-	  displayName: 'NotMap',
-	
-	  componentDidMount: function () {
-	    var map = ReactDOM.findDOMNode(this.refs.map);
-	    this.map = new google.maps.Map(map, mapOptions[this.props.cityName]);
-	    this.registerListeners();
-	    this.markers = [];
-	    this.eachGym(this.createMarkerFromGym);
-	  },
-	  componentWillReceiveProps: function (nextProps) {
-	    var map = ReactDOM.findDOMNode(this.refs.map);
-	    this.map = new google.maps.Map(map, mapOptions[nextProps.cityName]);
-	    this.registerListeners();
-	    this.markers = [];
-	    this.eachGym(this.createMarkerFromGym);
-	  },
-	  eachGym: function (callback) {
-	    var gyms = this.props.gyms;
-	    var keys = Object.keys(gyms);
-	    keys.forEach(function (key) {
-	      callback(gyms[key]);
-	    });
-	  },
-	
-	  componentDidUpdate: function () {
-	    this._onChange();
-	  },
-	
-	  _onChange: function () {
-	    var gymsToAdd = [];
-	    var markersToRemove = [];
-	    //Collect markers to remove
-	    this.markers.forEach(function (marker) {
-	      if (!this.props.gyms.hasOwnProperty(marker.gymId)) {
-	        markersToRemove.push(marker);
-	      }
-	    }.bind(this));
-	    // Collect gyms to add
-	    var currentGymIds = this.markers.map(function (marker) {
-	      return marker.id;
-	    });
-	    this.eachGym(function (gym) {
-	      if (!currentGymIds.includes(gym.id)) {
-	        gymsToAdd.push(gym);
-	      }
-	    });
-	    //Do the adding / removing
-	    gymsToAdd.forEach(this.createMarkerFromGym);
-	    markersToRemove.forEach(this.removeMarker);
-	  },
-	  registerListeners: function () {
-	    var that = this;
-	    google.maps.event.addListener(this.map, 'idle', function () {
-	      var bounds = that.map.getBounds();
-	      var northEast = _getCoordsObj(bounds.getNorthEast());
-	      var southWest = _getCoordsObj(bounds.getSouthWest());
-	      //actually issue the request
-	      bounds = {
-	        northEast: northEast,
-	        southWest: southWest
-	      };
-	    });
-	    // google.maps.event.addListener(this.map, 'mouseover', function(event) {
-	    //   var coords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
-	    //   // that._handleClick(coords);
-	    //   debugger
-	    // });
-	  },
-	  createMarkerFromGym: function (gym) {
-	    var lat, lng;
-	    var self = this;
-	    geocoder.geocode({ 'address': gym.address }, function (results, status) {
-	      if (status === google.maps.GeocoderStatus.OK) {
-	        lat = results[0].geometry.location.lat();
-	        lng = results[0].geometry.location.lng();
-	        var pos = new google.maps.LatLng(lat, lng);
-	        var marker = new google.maps.Marker({
-	          position: pos,
-	          map: self.map,
-	          gymId: gym.id,
-	          icon: {
-	            url: gym.logo_url,
-	            scaledSize: new google.maps.Size(50, 50)
-	          }
-	        });
-	        marker.addListener('click', function () {
-	          hashHistory.push("gyms/" + gym.id);
-	        });
-	        marker.addListener('mouseover', function () {});
-	        self.markers.push(marker);
-	      }
-	    });
-	  },
-	  render: function () {
-	    return React.createElement(
-	      'div',
-	      { className: 'half', ref: 'map' },
-	      'Map'
-	    );
-	  }
-	});
-	
-	module.exports = NotMap;
-
-/***/ },
-/* 292 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(293);
-
-
-/***/ },
-/* 293 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var React   = __webpack_require__(1),
-	    Beacon  = __webpack_require__(294),
-	    Tooltip = __webpack_require__(296);
-	
-	var defaultState = {
-	      index: 0,
-	      play: false,
-	      showTooltip: false,
-	      xPos: -1000,
-	      yPos: -1000,
-	      skipped: false
-	    },
-	    isTouch      = false;
-	
-	if (typeof window !== 'undefined') {
-	  isTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
-	}
-	
-	var Component = React.createClass({
-	  displayName: 'Joyride',
-	
-	  propTypes: {
-	    completeCallback: React.PropTypes.func,
-	    debug: React.PropTypes.bool,
-	    keyboardNavigation: React.PropTypes.bool,
-	    locale: React.PropTypes.object,
-	    resizeDebounce: React.PropTypes.bool,
-	    resizeDebounceDelay: React.PropTypes.number,
-	    scrollOffset: React.PropTypes.number,
-	    scrollToFirstStep: React.PropTypes.bool,
-	    scrollToSteps: React.PropTypes.bool,
-	    showBackButton: React.PropTypes.bool,
-	    showOverlay: React.PropTypes.bool,
-	    showSkipButton: React.PropTypes.bool,
-	    showStepsProgress: React.PropTypes.bool,
-	    stepCallback: React.PropTypes.func,
-	    steps: React.PropTypes.array,
-	    tooltipOffset: React.PropTypes.number,
-	    type: React.PropTypes.string
-	  },
-	
-	  getDefaultProps: function() {
-	    return {
-	      debug: false,
-	      keyboardNavigation: true,
-	      locale: {
-	        back: 'Back',
-	        close: 'Close',
-	        last: 'Last',
-	        next: 'Next',
-	        skip: 'Skip'
-	      },
-	      resizeDebounce: false,
-	      resizeDebounceDelay: 200,
-	      scrollToSteps: true,
-	      scrollOffset: 20,
-	      scrollToFirstStep: false,
-	      showBackButton: true,
-	      showOverlay: true,
-	      showSkipButton: false,
-	      showStepsProgress: false,
-	      steps: [],
-	      tooltipOffset: 15,
-	      type: 'single',
-	      completeCallback: undefined,
-	      stepCallback: undefined
-	    };
-	  },
-	
-	  getInitialState: function() {
-	    return defaultState;
-	  },
-	
-	  componentWillMount: function() {
-	    this.listeners = {
-	      tooltips: {}
-	    };
-	  },
-	
-	  componentDidMount: function() {
-	    var props = this.props;
-	
-	    this._log(['joyride:initialized', props]);
-	
-	    if (props.resizeDebounce) {
-	      var self = this,
-	          timeoutId;
-	
-	      this.listeners.resize = (function() {
-	        return function() {
-	          clearTimeout(timeoutId);
-	          timeoutId = setTimeout(function() {
-	            timeoutId = null;
-	            self._calcPlacement();
-	          }, props.resizeDebounceDelay);
-	        };
-	      }());
-	    }
-	    else {
-	      this.listeners.resize = this._calcPlacement;
-	    }
-	    window.addEventListener('resize', this.listeners.resize);
-	
-	    if (props.keyboardNavigation) {
-	      this.listeners.keyboard = this._keyboardNavigation;
-	      document.body.addEventListener('keydown', this.listeners.keyboard);
-	    }
-	  },
-	
-	  componentWillUnmount: function() {
-	    window.removeEventListener('resize', this.listeners.resize);
-	
-	    if (this.props.keyboardNavigation) {
-	      document.body.removeEventListener('keydown', this.listeners.keyboard);
-	    }
-	
-	    if (Object.keys(this.listeners.tooltips).length) {
-	      Object.keys(this.listeners.tooltips).forEach(function(key) {
-	        document.querySelector(key)
-	          .removeEventListener(this.listeners.tooltips[key].event, this.listeners.tooltips[key].cb);
-	        delete this.listeners.tooltips[key];
-	      });
-	    }
-	  },
-	
-	  componentDidUpdate: function(prevProps, prevState) {
-	    var props = this.props,
-	        state = this.state;
-	
-	    if ((state.tooltip || (state.play && props.steps[state.index])) && state.xPos < 0) {
-	      this._calcPlacement();
-	    }
-	
-	    if (prevProps.steps.length !== props.steps.length) {
-	      this._log(['joyride:changedSteps', this.props.steps]);
-	
-	      if (!props.steps.length) {
-	        this.reset();
-	      }
-	    }
-	
-	    if (state.play && props.scrollToSteps && (props.scrollToFirstStep || (state.index > 0 || prevState.index > state.index))) {
-	      var scroll = __webpack_require__(298);
-	      scroll.top(this._getBrowser() === 'firefox' ? document.documentElement : document.body, this._getScrollTop());
-	    }
-	  },
-	
-	  /**
-	   * Starts the tour
-	   * @param {boolean} [autorun]- Starts with the first tooltip opened
-	   */
-	  start: function(autorun) {
-	    autorun = autorun === true;
-	
-	    this._log(['joyride:start', 'autorun:', autorun]);
-	
-	    this.setState({
-	      play: true
-	    }, function() {
-	      if (autorun) {
-	        this._toggleTooltip(true);
-	      }
-	    });
-	  },
-	
-	  /**
-	   * Stop the tour
-	   */
-	  stop: function() {
-	    this._log(['joyride:stop']);
-	
-	    this.setState({
-	      showTooltip: false,
-	      play: false
-	    });
-	  },
-	
-	  /**
-	   * Reset Tour
-	   * @param {boolean} [restart] - Starts the new tour right away
-	   */
-	  reset: function(restart) {
-	    restart = restart === true;
-	
-	    var newState = JSON.parse(JSON.stringify(defaultState));
-	    newState.play = restart;
-	
-	    this._log(['joyride:reset', 'restart:', restart]);
-	
-	    // Force a re-render if necessary
-	    if (restart && this.state.play === restart && this.state.index === 0) {
-	      this.forceUpdate();
-	    }
-	
-	    this.setState(newState);
-	  },
-	
-	  /**
-	   * Retrieve the current progress of your tour
-	   * @returns {{index: (number|*), percentageComplete: number, step: (object|null)}}
-	   */
-	  getProgress: function() {
-	    var state = this.state,
-	        props = this.props;
-	
-	    this._log(['joyride:getProgress', 'steps:', props.steps]);
-	
-	    return {
-	      index: state.index,
-	      percentageComplete: parseFloat(((state.index / props.steps.length) * 100).toFixed(2).replace('.00', '')),
-	      step: props.steps[state.index]
-	    };
-	  },
-	
-	  /**
-	   * Parse the incoming steps
-	   * @param {Array|Object} steps
-	   * @returns {Array}
-	   */
-	  parseSteps: function(steps) {
-	    var tmpSteps = [],
-	        newSteps = [],
-	        el;
-	
-	    if (Array.isArray(steps)) {
-	      steps.forEach(function(s) {
-	        if (s instanceof Object) {
-	          tmpSteps.push(s);
-	        }
-	      });
-	    }
-	    else {
-	      tmpSteps = [steps];
-	    }
-	
-	    tmpSteps.forEach(function(s) {
-	      if (s.selector.dataset && s.selector.dataset.reactid) {
-	        s.selector = '[data-reactid="' + s.selector.dataset.reactid + '"]';
-	        console.warn('Deprecation warning: React 15.0 removed reactid. Update your code.'); //eslint-disable-line no-console
-	      }
-	      else if (s.selector.dataset) {
-	        console.error('Unsupported error: React 15.0+ don\'t write reactid to the DOM anymore, please use a plain class in your step.', s); //eslint-disable-line no-console
-	        if (s.selector.className) {
-	          s.selector = '.' + s.selector.className.replace(' ', '.');
-	        }
-	      }
-	
-	      el = document.querySelector(s.selector);
-	      s.position = s.position || 'top';
-	
-	      if (el && el.offsetParent) {
-	        newSteps.push(s);
-	      }
-	      else {
-	        this._log(['joyride:parseSteps', 'Element not rendered in the DOM. Skipped..', s], true);
-	      }
-	    }.bind(this));
-	
-	    return newSteps;
-	  },
-	
-	  addTooltip: function(data) {
-	    var parseData = this.parseSteps(data),
-	        el,
-	        eventType,
-	        key;
-	
-	    this._log(['joyride:addTooltip', 'data:', data]);
-	
-	    if (parseData.length) {
-	      data = parseData[0];
-	      key = data.trigger || data.selector;
-	      el = document.querySelector(key);
-	      eventType = data.event || 'click';
-	    }
-	
-	    el.dataset.tooltip = JSON.stringify(data);
-	
-	    if (eventType === 'hover' && !isTouch) {
-	      this.listeners.tooltips[key] = { event: 'mouseenter', cb: this._onTooltipTrigger };
-	      this.listeners.tooltips[key + 'mouseleave'] = { event: 'mouseleave', cb: this._onTooltipTrigger };
-	      this.listeners.tooltips[key + 'click'] = {
-	        event: 'click', cb: function(e) {
-	          e.preventDefault();
-	        }
-	      };
-	
-	      el.addEventListener('mouseenter', this.listeners.tooltips[key].cb);
-	      el.addEventListener('mouseleave', this.listeners.tooltips[key + 'mouseleave'].cb);
-	      el.addEventListener('click', this.listeners.tooltips[key + 'click'].cb);
-	    }
-	    else {
-	      this.listeners.tooltips[key] = { event: 'click', cb: this._onTooltipTrigger };
-	      el.addEventListener('click', this.listeners.tooltips[key].cb);
-	    }
-	  },
-	
-	  _log: function(msg, warn) {
-	    var logger = warn ? console.warn || console.error : console.log; //eslint-disable-line no-console
-	
-	    if (this.props.debug) {
-	      logger.apply(console, msg); //eslint-disable-line no-console
-	    }
-	  },
-	
-	  /**
-	   * Returns the current browser
-	   * @private
-	   * @returns {String}
-	   */
-	  _getBrowser: function() {
-	    // Return cached result if avalible, else get result then cache it.
-	    if (this._browser) {
-	      return this._browser;
-	    }
-	
-	    var isOpera = Boolean(window.opera) || navigator.userAgent.indexOf(' OPR/') >= 0;
-	    // Opera 8.0+ (UA detection to detect Blink/v8-powered Opera)
-	    var isFirefox = typeof InstallTrigger !== 'undefined';// Firefox 1.0+
-	    var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-	    // At least Safari 3+: "[object HTMLElementConstructor]"
-	    var isChrome = Boolean(window.chrome) && !isOpera;// Chrome 1+
-	    var isIE = /*@cc_on!@*/ Boolean(document.documentMode); // At least IE6
-	
-	    return (this._browser =
-	      isOpera ? 'opera' :
-	      isFirefox ? 'firefox' :
-	      isSafari ? 'safari' :
-	      isChrome ? 'chrome' :
-	      isIE ? 'ie' :
-	      '');
-	  },
-	
-	  /**
-	   * Get an element actual dimensions with margin
-	   * @param {String|Element} el - Element node or selector
-	   * @returns {{height: number, width: number}}
-	   */
-	  _getElementDimensions: function(el) {
-	    // Get the DOM Node if you pass in a string
-	    el = (typeof el === 'string') ? document.querySelector(el) : el;
-	
-	    var styles = window.getComputedStyle(el),
-	        height = el.clientHeight + parseInt(styles.marginTop, 10) + parseInt(styles.marginBottom, 10),
-	        width  = el.clientWidth + parseInt(styles.marginLeft, 10) + parseInt(styles.marginRight, 10);
-	
-	    return {
-	      height: height,
-	      width: width
-	    };
-	  },
-	
-	  /**
-	   * Get the scrollTop position
-	   * @returns {number}
-	   */
-	  _getScrollTop: function() {
-	    var state     = this.state,
-	        props     = this.props,
-	        step      = props.steps[state.index],
-	        position  = step.position,
-	        target    = document.querySelector(step.selector),
-	        targetTop = target.getBoundingClientRect().top + document.body.scrollTop,
-	        scrollTop = 0;
-	
-	    if (/^top/.test(position) || state.position === 'top') {
-	      scrollTop = Math.floor(state.yPos - props.scrollOffset);
-	    }
-	    else if (/^bottom|^left|^right/.test(position)) {
-	      scrollTop = Math.floor(targetTop - props.scrollOffset);
-	    }
-	
-	    return scrollTop;
-	  },
-	
-	  /**
-	   * Keydown event listener
-	   * @param {Event} e - Keyboard event
-	   */
-	  _keyboardNavigation: function(e) {
-	    var state  = this.state,
-	        props  = this.props,
-	        intKey = (window.Event) ? e.which : e.keyCode,
-	        hasSteps;
-	
-	    if (state.showTooltip) {
-	      if ([32, 38, 40].indexOf(intKey) > -1) {
-	        e.preventDefault();
-	      }
-	
-	      if (intKey === 27) {
-	        this._toggleTooltip(false, state.index + 1);
-	      }
-	      else if ([13, 32].indexOf(intKey) > -1) {
-	        hasSteps = Boolean(props.steps[state.index + 1]);
-	        this._toggleTooltip(hasSteps, state.index + 1, 'next');
-	      }
-	    }
-	  },
-	
-	  /**
-	   * Tooltip event listener
-	   * @param {Event} e - Click event
-	   */
-	  _onTooltipTrigger: function(e) {
-	    e.preventDefault();
-	    var tooltip = e.currentTarget.dataset.tooltip;
-	
-	    if (tooltip) {
-	      tooltip = JSON.parse(tooltip);
-	
-	      if (!this.state.tooltip || (this.state.tooltip.selector !== tooltip.selector)) {
-	
-	        this.setState({
-	          previousPlay: this.state.previousPlay !== undefined ? this.state.previousPlay : this.state.play,
-	          play: false,
-	          showTooltip: false,
-	          tooltip: tooltip,
-	          xPos: -1000,
-	          yPos: -1000
-	        });
-	      }
-	      else {
-	        document.querySelector('.joyride-tooltip__close').click();
-	      }
-	    }
-	  },
-	
-	  /**
-	   * Beacon click event listener
-	   * @param {Event} e - Click event
-	   */
-	  _onBeaconTrigger: function(e) {
-	    e.preventDefault();
-	    this._toggleTooltip(true, this.state.index);
-	  },
-	
-	  /**
-	   * Tooltip click event listener
-	   * @param {Event} e - Click event
-	   */
-	  _onClickTooltip: function(e) {
-	    e.preventDefault();
-	    e.stopPropagation();
-	
-	    var state    = this.state,
-	        props    = this.props,
-	        tooltip  = document.querySelector('.joyride-tooltip'),
-	        el       = e.target,
-	        type     = el.dataset.type,
-	        newIndex = state.index + (type === 'back' ? -1 : 1);
-	
-	    if (type === 'skip') {
-	      this.setState({
-	        skipped: true
-	      });
-	      newIndex = props.steps.length + 1;
-	    }
-	
-	    if (tooltip.classList.contains('joyride-tooltip--standalone')) {
-	      this.setState({
-	        play: this.state.previousPlay,
-	        previousPlay: undefined,
-	        tooltip: undefined,
-	        xPos: -1000,
-	        yPos: -1000
-	      });
-	    }
-	    else if (type) {
-	      this._toggleTooltip(
-	        (props.type === 'continuous' || props.type === 'guided')
-	        && ['close', 'skip'].indexOf(type) === -1
-	        && Boolean(props.steps[newIndex])
-	        , newIndex
-	        , type);
-	    }
-	  },
-	
-	  /**
-	   * Toggle Tooltip's visibility
-	   * @param {Boolean} show - Render the tooltip directly or the beacon
-	   * @param {Number} [index] - The tour's new index
-	   * @param {string} [action]
-	   */
-	  _toggleTooltip: function(show, index, action) {
-	    index = (index !== undefined ? index : this.state.index);
-	    var props = this.props;
-	
-	    this.setState({
-	      play: props.steps[index] ? this.state.play : false,
-	      showTooltip: show,
-	      index: index,
-	      xPos: -1000,
-	      yPos: -1000
-	    }, function() {
-	      var lastIndex = action === 'back' ? index + 1 : index - 1;
-	
-	      if (action && typeof props.stepCallback === 'function' && props.steps[lastIndex]) {
-	        props.stepCallback(props.steps[lastIndex]);
-	      }
-	
-	      if (props.steps.length && !props.steps[index]) {
-	        if (typeof props.completeCallback === 'function') {
-	          props.completeCallback(props.steps, this.state.skipped);
-	        }
-	      }
-	    });
-	  },
-	
-	  /**
-	   * Position absolute elements next to its target
-	   */
-	  _calcPlacement: function() {
-	    var state       = this.state,
-	        props       = this.props,
-	        step        = state.tooltip ? state.tooltip : props.steps[state.index],
-	        showTooltip = state.tooltip ? true : state.showTooltip,
-	        component,
-	        position,
-	        body,
-	        target,
-	        placement   = {
-	          x: -1000,
-	          y: -1000
-	        };
-	
-	    if (step) {
-	      position = step.position;
-	      body = document.body.getBoundingClientRect();
-	      target = document.querySelector(step.selector).getBoundingClientRect();
-	      component = this._getElementDimensions((showTooltip ? '.joyride-tooltip' : '.joyride-beacon'));
-	
-	      // Change the step position in the tooltip won't fit in the window
-	      if (/^left/.test(position) && target.left - (component.width + props.tooltipOffset) < 0) {
-	        position = 'top';
-	      }
-	      else if (/^right/.test(position) && target.left + target.width + (component.width + props.tooltipOffset) > body.width) {
-	        position = 'bottom';
-	      }
-	
-	      // Calculate x position
-	      if (/^left/.test(position)) {
-	        placement.x = target.left - (showTooltip ? component.width + props.tooltipOffset : component.width / 2);
-	      }
-	      else if (/^right/.test(position)) {
-	        placement.x = target.left + target.width - (showTooltip ? -props.tooltipOffset : component.width / 2);
-	      }
-	      else {
-	        placement.x = target.left + target.width / 2 - component.width / 2;
-	      }
-	
-	      // Calculate y position
-	      if (/^top/.test(position)) {
-	        placement.y = (target.top - body.top) - (showTooltip ? component.height + props.tooltipOffset : component.height / 2);
-	      }
-	      else if (/^bottom/.test(position)) {
-	        placement.y = (target.top - body.top) + target.height - (showTooltip ? -props.tooltipOffset : component.height / 2);
-	      }
-	      else {
-	        placement.y = (target.top - body.top) + target.height / 2 - component.height / 2 + (showTooltip ? props.tooltipOffset : 0);
-	      }
-	
-	      if (/^bottom|^top/.test(position)) {
-	        if (/left/.test(position)) {
-	          placement.x = target.left - (showTooltip ? props.tooltipOffset : component.width / 2);
-	        }
-	        else if (/right/.test(position)) {
-	          placement.x = target.left + target.width - (showTooltip ? component.width - props.tooltipOffset : component.width / 2);
-	        }
-	      }
-	
-	      this.setState({
-	        xPos: this._preventWindowOverflow(Math.ceil(placement.x), 'x', component.width, component.height),
-	        yPos: this._preventWindowOverflow(Math.ceil(placement.y), 'y', component.width, component.height),
-	        position: position
-	      });
-	    }
-	  },
-	
-	  /**
-	   * Prevent tooltip to render outside the window
-	   * @param {Number} value - The axis position
-	   * @param {String} axis - The Axis X or Y
-	   * @param {Number} elWidth - The target element width
-	   * @param {Number} elHeight - The target element height
-	   * @returns {Number}
-	   */
-	  _preventWindowOverflow: function(value, axis, elWidth, elHeight) {
-	    var winWidth  = window.innerWidth,
-	        body      = document.body,
-	        html      = document.documentElement,
-	        docHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight),
-	        newValue  = value;
-	
-	    if (axis === 'x') {
-	      if (value + elWidth >= winWidth) {
-	        newValue = winWidth - elWidth - 15;
-	      }
-	      else if (value < 15) {
-	        newValue = 15;
-	      }
-	    }
-	    else if (axis === 'y') {
-	      if (value + elHeight >= docHeight) {
-	        newValue = docHeight - elHeight - 15;
-	      }
-	      else if (value < 15) {
-	        newValue = 15;
-	      }
-	    }
-	
-	    return newValue;
-	  },
-	
-	  /**
-	   *
-	   * @param {Boolean} [update]
-	   * @returns {*}
-	   * @private
-	   */
-	  _createComponent: function(update) {
-	    var state       = this.state,
-	        props       = this.props,
-	        currentStep = Object.assign({}, state.tooltip || props.steps[state.index]),
-	        buttons     = {
-	          primary: props.locale.close
-	        },
-	        target      = currentStep && currentStep.selector ? document.querySelector(currentStep.selector) : null,
-	        cssPosition = target ? target.style.position : null,
-	        showOverlay = state.tooltip ? false : props.showOverlay,
-	        component;
-	
-	    this._log([
-	      'joyride:' + (update ? 'updateComponent' : 'createComponent'),
-	      'component:', state.showTooltip || state.tooltip ? 'Tooltip' : 'Beacon',
-	      'target:', target
-	    ]);
-	
-	    if (target) {
-	      if (state.showTooltip || state.tooltip) {
-	        currentStep.position = state.position;
-	
-	        if (!state.tooltip) {
-	          if (props.type === 'continuous' || props.type === 'guided') {
-	            buttons.primary = props.locale.last;
-	
-	            if (props.steps[state.index + 1]) {
-	              buttons.primary = props.locale.next;
-	
-	              if (props.showStepsProgress) {
-	                buttons.primary += ' ' + (state.index + 1) + '/' + props.steps.length;
-	              }
-	            }
-	
-	            if (props.showBackButton && state.index > 0) {
-	              buttons.secondary = props.locale.back;
-	            }
-	          }
-	
-	          if (props.showSkipButton) {
-	            buttons.skip = props.locale.skip;
-	          }
-	        }
-	
-	        component = React.createElement(Tooltip, {
-	          animate: state.xPos > -1,
-	          browser: this._getBrowser(),
-	          buttons: buttons,
-	          cssPosition: cssPosition,
-	          showOverlay: showOverlay,
-	          step: currentStep,
-	          standalone: Boolean(state.tooltip),
-	          type: props.type,
-	          xPos: state.xPos,
-	          yPos: state.yPos,
-	          onClick: this._onClickTooltip
-	        });
-	      }
-	      else {
-	        component = React.createElement(Beacon, {
-	          cssPosition: cssPosition,
-	          step: currentStep,
-	          xPos: state.xPos,
-	          yPos: state.yPos,
-	          onTrigger: this._onBeaconTrigger,
-	          eventType: currentStep.type || 'click'
-	        });
-	      }
-	    }
-	
-	    return component;
-	  },
-	
-	  render: function() {
-	    var state   = this.state,
-	        props   = this.props,
-	        hasStep = Boolean(props.steps[state.index]),
-	        component,
-	        standaloneTooltip;
-	
-	    if (state.play && state.xPos < 0 && hasStep) {
-	      this._log(['joyride:render', 'step:', props.steps[state.index]]);
-	    }
-	    else if (!state.play && state.tooltip) {
-	      this._log(['joyride:render', 'tooltip:', state.tooltip]);
-	    }
-	
-	    if (state.tooltip) {
-	      standaloneTooltip = this._createComponent();
-	    }
-	    else if (state.play && hasStep) {
-	      component = this._createComponent(state.xPos < 0);
-	    }
-	
-	    return React.createElement('div', {
-	        className: 'joyride'
-	      },
-	      component,
-	      standaloneTooltip
-	    );
-	  }
-	});
-	
-	module.exports = Component;
-
-
-/***/ },
-/* 294 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var React    = __webpack_require__(1),
-	    hexToRGB = __webpack_require__(295).hexToRgb;
-	
-	var isTouch = false;
-	
-	if (typeof window !== 'undefined') {
-	  isTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
-	}
-	
-	var Beacon = React.createClass({
-	  displayName: 'JoyrideBeacon',
-	  propTypes: {
-	    cssPosition: React.PropTypes.string.isRequired,
-	    eventType: React.PropTypes.string.isRequired,
-	    onTrigger: React.PropTypes.func.isRequired,
-	    xPos: React.PropTypes.oneOfType([
-	      React.PropTypes.number,
-	      React.PropTypes.string
-	    ]).isRequired,
-	    yPos: React.PropTypes.oneOfType([
-	      React.PropTypes.number,
-	      React.PropTypes.string
-	    ]).isRequired
-	  },
-	
-	  getDefaultProps: function() {
-	    return {
-	      cssPosition: 'absolute',
-	      xPos: -1000,
-	      yPos: -1000
-	    };
-	  },
-	
-	  render: function() {
-	    var props      = this.props,
-	        stepStyles = props.step.style || {},
-	        rgb,
-	        styles     = {
-	          beacon: {
-	            left: props.xPos,
-	            position: props.cssPosition === 'fixed' ? 'fixed' : 'absolute',
-	            top: props.yPos
-	          },
-	          inner: {},
-	          outer: {}
-	        };
-	
-	    if (stepStyles.beacon) {
-	      if (typeof stepStyles.beacon === 'string') {
-	        rgb = hexToRGB(stepStyles.beacon);
-	
-	        styles.inner.backgroundColor = stepStyles.beacon;
-	        styles.outer = {
-	          backgroundColor: 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', 0.2)',
-	          borderColor: stepStyles.beacon
-	        };
-	      }
-	      else {
-	        if (stepStyles.beacon.inner) {
-	          styles.inner.backgroundColor = stepStyles.beacon.inner;
-	        }
-	
-	        if (stepStyles.beacon.outer) {
-	          rgb = hexToRGB(stepStyles.beacon.outer);
-	
-	          styles.outer = {
-	            backgroundColor: 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', 0.4)',
-	            borderColor: stepStyles.beacon.outer
-	          };
-	        }
-	      }
-	    }
-	
-	    return (
-	      React.createElement('a', {
-	          href: '#',
-	          className: 'joyride-beacon',
-	          style: styles.beacon,
-	          onClick: props.eventType === 'click' || isTouch ? props.onTrigger : null,
-	          onMouseEnter: props.eventType === 'hover' && !isTouch ? props.onTrigger : null
-	        },
-	        React.createElement('span', {
-	          className: 'joyride-beacon__inner',
-	          style: styles.inner
-	        }),
-	        React.createElement('span', {
-	          className: 'joyride-beacon__outer',
-	          style: styles.outer
-	        })
-	      )
-	    );
-	  }
-	
-	});
-	
-	module.exports = Beacon;
-
-
-/***/ },
-/* 295 */
-/***/ function(module, exports) {
-
-	module.exports = {
-	  hexToRgb: function(hex) {
-	    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-	    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-	    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-	      return r + r + g + g + b + b;
-	    });
-	
-	    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-	    return result ? {
-	      r: parseInt(result[1], 16),
-	      g: parseInt(result[2], 16),
-	      b: parseInt(result[3], 16)
-	    } : null;
-	  }
-	};
-
-
-/***/ },
-/* 296 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var React  = __webpack_require__(1),
-	    assign = __webpack_require__(297);
-	
-	var Tooltip = React.createClass({
-	  displayName: 'JoyrideTooltip',
-	
-	  propTypes: {
-	    animate: React.PropTypes.bool.isRequired,
-	    browser: React.PropTypes.string.isRequired,
-	    buttons: React.PropTypes.object.isRequired,
-	    cssPosition: React.PropTypes.string.isRequired,
-	    onClick: React.PropTypes.func.isRequired,
-	    showOverlay: React.PropTypes.bool.isRequired,
-	    standalone: React.PropTypes.bool,
-	    step: React.PropTypes.object.isRequired,
-	    type: React.PropTypes.string.isRequired,
-	    xPos: React.PropTypes.oneOfType([
-	      React.PropTypes.number,
-	      React.PropTypes.string
-	    ]).isRequired,
-	    yPos: React.PropTypes.oneOfType([
-	      React.PropTypes.number,
-	      React.PropTypes.string
-	    ]).isRequired
-	  },
-	
-	  getDefaultProps: function() {
-	    return {
-	      browser: 'chrome',
-	      buttons: {
-	        primary: 'Close'
-	      },
-	      cssPosition: 'absolute',
-	      step: {},
-	      xPos: -1000,
-	      yPos: -1000
-	    };
-	  },
-	
-	  _getArrowPosition: function(position) {
-	    var arrowPosition;
-	
-	    if (window.innerWidth < 480) {
-	      arrowPosition = (position < 8 ? 8 : (position > 92 ? 92 : position));
-	    }
-	    else if (window.innerWidth < 1024) {
-	      arrowPosition = (position < 6 ? 6 : (position > 94 ? 94 : position));
-	    }
-	    else {
-	      arrowPosition = (position < 5 ? 5 : (position > 95 ? 95 : position));
-	    }
-	
-	    return arrowPosition;
-	  },
-	
-	  _generateArrow: function(opts) {
-	    var width,
-	        height,
-	        rotate;
-	
-	    opts = opts || {};
-	    opts.location = opts.location || 'top';
-	    opts.color = opts.color || '#f04';
-	    opts.color = opts.color.replace('#', '%23');
-	
-	    opts.width = opts.width || 36;
-	    opts.height = opts.width / 2;
-	    opts.scale = opts.width / 16;
-	    opts.rotate = '0';
-	
-	    height = opts.height;
-	    rotate = opts.rotate;
-	    width = opts.width;
-	
-	    if (opts.location === 'bottom') {
-	      rotate = '180 8 4';
-	    }
-	    else if (opts.location === 'left') {
-	      height = opts.width;
-	      width = opts.height;
-	      rotate = '270 8 8';
-	    }
-	    else if (opts.location === 'right') {
-	      height = opts.width;
-	      width = opts.height;
-	      rotate = '90 4 4';
-	    }
-	
-	    return 'data:image/svg+xml,%3Csvg%20width%3D%22' + width + '%22%20height%3D%22' + height + '%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpolygon%20points%3D%220%2C%200%208%2C%208%2016%2C0%22%20fill%3D%22' + opts.color + '%22%20transform%3D%22scale%28' + opts.scale + '%29%20rotate%28' + rotate + '%29%22%3E%3C%2Fpolygon%3E%3C%2Fsvg%3E';
-	  },
-	
-	  _setStyles: function(opts, styles, stepStyles) {
-	    styles.hole = {
-	      top: Math.round((opts.target.top - document.body.getBoundingClientRect().top) - 5),
-	      left: Math.round(opts.target.left - 5),
-	      width: Math.round(opts.target.width + 10),
-	      height: Math.round(opts.target.height + 10)
-	    };
-	
-	    styles.buttons = {
-	      back: {},
-	      close: {},
-	      primary: {},
-	      skip: {}
-	    };
-	
-	    /* Styling */
-	    if (stepStyles) {
-	      if (stepStyles.backgroundColor) {
-	        styles.arrow.backgroundImage = 'url("' + this._generateArrow({
-	            location: opts.positonBaseClass,
-	            color: stepStyles.backgroundColor
-	          }) + '")';
-	        styles.tooltip.backgroundColor = stepStyles.backgroundColor;
-	      }
-	
-	      if (stepStyles.borderRadius) {
-	        styles.tooltip.borderRadius = stepStyles.borderRadius;
-	      }
-	
-	      if (stepStyles.color) {
-	        styles.buttons.primary.color = stepStyles.color;
-	        styles.buttons.close.color = stepStyles.color;
-	        styles.buttons.skip.color = stepStyles.color;
-	        styles.header.color = stepStyles.color;
-	        styles.tooltip.color = stepStyles.color;
-	
-	        if (stepStyles.mainColor && stepStyles.mainColor === stepStyles.color) {
-	          styles.buttons.primary.color = stepStyles.backgroundColor;
-	        }
-	      }
-	
-	      if (stepStyles.mainColor) {
-	        styles.buttons.primary.backgroundColor = stepStyles.mainColor;
-	        styles.buttons.back.color = stepStyles.mainColor;
-	        styles.header.borderColor = stepStyles.mainColor;
-	      }
-	
-	      if (stepStyles.textAlign) {
-	        styles.tooltip.textAlign = stepStyles.textAlign;
-	      }
-	
-	      if (stepStyles.width) {
-	        styles.tooltip.width = stepStyles.width;
-	      }
-	
-	      if (stepStyles.back) {
-	        styles.buttons.back = assign(styles.buttons.back, stepStyles.back);
-	      }
-	
-	      if (stepStyles.button) {
-	        styles.buttons.primary = assign(styles.buttons.primary, stepStyles.button);
-	      }
-	
-	      if (stepStyles.close) {
-	        styles.buttons.close = assign(styles.buttons.close, stepStyles.close);
-	      }
-	
-	      if (stepStyles.skip) {
-	        styles.buttons.skip = assign(styles.buttons.skip, stepStyles.skip);
-	      }
-	    }
-	
-	    return styles;
-	  },
-	
-	  render: function() {
-	    var props  = this.props,
-	        step   = props.step,
-	        opts   = {
-	          classes: ['joyride-tooltip'],
-	          target: document.querySelector(step.selector).getBoundingClientRect(),
-	          positionClass: step.position
-	        },
-	        styles = {
-	          arrow: {},
-	          buttons: {},
-	          header: {},
-	          hole: {},
-	          tooltip: {
-	            position: this.props.cssPosition === 'fixed' ? 'fixed' : 'absolute',
-	            top: Math.round(this.props.yPos),
-	            left: Math.round(this.props.xPos)
-	          }
-	        };
-	
-	    opts.positonBaseClass = opts.positionClass.match(/-/) ? opts.positionClass.split('-')[0] : opts.positionClass;
-	
-	    if ((/^bottom$/.test(opts.positionClass) || /^top$/.test(opts.positionClass)) && props.xPos > -1) {
-	      opts.tooltip = document.querySelector('.joyride-tooltip').getBoundingClientRect();
-	      opts.targetMiddle = (opts.target.left + opts.target.width / 2);
-	      opts.arrowPosition = (((opts.targetMiddle - props.xPos) / opts.tooltip.width) * 100).toFixed(2);
-	      opts.arrowPosition = this._getArrowPosition(opts.arrowPosition) + '%';
-	
-	      styles.arrow.left = opts.arrowPosition;
-	    }
-	
-	    styles = this._setStyles(opts, styles, step.style);
-	
-	    if (props.standalone) {
-	      opts.classes.push('joyride-tooltip--standalone');
-	    }
-	    if (opts.positonBaseClass) {
-	      opts.classes.push(opts.positonBaseClass);
-	    }
-	    opts.classes.push(opts.positionClass);
-	    if (props.animate) {
-	      opts.classes.push('joyride-tooltip--animate');
-	    }
-	
-	    if (step.title) {
-	      opts.header = (
-	        React.createElement('div', {
-	          className: 'joyride-tooltip__header',
-	          style: styles.header
-	        }, step.title)
-	      );
-	    }
-	
-	    opts.tooltipElement = React.createElement('div', {
-	        className: opts.classes.join(' '),
-	        style: styles.tooltip,
-	        'data-target': step.selector
-	      },
-	      React.createElement('div', {
-	        className: 'joyride-tooltip__triangle joyride-tooltip__triangle-' + opts.positionClass,
-	        style: styles.arrow
-	      }),
-	      React.createElement('a', {
-	        href: '#',
-	        className: 'joyride-tooltip__close' + (opts.header ? ' joyride-tooltip__close--header' : ''),
-	        style: styles.buttons.close,
-	        'data-type': 'close',
-	        onClick: props.onClick
-	      }, '×'),
-	      opts.header,
-	      React.createElement('div', {
-	        className: 'joyride-tooltip__main',
-	        dangerouslySetInnerHTML: { __html: step.text || '' }
-	      }),
-	      React.createElement('div', {
-	          className: 'joyride-tooltip__footer'
-	        },
-	        (props.buttons.skip ?
-	         React.createElement('a', {
-	           href: '#',
-	           className: 'joyride-tooltip__button joyride-tooltip__button--skip',
-	           style: styles.buttons.skip,
-	           'data-type': 'skip',
-	           onClick: props.onClick
-	         }, props.buttons.skip)
-	          : false),
-	        (props.buttons.secondary ?
-	         React.createElement('a', {
-	           href: '#',
-	           className: 'joyride-tooltip__button joyride-tooltip__button--secondary',
-	           style: styles.buttons.back,
-	           'data-type': 'back',
-	           onClick: props.onClick
-	         }, props.buttons.secondary)
-	          : false),
-	        React.createElement('a', {
-	          href: '#',
-	          className: 'joyride-tooltip__button joyride-tooltip__button--primary',
-	          style: styles.buttons.primary,
-	          'data-type': props.type === 'single' ? 'close' : 'next',
-	          onClick: props.onClick
-	        }, props.buttons.primary)
-	      )
-	    );
-	
-	    if (props.showOverlay) {
-	      opts.hole = React.createElement('div', {
-	        className: 'joyride-hole ' + props.browser,
-	        style: styles.hole
-	      });
-	    }
-	
-	    if (!props.showOverlay) {
-	      return opts.tooltipElement;
-	    }
-	
-	    return React.createElement('div', {
-	        className: 'joyride-overlay',
-	        style: {
-	          height: document.body.clientHeight
-	        },
-	        'data-type': 'close',
-	        onClick: props.onClick
-	      },
-	      opts.hole,
-	      opts.tooltipElement
-	    );
-	  }
-	});
-	
-	module.exports = Tooltip;
-
-
-/***/ },
-/* 297 */
-/***/ function(module, exports) {
-
-	/* eslint-disable no-unused-vars */
-	'use strict';
-	var hasOwnProperty = Object.prototype.hasOwnProperty;
-	var propIsEnumerable = Object.prototype.propertyIsEnumerable;
-	
-	function toObject(val) {
-		if (val === null || val === undefined) {
-			throw new TypeError('Object.assign cannot be called with null or undefined');
-		}
-	
-		return Object(val);
-	}
-	
-	module.exports = Object.assign || function (target, source) {
-		var from;
-		var to = toObject(target);
-		var symbols;
-	
-		for (var s = 1; s < arguments.length; s++) {
-			from = Object(arguments[s]);
-	
-			for (var key in from) {
-				if (hasOwnProperty.call(from, key)) {
-					to[key] = from[key];
-				}
-			}
-	
-			if (Object.getOwnPropertySymbols) {
-				symbols = Object.getOwnPropertySymbols(from);
-				for (var i = 0; i < symbols.length; i++) {
-					if (propIsEnumerable.call(from, symbols[i])) {
-						to[symbols[i]] = from[symbols[i]];
-					}
-				}
-			}
-		}
-	
-		return to;
-	};
-
-
-/***/ },
-/* 298 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var raf = __webpack_require__(299)
-	var ease = __webpack_require__(300)
-	
-	function scroll (prop, element, to, options, callback) {
-	  var start = +new Date
-	  var from = element[prop]
-	  var cancelled = false
-	  var type = 'inOutSine'
-	  var duration = 350
-	
-	  if (typeof options === 'function') {
-	    callback = options
-	  }
-	  else {
-	    options = options || {}
-	    type = options.ease || type
-	    duration = options.duration || duration
-	    callback = callback || function () {}
-	  }
-	
-	  var easing = ease[type]
-	
-	  if (from === to) {
-	    return callback(
-	      new Error('Element already at target scroll position'),
-	      element[prop]
-	    )
-	  }
-	
-	  function cancel () {
-	    cancelled = true
-	  }
-	
-	  function animate (timestamp) {
-	    if (cancelled) {
-	      return callback(
-	        new Error('Scroll cancelled'),
-	        element[prop]
-	      )
-	    }
-	
-	    var now = +new Date
-	    var time = Math.min(1, ((now - start) / duration))
-	    var eased = easing(time)
-	
-	    element[prop] = (eased * (to - from)) + from
-	
-	    time < 1 ?
-	      raf(animate) :
-	      callback(null, element[prop])
-	  }
-	
-	  raf(animate)
-	
-	  return cancel
-	}
-	
-	module.exports = {
-	  top: function (element, to, options, callback) {
-	    return scroll('scrollTop', element, to, options, callback)
-	  },
-	  left: function (element, to, options, callback) {
-	    return scroll('scrollLeft', element, to, options, callback)
-	  }
-	}
-
-
-/***/ },
-/* 299 */
-/***/ function(module, exports) {
-
-	/**
-	 * Expose `requestAnimationFrame()`.
-	 */
-	
-	exports = module.exports = window.requestAnimationFrame
-	  || window.webkitRequestAnimationFrame
-	  || window.mozRequestAnimationFrame
-	  || window.oRequestAnimationFrame
-	  || window.msRequestAnimationFrame
-	  || fallback;
-	
-	/**
-	 * Fallback implementation.
-	 */
-	
-	var prev = new Date().getTime();
-	function fallback(fn) {
-	  var curr = new Date().getTime();
-	  var ms = Math.max(0, 16 - (curr - prev));
-	  var req = setTimeout(fn, ms);
-	  prev = curr;
-	  return req;
-	}
-	
-	/**
-	 * Cancel.
-	 */
-	
-	var cancel = window.cancelAnimationFrame
-	  || window.webkitCancelAnimationFrame
-	  || window.mozCancelAnimationFrame
-	  || window.oCancelAnimationFrame
-	  || window.msCancelAnimationFrame
-	  || window.clearTimeout;
-	
-	exports.cancel = function(id){
-	  cancel.call(window, id);
-	};
-
-
-/***/ },
-/* 300 */
-/***/ function(module, exports) {
-
-	
-	// easing functions from "Tween.js"
-	
-	exports.linear = function(n){
-	  return n;
-	};
-	
-	exports.inQuad = function(n){
-	  return n * n;
-	};
-	
-	exports.outQuad = function(n){
-	  return n * (2 - n);
-	};
-	
-	exports.inOutQuad = function(n){
-	  n *= 2;
-	  if (n < 1) return 0.5 * n * n;
-	  return - 0.5 * (--n * (n - 2) - 1);
-	};
-	
-	exports.inCube = function(n){
-	  return n * n * n;
-	};
-	
-	exports.outCube = function(n){
-	  return --n * n * n + 1;
-	};
-	
-	exports.inOutCube = function(n){
-	  n *= 2;
-	  if (n < 1) return 0.5 * n * n * n;
-	  return 0.5 * ((n -= 2 ) * n * n + 2);
-	};
-	
-	exports.inQuart = function(n){
-	  return n * n * n * n;
-	};
-	
-	exports.outQuart = function(n){
-	  return 1 - (--n * n * n * n);
-	};
-	
-	exports.inOutQuart = function(n){
-	  n *= 2;
-	  if (n < 1) return 0.5 * n * n * n * n;
-	  return -0.5 * ((n -= 2) * n * n * n - 2);
-	};
-	
-	exports.inQuint = function(n){
-	  return n * n * n * n * n;
-	}
-	
-	exports.outQuint = function(n){
-	  return --n * n * n * n * n + 1;
-	}
-	
-	exports.inOutQuint = function(n){
-	  n *= 2;
-	  if (n < 1) return 0.5 * n * n * n * n * n;
-	  return 0.5 * ((n -= 2) * n * n * n * n + 2);
-	};
-	
-	exports.inSine = function(n){
-	  return 1 - Math.cos(n * Math.PI / 2 );
-	};
-	
-	exports.outSine = function(n){
-	  return Math.sin(n * Math.PI / 2);
-	};
-	
-	exports.inOutSine = function(n){
-	  return .5 * (1 - Math.cos(Math.PI * n));
-	};
-	
-	exports.inExpo = function(n){
-	  return 0 == n ? 0 : Math.pow(1024, n - 1);
-	};
-	
-	exports.outExpo = function(n){
-	  return 1 == n ? n : 1 - Math.pow(2, -10 * n);
-	};
-	
-	exports.inOutExpo = function(n){
-	  if (0 == n) return 0;
-	  if (1 == n) return 1;
-	  if ((n *= 2) < 1) return .5 * Math.pow(1024, n - 1);
-	  return .5 * (-Math.pow(2, -10 * (n - 1)) + 2);
-	};
-	
-	exports.inCirc = function(n){
-	  return 1 - Math.sqrt(1 - n * n);
-	};
-	
-	exports.outCirc = function(n){
-	  return Math.sqrt(1 - (--n * n));
-	};
-	
-	exports.inOutCirc = function(n){
-	  n *= 2
-	  if (n < 1) return -0.5 * (Math.sqrt(1 - n * n) - 1);
-	  return 0.5 * (Math.sqrt(1 - (n -= 2) * n) + 1);
-	};
-	
-	exports.inBack = function(n){
-	  var s = 1.70158;
-	  return n * n * (( s + 1 ) * n - s);
-	};
-	
-	exports.outBack = function(n){
-	  var s = 1.70158;
-	  return --n * n * ((s + 1) * n + s) + 1;
-	};
-	
-	exports.inOutBack = function(n){
-	  var s = 1.70158 * 1.525;
-	  if ( ( n *= 2 ) < 1 ) return 0.5 * ( n * n * ( ( s + 1 ) * n - s ) );
-	  return 0.5 * ( ( n -= 2 ) * n * ( ( s + 1 ) * n + s ) + 2 );
-	};
-	
-	exports.inBounce = function(n){
-	  return 1 - exports.outBounce(1 - n);
-	};
-	
-	exports.outBounce = function(n){
-	  if ( n < ( 1 / 2.75 ) ) {
-	    return 7.5625 * n * n;
-	  } else if ( n < ( 2 / 2.75 ) ) {
-	    return 7.5625 * ( n -= ( 1.5 / 2.75 ) ) * n + 0.75;
-	  } else if ( n < ( 2.5 / 2.75 ) ) {
-	    return 7.5625 * ( n -= ( 2.25 / 2.75 ) ) * n + 0.9375;
-	  } else {
-	    return 7.5625 * ( n -= ( 2.625 / 2.75 ) ) * n + 0.984375;
-	  }
-	};
-	
-	exports.inOutBounce = function(n){
-	  if (n < .5) return exports.inBounce(n * 2) * .5;
-	  return exports.outBounce(n * 2 - 1) * .5 + .5;
-	};
-	
-	// aliases
-	
-	exports['in-quad'] = exports.inQuad;
-	exports['out-quad'] = exports.outQuad;
-	exports['in-out-quad'] = exports.inOutQuad;
-	exports['in-cube'] = exports.inCube;
-	exports['out-cube'] = exports.outCube;
-	exports['in-out-cube'] = exports.inOutCube;
-	exports['in-quart'] = exports.inQuart;
-	exports['out-quart'] = exports.outQuart;
-	exports['in-out-quart'] = exports.inOutQuart;
-	exports['in-quint'] = exports.inQuint;
-	exports['out-quint'] = exports.outQuint;
-	exports['in-out-quint'] = exports.inOutQuint;
-	exports['in-sine'] = exports.inSine;
-	exports['out-sine'] = exports.outSine;
-	exports['in-out-sine'] = exports.inOutSine;
-	exports['in-expo'] = exports.inExpo;
-	exports['out-expo'] = exports.outExpo;
-	exports['in-out-expo'] = exports.inOutExpo;
-	exports['in-circ'] = exports.inCirc;
-	exports['out-circ'] = exports.outCirc;
-	exports['in-out-circ'] = exports.inOutCirc;
-	exports['in-back'] = exports.inBack;
-	exports['out-back'] = exports.outBack;
-	exports['in-out-back'] = exports.inOutBack;
-	exports['in-bounce'] = exports.inBounce;
-	exports['out-bounce'] = exports.outBounce;
-	exports['in-out-bounce'] = exports.inOutBounce;
-
 
 /***/ }
 /******/ ]);
