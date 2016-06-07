@@ -153,7 +153,6 @@ var LoginForm = React.createClass({
           {this.homeCities()}
           {this.myGym()}
           {this.profile()}
-          {this.errors()}
           {this.form()}
         </ul>
       </nav>

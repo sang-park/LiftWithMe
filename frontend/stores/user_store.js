@@ -36,6 +36,8 @@ UserStore.__onDispatch = function (payload) {
           goBack(location.hash.slice(1).split("?")[0]);
         }
         UserStore.__emitChange();
+      } else {
+        _errors = [];
       }
       break;
     case UserConstants.LOGOUT:

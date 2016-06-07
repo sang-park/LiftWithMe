@@ -26735,6 +26735,8 @@
 	          goBack(location.hash.slice(1).split("?")[0]);
 	        }
 	        UserStore.__emitChange();
+	      } else {
+	        _errors = [];
 	      }
 	      break;
 	    case UserConstants.LOGOUT:
@@ -33880,7 +33882,6 @@
 	        this.homeCities(),
 	        this.myGym(),
 	        this.profile(),
-	        this.errors(),
 	        this.form()
 	      )
 	    );
