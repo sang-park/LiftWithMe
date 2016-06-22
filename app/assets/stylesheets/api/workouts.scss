@@ -47,13 +47,22 @@ $blue4: #091065;
   font-size: 12px;
   font-weight: 600;
   justify-content: space-around;;
-
+  margin: 0;
+  border-top: 1px solid lightgray;
 
   button {
+    &:first-child {
+      border-right: 1px solid lightgray;
+    }
     background-color: white;
     border-radius: 0;
     margin: 0;
     width: 50%;
+    text-align: center;
+
+    &:hover {
+      background-color: $gold1;
+    }
 
   }
 }
