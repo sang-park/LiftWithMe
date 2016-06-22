@@ -47,8 +47,6 @@ var WorkoutShow = React.createClass({
         <tbody>
           {exercises}
         </tbody>
-        {this.editAndDeleteOrPairUp()}
-
       </table>
     );
   },
@@ -59,7 +57,7 @@ var WorkoutShow = React.createClass({
     } else if  ( UserStore.currentUser() &&
       UserStore.currentUser().id === this.props.workout.user_id){
       return (
-        <caption className="workout-show-buttons">
+        <span className="workout-show-buttons">
           <button
             className="form-button"
             onClick={this.openEditForm(this.props.workout)}
@@ -71,11 +69,11 @@ var WorkoutShow = React.createClass({
             value={this.props.workout.id}>
             Delete
           </button>
-        </caption>
+        </span>
       );
     } else {
       return (
-        <caption className="workout-show-buttons">
+        <span className="workout-show-buttons">
             <button
               className="pair-up"
               onClick={this.pairUp}
@@ -88,7 +86,7 @@ var WorkoutShow = React.createClass({
             >
               More from {this.props.workout.username}
             </button>
-        </caption>
+        </span>
       );
     }
   },
@@ -147,6 +145,7 @@ var WorkoutShow = React.createClass({
       <div className="workout-modal">
         {workoutTitle}
         {display}
+        {this.editAndDeleteOrPairUp()}
       </div>
     );
   }

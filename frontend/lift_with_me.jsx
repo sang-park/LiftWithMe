@@ -73,7 +73,6 @@ var App = React.createClass({
     );
   }
 });
-// {this.props.children}
 
 var router =  (
   <Router history={hashHistory}>

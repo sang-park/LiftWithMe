@@ -20,8 +20,12 @@ $blue3: #0F1885;
 $blue4: #091065;
 
 .workout-modal {
-  margin: 20px;
+  * {
+    margin: 15px;
+  }
+
   table {
+      width: 90%;
     tr {
       border-left: 1px solid gray;
       border-right: 1px solid gray;
@@ -38,12 +42,20 @@ $blue4: #091065;
 
 .workout-show-buttons {
   background-color:white;
-  display:flex;
+  display: flex;
   flex-direction: row;
   font-size: 12px;
   font-weight: 600;
-  justify-content: center;
-  position: relative;
+  justify-content: space-around;;
+
+
+  button {
+    background-color: white;
+    border-radius: 0;
+    margin: 0;
+    width: 50%;
+
+  }
 }
 
 table {

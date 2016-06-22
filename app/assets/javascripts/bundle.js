@@ -122,7 +122,6 @@
 	    );
 	  }
 	});
-	// {this.props.children}
 	
 	var router = React.createElement(
 	  Router,
@@ -37424,8 +37423,7 @@
 	        'tbody',
 	        null,
 	        exercises
-	      ),
-	      this.editAndDeleteOrPairUp()
+	      )
 	    );
 	  },
 	
@@ -37434,7 +37432,7 @@
 	      return;
 	    } else if (UserStore.currentUser() && UserStore.currentUser().id === this.props.workout.user_id) {
 	      return React.createElement(
-	        'caption',
+	        'span',
 	        { className: 'workout-show-buttons' },
 	        React.createElement(
 	          'button',
@@ -37454,7 +37452,7 @@
 	      );
 	    } else {
 	      return React.createElement(
-	        'caption',
+	        'span',
 	        { className: 'workout-show-buttons' },
 	        React.createElement(
 	          'button',
@@ -37526,7 +37524,8 @@
 	      'div',
 	      { className: 'workout-modal' },
 	      workoutTitle,
-	      display
+	      display,
+	      this.editAndDeleteOrPairUp()
 	    );
 	  }
 	
