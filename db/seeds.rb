@@ -75,24 +75,24 @@ end
 
 
 User.create!({username: "Arnold.S",password: "123123", gym_id: 1,
-  age: 68, weight: 249, profile_image_url: "http://daily.barbellshrugged.com/wp-content/uploads/2015/02/Screen-Shot-2015-02-05-at-10.52.48-AM.png"})
+  age: 68, weight: 249, profile_image_url: "http://res.cloudinary.com/dque3vywj/image/upload/v1469322076/Screen-Shot-2015-02-05-at-10.52.48-AM_qdoppz.png"})
 User.create!({username: "Kai.G",password: "123123", gym_id: 1,
-  age: 40, weight: 310, profile_image_url: 'http://broscience.co/wp-content/uploads/2015/01/Kai-greene-workout-routine.jpg'})
+  age: 40, weight: 310, profile_image_url: 'http://res.cloudinary.com/dque3vywj/image/upload/v1469322065/kaig_xm3xxz.jpg'})
 User.create!({username: "Jay.Cutler",password: "123123", gym_id: 1,
-  age: 42, weight: 274, profile_image_url: "http://cdn.nextimpulsesports.com/wp-content/uploads/2015/01/a236f_ORIG-JayCutler_MD_Dec2012_PerBernal_612JJ_B.jpg" })
+  age: 42, weight: 274, profile_image_url: "http://res.cloudinary.com/dque3vywj/image/upload/v1469322161/jayc_iw2f9b.jpg" })
 User.create!({username: "Dom.M",password: "123123", gym_id: 1,
-  age: 25, weight: 183, profile_image_url: "https://bodywhat.com/uploads/media/report/0001/09/thumb_8981_report_extra_eac14c103849acaa85f8ccbc4a1264414a066aca.png"})
+  age: 25, weight: 183, profile_image_url: "http://res.cloudinary.com/dque3vywj/image/upload/v1469322214/domm_oysvkr.png"})
 User.create!({username: "Timothy.E",password: "123123", gym_id: 1,
-  age: 23, weight: 180, profile_image_url: "https://scontent.xx.fbcdn.net/hphotos-xap1/v/t1.0-9/10858351_10152974780013203_7558280172421105113_n.jpg?oh=788c74308a3fd394904a4848e99dde13&oe=57BA63DD"})
+  age: 23, weight: 180, profile_image_url: "http://res.cloudinary.com/dque3vywj/image/upload/v1469322446/time_si9snq.png"})
 User.create!({username: "Max.L",password: "123123", gym_id: 1,
-  age: 22, weight: 165, profile_image_url: "https://scontent.xx.fbcdn.net/t31.0-8/11895031_10153073140616009_5004617786088603322_o.jpg"})
+  age: 22, weight: 165, profile_image_url: "http://res.cloudinary.com/dque3vywj/image/upload/v1469322501/11895031_10153073140616009_5004617786088603322_o_nlyd4u.jpg"})
 
 images = [
-  "https://upload.wikimedia.org/wikipedia/commons/d/d4/Arnold_Schwarzenegger_February_2015.jpg",
+  "http://res.cloudinary.com/dque3vywj/image/upload/v1469322076/Screen-Shot-2015-02-05-at-10.52.48-AM_qdoppz.png",
   "https://cdn1.lockerdome.com/uploads/a9c826dad8180cdcc94199aa01f0f05f4867076e66ed0a6ae5822e98c4a5a233_large",
-  "http://www.trbimg.com/img-5671783a/turbine/la-sp-sn-conor-mcgregor-mma-rankings-20151216",
+  "http://res.cloudinary.com/dque3vywj/image/upload/v1469322612/conor_okdfsh.jpg",
   "http://i.telegraph.co.uk/multimedia/archive/03490/Pacman_3490363b.jpg",
-  "http://blogs-images.forbes.com/kurtbadenhausen/files/2014/05/EM1_4541.jpg",
+  "http://res.cloudinary.com/dque3vywj/image/upload/v1469322698/floydm_gk1s7f.jpg",
   "http://www.ballnroll.com/Uploads/Blogs/Fitness/2014CavsRioWorkout/LeBron%20Is%20Jacked%20Workout.jpg",
   "http://hoopeduponline.com/wp-content/uploads/2015/03/jeremy-lin-all-star-ditl.png",
   "https://i.ytimg.com/vi/S7cZKAz6Meo/hqdefault.jpg",
