@@ -5,7 +5,7 @@ Do you ever feel like a plastic bag? Drifting through the gym, wanting to max ou
 LiftWithMe is a web application for finding people to work out with! LWM uses Rails backend, PostgreSQL database, and React.js with a Flux architectural framework frontend.
 
 [LiftWithMe][link]
-[link]: http://liftwithme.herokuapp.com
+[link]: http://liftwithme.co
 
 ## Welcome View
 
@@ -18,7 +18,7 @@ LiftWithMe is a web application for finding people to work out with! LWM uses Ra
 With LiftWithMe, the users have the ability to search for their local gym, and post their work outs. Other users are able to look at these work outs and pair up with the work out you want to be a part of.
 
 ### Users
-- Users can either sign up and make their own account, or try out the website with a demo account. The demo account has pre-loaded data for the user to interact with. 
+- Users can either sign up and make their own account, or try out the website with a demo account. The demo account has pre-loaded data for the user to interact with.
 
 ### Cities
 - In the city index page, the user is able to see the cities and choose the city they reside in.  
