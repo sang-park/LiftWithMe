@@ -56,7 +56,7 @@ var HomePage = React.createClass({
             <p>Never work out without a spotter again</p>
             <div className="button-cover">
               <button
-                onClick={this.handleClick}>Let's workout</button>
+                onClick={this.handleClick}>Let's workout</button> // '
             </div>
           </div>
         </div>
