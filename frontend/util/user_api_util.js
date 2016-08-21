@@ -45,5 +45,4 @@ var UserApiUtil = {
 	}
 };
 
-window.userapi = UserApiUtil;
 module.exports = UserApiUtil;

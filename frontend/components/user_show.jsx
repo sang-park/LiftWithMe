@@ -25,16 +25,18 @@ var UserShow = React.createClass({
   },
 
   updateUser: function(){
-    if (UserStore.user && !this.sent) {
-      var id = this.props.params.user_id;
-      UserActions.fetchUser(id);
-      this.sent = true;
-    } else if (UserStore.user && this.sent){
-      this.sent = false;
+    if (UserStore.user() && !this.sent) {
+    //   var id = this.props.params.user_id;
+    //   UserActions.fetchUser(id);
+    //   this.sent = true;
+    //   debugger
+    // } else if (UserStore.user() && this.sent){
+    //   this.sent = false;
       var user = UserStore.user();
       this.setState({user: user});
     }
   },
+
   profile: function(){
     var profileUrl = "https://www.drupal.org/files/profile_default.png";
     if (this.state.user.profile_image_url) {
